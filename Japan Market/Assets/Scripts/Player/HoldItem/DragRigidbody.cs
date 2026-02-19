@@ -3,46 +3,39 @@ using UnityEngine;
 // Drag a rigidbody with the mouse using a spring joint like Dani did in KARLSON. By Boxply
 // https://youtube.com/c/Boxply
 
-[RequireComponent(typeof(Rigidbody))]
 public class DragRigidbody : MonoBehaviour
 {
-    public float force = 600;
-	public float damping = 6;
-	public float distance = 15;
+    [SerializeField] float force = 600;
+    [SerializeField] float damping = 6;
+    [SerializeField] float distance = 15;
 
-	public LineRenderer lr;
+
 	public Transform lineRenderLocation;
 
     Transform jointTrans;
 	float dragDepth;
-
-	void OnMouseDown ()
-	{
-		HandleInputBegin (Input.mousePosition);
-	}
-	
-	void OnMouseUp ()
-	{
-		HandleInputEnd (Input.mousePosition);
-	}
-	
-	void OnMouseDrag ()
-	{
-		HandleInput (Input.mousePosition);
-	}
+    private void Awake()
+    {
+		ServiceLocator.Register(this);
+    }
+    
 	
 	public void HandleInputBegin (Vector3 screenPosition)
 	{
 		var ray = Camera.main.ScreenPointToRay (screenPosition);
 		RaycastHit hit;
-		if (Physics.Raycast (ray, out hit, distance)) {
-			if (hit.transform.gameObject.layer == LayerMask.NameToLayer ("Interactive")) {
+		
+		if (Physics.Raycast (ray, out hit, distance)) 
+		{
+         
+            if (hit.transform.gameObject.layer == LayerMask.NameToLayer ("Interactive")) {
 				dragDepth = CameraPlane.CameraToPointDepth (Camera.main, hit.point);
+				
 				jointTrans = AttachJoint (hit.rigidbody, hit.point);
 			}
 		}
 
-		lr.positionCount = 2;
+
 	}
 	
 	public void HandleInput (Vector3 screenPosition)
@@ -52,12 +45,12 @@ public class DragRigidbody : MonoBehaviour
 		var worldPos = Camera.main.ScreenToWorldPoint (screenPosition);
 		jointTrans.position = CameraPlane.ScreenToWorldPlanePoint (Camera.main, dragDepth, screenPosition);
 
-		DrawRope();
+		
 	}
 	
 	public void HandleInputEnd (Vector3 screenPosition)
 	{
-		DestroyRope();
+		
         Destroy (jointTrans.gameObject);
 	}
 	
@@ -91,19 +84,7 @@ public class DragRigidbody : MonoBehaviour
         return drive;
     }
 
-    private void DrawRope()
-	{
-		if(jointTrans == null)
-		{
-			return;
-		}
+   
 
-		lr.SetPosition(0, lineRenderLocation.position);
-		lr.SetPosition(1, this.transform.position);
-    }
 
-	private void DestroyRope()
-	{
-		lr.positionCount = 0;
-	}
 }
