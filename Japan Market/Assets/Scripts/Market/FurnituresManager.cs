@@ -1,18 +1,37 @@
 using System.Collections.Generic;
 using UnityEngine;
-
+public enum Furnitures
+{
+    Shelf,
+    Freezer
+}
 public class FurnituresManager : MonoBehaviour
 {
     public List<Transform> furnitures = new List<Transform>();
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    private Furnitures furnitures_enum;
+    [SerializeField] private Furniture shelf, freezer;
+    [SerializeField] private Transform[] greenFurnitures;
+    private void Awake()
     {
-        
+        ServiceLocator.Register(this);
     }
-
-    // Update is called once per frame
-    void Update()
+    private void Update()
     {
-        
+        if (Input.GetKeyDown(KeyCode.E))
+        {
+            AddFurniture();
+        }
+    }
+    public void AddFurniture()
+    {
+        switch (furnitures_enum)
+        {
+            case Furnitures.Shelf:
+                Instantiate(shelf.prefab, greenFurnitures[0]);
+                break; 
+            case Furnitures.Freezer:
+                Instantiate(freezer.prefab, greenFurnitures[1]);
+                break;
+        }
     }
 }
