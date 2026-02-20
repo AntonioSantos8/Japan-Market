@@ -47,7 +47,7 @@ public class OpenDoors : MonoBehaviour
                 if (rb == null) return;
 
                 rb.useGravity = true;
-                rb.freezeRotation = false;
+              //  rb.freezeRotation = false;
 
                 isHolding = true;
             }

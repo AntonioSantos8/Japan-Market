@@ -217,10 +217,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::OpenDoors
   playerCam: {fileID: 444260563}
   grabButton: Fire1
-  pickupRange: 2.5
+  pickupRange: 2
   holdDistance: 2
   maxDistance: 3
-  moveForce: 35
+  moveForce: 65
 --- !u!1 &444260558
 GameObject:
   m_ObjectHideFlags: 0
@@ -597,23 +597,23 @@ HingeJoint:
   m_Anchor: {x: 0, y: 0, z: -0.51}
   m_Axis: {x: 0, y: 1, z: 0}
   m_AutoConfigureConnectedAnchor: 1
-  m_ConnectedAnchor: {x: 0, y: 0, z: -0.489}
+  m_ConnectedAnchor: {x: 0, y: 0, z: 0}
   m_UseSpring: 0
   m_Spring:
     spring: 0
     damper: 0
     targetPosition: 0
-  m_UseMotor: 1
+  m_UseMotor: 0
   m_Motor:
     targetVelocity: 0
-    force: 150
+    force: 0
     freeSpin: 0
-  m_UseLimits: 1
+  m_UseLimits: 0
   m_ExtendedLimits: 0
   m_UseAcceleration: 0
   m_Limits:
-    min: -105.97629
-    max: 103.05072
+    min: -90
+    max: 1
     bounciness: 0
     bounceMinVelocity: 0.2
     contactDistance: 0
@@ -633,7 +633,7 @@ Rigidbody:
   serializedVersion: 5
   m_Mass: 0.5
   m_LinearDamping: 0
-  m_AngularDamping: 0.05
+  m_AngularDamping: 0
   m_CenterOfMass: {x: 0, y: 0, z: 0}
   m_InertiaTensor: {x: 1, y: 1, z: 1}
   m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
@@ -647,9 +647,9 @@ Rigidbody:
   m_ImplicitTensor: 1
   m_UseGravity: 1
   m_IsKinematic: 0
-  m_Interpolate: 1
-  m_Constraints: 4
-  m_CollisionDetection: 1
+  m_Interpolate: 0
+  m_Constraints: 80
+  m_CollisionDetection: 0
 --- !u!1 &1493133952
 GameObject:
   m_ObjectHideFlags: 0
