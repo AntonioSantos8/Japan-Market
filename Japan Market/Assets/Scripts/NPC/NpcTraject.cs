@@ -10,14 +10,13 @@ public class NpcTraject : MonoBehaviour
     {
         npc_agent = GetComponent<NavMeshAgent>();
     }
-    private void Start()
-    {
-        SortTraject();
-    }
     private void SortTraject()
     {
+        if (ServiceLocator.Get<FurnituresManager>().furnitures == null) return;
+
         GameObject furniture = ServiceLocator.Get<FurnituresManager>().
             furnitures[Random.Range(0, ServiceLocator.Get<FurnituresManager>().furnitures.Count)];
-        npc_agent.SetDestination(furniture.transform.position);
+        Transform frontPoint = furniture.transform.Find("Front");
+        npc_agent.SetDestination(frontPoint.transform.position);
     }
 }

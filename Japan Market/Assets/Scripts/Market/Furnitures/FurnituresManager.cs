@@ -10,15 +10,24 @@ public class FurnituresManager : MonoBehaviour
     public List<GameObject> furnitures = new List<GameObject>();
     [SerializeField] private Furnitures furnitures_enum;
     [SerializeField] private Furniture shelf, freezer;
-    [SerializeField] private GameObject[] greenFurnitures;
+    [SerializeField] private GameObject[] furnituresTranslucent;
     [SerializeField] private GameObject furnituresFather;
+
+    public bool furnitureInWay;
+    private bool canAddFurniture;
     private void Awake()
     {
         ServiceLocator.Register(this);
     }
     private void Update()
     {
-        //SO PRA TESTE
+        if (!furnitureInWay)
+        {
+            canAddFurniture = true;
+        }
+        else
+            canAddFurniture = false;
+
         if (Input.GetKeyDown(KeyCode.E))
         {
             AddFurniture();
@@ -26,28 +35,28 @@ public class FurnituresManager : MonoBehaviour
         if(Input.GetKeyDown(KeyCode.T))
         {
             furnitures_enum = Furnitures.Shelf;
-            greenFurnitures[0].SetActive(true);
-            greenFurnitures[1].SetActive(false);
+            furnituresTranslucent[0].SetActive(true);
+            furnituresTranslucent[1].SetActive(false);
         }
         if (Input.GetKeyDown(KeyCode.Y))
         {
             furnitures_enum = Furnitures.Freezer;
-            greenFurnitures[0].SetActive(false);
-            greenFurnitures[1].SetActive(true);
+            furnituresTranslucent[0].SetActive(false);
+            furnituresTranslucent[1].SetActive(true);
         }
     }
     public void AddFurniture()
     {
+        if (!canAddFurniture) return;
         GameObject obj = null;
-
         switch (furnitures_enum)
         {
             case Furnitures.Shelf:
-                obj = Instantiate(shelf.prefab, greenFurnitures[0].transform.position, greenFurnitures[0].transform.rotation);
+                obj = Instantiate(shelf.prefab, furnituresTranslucent[0].transform.position, furnituresTranslucent[0].transform.rotation);
                 break;
 
             case Furnitures.Freezer:
-                obj = Instantiate(freezer.prefab, greenFurnitures[1].transform.position, greenFurnitures[1].transform.rotation);
+                obj = Instantiate(freezer.prefab, furnituresTranslucent[1].transform.position, furnituresTranslucent[1].transform.rotation);
                 break;
         }
 
