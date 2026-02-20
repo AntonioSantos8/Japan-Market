@@ -1,82 +1,67 @@
 using UnityEngine;
-using System.Collections;
-using System.Collections.Generic;
+
 
 public class OpenDoors : MonoBehaviour
 {
+    [SerializeField] float forcePush = 170f;
+    [SerializeField] float angleDistance = 180f;
+    [SerializeField] float interactDistance = 2.5f;
 
-    [SerializeField] private Camera playerCam;
+    float currentAngle;
+    bool isDragging;
+    Camera cam;
 
- 
-    [SerializeField] private string grabButton = "Grab";
-    [SerializeField] private float pickupRange = 2.5f;
-    [SerializeField] private float holdDistance = 2f;
-    [SerializeField] private float maxDistance = 3f;
-    [SerializeField] private float moveForce = 10f;
-
-    private GameObject doorHeld;
-    private bool isHolding;
-
-    void FixedUpdate()
+    void Start()
     {
-        if (Input.GetButton(grabButton))
+        cam = Camera.main;
+        currentAngle = transform.localEulerAngles.y;
+    }
+
+    void Update()
+    {
+        HandleInput();
+    }
+
+    void HandleInput()
+    {
+        if (Input.GetButton("Fire1"))
         {
-            if (!isHolding)
-                TryGrabDoor();
+            if (!isDragging)
+            {
+                TryStartDrag();
+            }
             else
-                HoldDoor();
+            {
+                DragDoor();
+            }
         }
-        else if (isHolding)
+        else
         {
-            DropDoor();
+            isDragging = false;
         }
     }
 
-    void TryGrabDoor()
+    void TryStartDrag()
     {
-        Ray ray = playerCam.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
+        Ray ray = cam.ViewportPointToRay(new Vector3(0.5f, 0.5f));
         RaycastHit hit;
 
-        if (Physics.Raycast(ray, out hit, pickupRange))
+        if (Physics.Raycast(ray, out hit, interactDistance))
         {
-            if (hit.collider.CompareTag("Door"))
+            if (hit.transform == transform)
             {
-                doorHeld = hit.collider.gameObject;
-
-                Rigidbody rb = doorHeld.GetComponent<Rigidbody>();
-                if (rb == null) return;
-
-                rb.useGravity = true;
-              //  rb.freezeRotation = false;
-
-                isHolding = true;
+                isDragging = true;
             }
         }
     }
 
-    void HoldDoor()
+    void DragDoor()
     {
-        if (doorHeld == null) return;
+        float mouseMovement = -Input.GetAxis("Mouse X");
 
-        Ray ray = playerCam.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
+        currentAngle += mouseMovement * forcePush * Time.deltaTime;
+        currentAngle = Mathf.Clamp(currentAngle, -angleDistance, angleDistance);
 
-        Vector3 targetPos = playerCam.transform.position + ray.direction * holdDistance;
-        Vector3 currentPos = doorHeld.transform.position;
-
-        Rigidbody rb = doorHeld.GetComponent<Rigidbody>();
-        rb.linearVelocity = (targetPos - currentPos) * moveForce;
-
-        if (Vector3.Distance(currentPos, playerCam.transform.position) > maxDistance)
-        {
-            DropDoor();
-        }
-    }
-
-    void DropDoor()
-    {
-        if (doorHeld == null) return;
-
-        isHolding = false;
-        doorHeld = null;
+        transform.localRotation = Quaternion.Euler(0, currentAngle, 0);
     }
 }
