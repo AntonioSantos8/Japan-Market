@@ -7,10 +7,10 @@ public enum Furnitures
 }
 public class FurnituresManager : MonoBehaviour
 {
-    public List<Transform> furnitures = new List<Transform>();
-    private Furnitures furnitures_enum;
+    public List<GameObject> furnitures = new List<GameObject>();
+    [SerializeField] private Furnitures furnitures_enum;
     [SerializeField] private Furniture shelf, freezer;
-    [SerializeField] private Transform[] greenFurnitures;
+    [SerializeField] private GameObject[] greenFurnitures;
     [SerializeField] private GameObject furnituresFather;
     private void Awake()
     {
@@ -18,9 +18,22 @@ public class FurnituresManager : MonoBehaviour
     }
     private void Update()
     {
+        //SO PRA TESTE
         if (Input.GetKeyDown(KeyCode.E))
         {
             AddFurniture();
+        }
+        if(Input.GetKeyDown(KeyCode.T))
+        {
+            furnitures_enum = Furnitures.Shelf;
+            greenFurnitures[0].SetActive(true);
+            greenFurnitures[1].SetActive(false);
+        }
+        if (Input.GetKeyDown(KeyCode.Y))
+        {
+            furnitures_enum = Furnitures.Freezer;
+            greenFurnitures[0].SetActive(false);
+            greenFurnitures[1].SetActive(true);
         }
     }
     public void AddFurniture()
@@ -30,18 +43,15 @@ public class FurnituresManager : MonoBehaviour
         switch (furnitures_enum)
         {
             case Furnitures.Shelf:
-                obj = Instantiate(shelf.prefab, greenFurnitures[0].position, greenFurnitures[0].rotation);
+                obj = Instantiate(shelf.prefab, greenFurnitures[0].transform.position, greenFurnitures[0].transform.rotation);
                 break;
 
             case Furnitures.Freezer:
-                obj = Instantiate(freezer.prefab, greenFurnitures[1].position, greenFurnitures[1].rotation);
+                obj = Instantiate(freezer.prefab, greenFurnitures[1].transform.position, greenFurnitures[1].transform.rotation);
                 break;
         }
 
-        if (obj != null)
-        {
-            obj.transform.SetParent(furnituresFather.transform);
-            obj.transform.localScale = Vector3.one;
-        }
+        obj.transform.SetParent(furnituresFather.transform);
+        furnitures.Add(obj);
     }
 }

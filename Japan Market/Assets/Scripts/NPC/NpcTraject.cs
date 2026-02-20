@@ -16,8 +16,8 @@ public class NpcTraject : MonoBehaviour
     }
     private void SortTraject()
     {
-        Transform furniture = ServiceLocator.Get<FurnituresManager>().
+        GameObject furniture = ServiceLocator.Get<FurnituresManager>().
             furnitures[Random.Range(0, ServiceLocator.Get<FurnituresManager>().furnitures.Count)];
-        npc_agent.SetDestination(furniture.position);
+        npc_agent.SetDestination(furniture.transform.position);
     }
 }
