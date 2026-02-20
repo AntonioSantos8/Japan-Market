@@ -10,18 +10,31 @@ public class Segment : MonoBehaviour
 
     private void Start()
     {
-        spaces = new List<Transform>(allItems.Length);
+        spaces = new List<Transform>(new Transform[allItems.Length]);
     }
     private void OnTriggerEnter(Collider other)
     {
+        
         if (other.gameObject.TryGetComponent(out Item item))
         {
+            if (mySegment == Items.None || item.GetItemType() == mySegment)
+            {
+                if (GetNullSpace() == -1) return;
+                mySegment = item.GetItemType();
+                item.GetComponent<HoldableItem>().enabled = false;
+                Destroy(item.GetComponent<Rigidbody>());
+                item.transform.position = allItems[GetNullSpace()].transform.position;
 
-            item.GetComponent<HoldableItem>().enabled = false;
-            Destroy(item.GetComponent<Rigidbody>());
-            item.transform.position = allItems[GetNullSpace()].transform.position;
-
-            item.transform.rotation = allItems[GetNullSpace()].transform.rotation;
+                item.transform.rotation = allItems[GetNullSpace()].transform.rotation;
+                spaces[GetNullSpace()] = item.transform;
+            }
+        }else if (other.gameObject.TryGetComponent(out ItemBox itemBox)) 
+        {
+        
+        
+        
+        
+        
         }
     }
     public int GetNullSpace() 
@@ -34,7 +47,7 @@ public class Segment : MonoBehaviour
             }
 
         }
-        return 0;
+        return -1;
     
     
     }
