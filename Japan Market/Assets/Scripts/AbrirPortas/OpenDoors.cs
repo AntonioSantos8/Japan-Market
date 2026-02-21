@@ -1,67 +1,62 @@
 using UnityEngine;
-
-
 public class OpenDoors : MonoBehaviour
 {
-    [SerializeField] float forcePush = 170f;
-    [SerializeField] float angleDistance = 180f;
-    [SerializeField] float interactDistance = 2.5f;
-
-    float currentAngle;
-    bool isDragging;
-    Camera cam;
-
-    void Start()
-    {
-        cam = Camera.main;
-        currentAngle = transform.localEulerAngles.y;
-    }
+    [SerializeField] Camera cam;
+    Transform selectedDoor;
+    int leftDoor = 1;
+    [SerializeField] LayerMask doorLayer;
+    [SerializeField] float interactDistance = 3f;
+    [SerializeField] float motorSpeed = 300f;
 
     void Update()
     {
-        HandleInput();
-    }
-
-    void HandleInput()
-    {
-        if (Input.GetButton("Fire1"))
-        {
-            if (!isDragging)
-            {
-                TryStartDrag();
-            }
-            else
-            {
-                DragDoor();
-            }
-        }
-        else
-        {
-            isDragging = false;
-        }
-    }
-
-    void TryStartDrag()
-    {
-        Ray ray = cam.ViewportPointToRay(new Vector3(0.5f, 0.5f));
         RaycastHit hit;
 
-        if (Physics.Raycast(ray, out hit, interactDistance))
+        
+        if (Physics.Raycast(cam.transform.position, cam.transform.forward, out hit, interactDistance, doorLayer))
         {
-            if (hit.transform == transform)
+            if (Input.GetMouseButtonDown(0))
             {
-                isDragging = true;
+                selectedDoor = hit.collider.transform;
+
+                HingeJoint joint = selectedDoor.GetComponent<HingeJoint>();
+                if (joint != null)
+                {
+                    joint.useMotor = true;
+
+                   
+                    if (selectedDoor.localPosition.x > 0)
+                        leftDoor = 1;
+                    else
+                        leftDoor = -1;
+                }
             }
         }
-    }
 
-    void DragDoor()
-    {
-        float mouseMovement = -Input.GetAxis("Mouse X");
+        
+        if (Input.GetMouseButton(0) && selectedDoor != null)
+        {
+            HingeJoint joint = selectedDoor.GetComponent<HingeJoint>();
+            JointMotor motor = joint.motor;
 
-        currentAngle += mouseMovement * forcePush * Time.deltaTime;
-        currentAngle = Mathf.Clamp(currentAngle, -angleDistance, angleDistance);
+            float mouseDelta = -Input.GetAxis("Mouse X");
 
-        transform.localRotation = Quaternion.Euler(0, currentAngle, 0);
+            motor.targetVelocity = mouseDelta * motorSpeed * leftDoor;
+           
+
+            joint.motor = motor;
+        }
+
+      
+        if (Input.GetMouseButtonUp(0) && selectedDoor != null)
+        {
+            HingeJoint joint = selectedDoor.GetComponent<HingeJoint>();
+            JointMotor motor = joint.motor;
+
+            motor.targetVelocity = 0;
+            joint.motor = motor;
+
+            selectedDoor = null;
+        }
     }
 }
