@@ -1,4 +1,5 @@
 using UnityEngine;
+
 public class OpenDoors : MonoBehaviour
 {
     [SerializeField] Camera cam;
