@@ -57,7 +57,11 @@ public class Segment : MonoBehaviour
             }
         }
     }
-
+    public void FreeSpace(int groupIndex, int spaceIndex)
+    {
+        groups[groupIndex].spaces[spaceIndex-1] = null;
+ 
+    }
     bool PlaceSingleItem(Transform itemTransform, Items type)
     {
         for (int g = 0; g < groups.Length; g++)
@@ -67,17 +71,26 @@ public class Segment : MonoBehaviour
             int spaceIndex = groups[g].GetNullSpace();
             if (spaceIndex == -1) return false;
 
-            itemTransform.GetComponent<HoldableItem>().enabled = false;
-            Destroy(itemTransform.GetComponent<Rigidbody>());
+           itemTransform.GetComponent<Rigidbody>().isKinematic = true;
 
             itemTransform.position = groups[g].allItems[spaceIndex].position;
             itemTransform.rotation = groups[g].allItems[spaceIndex].rotation;
 
             groups[g].spaces[spaceIndex] = itemTransform;
 
+            ShelfItem shelfItem = itemTransform.GetComponent<ShelfItem>();
+            if (shelfItem == null)
+                shelfItem = itemTransform.gameObject.AddComponent<ShelfItem>();
+
+            shelfItem.Setup(this, g, spaceIndex);
+
             return true;
         }
 
         return false;
     }
+    [SerializeField]
+    GameObject
+        outroCol;
+    public void InactiveCollide() { GetComponent<Collider>().enabled = false; outroCol.SetActive(true); }
 }
