@@ -1,82 +1,63 @@
 using UnityEngine;
-using System.Collections;
-using System.Collections.Generic;
 
 public class OpenDoors : MonoBehaviour
 {
+    [SerializeField] Camera cam;
+    Transform selectedDoor;
+    int leftDoor = 1;
+    [SerializeField] LayerMask doorLayer;
+    [SerializeField] float interactDistance = 3f;
+    [SerializeField] float motorSpeed = 300f;
 
-    [SerializeField] private Camera playerCam;
-
- 
-    [SerializeField] private string grabButton = "Grab";
-    [SerializeField] private float pickupRange = 2.5f;
-    [SerializeField] private float holdDistance = 2f;
-    [SerializeField] private float maxDistance = 3f;
-    [SerializeField] private float moveForce = 10f;
-
-    private GameObject doorHeld;
-    private bool isHolding;
-
-    void FixedUpdate()
+    void Update()
     {
-        if (Input.GetButton(grabButton))
-        {
-            if (!isHolding)
-                TryGrabDoor();
-            else
-                HoldDoor();
-        }
-        else if (isHolding)
-        {
-            DropDoor();
-        }
-    }
-
-    void TryGrabDoor()
-    {
-        Ray ray = playerCam.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
         RaycastHit hit;
 
-        if (Physics.Raycast(ray, out hit, pickupRange))
+        
+        if (Physics.Raycast(cam.transform.position, cam.transform.forward, out hit, interactDistance, doorLayer))
         {
-            if (hit.collider.CompareTag("Door"))
+            if (Input.GetMouseButtonDown(0))
             {
-                doorHeld = hit.collider.gameObject;
+                selectedDoor = hit.collider.transform;
 
-                Rigidbody rb = doorHeld.GetComponent<Rigidbody>();
-                if (rb == null) return;
+                HingeJoint joint = selectedDoor.GetComponent<HingeJoint>();
+                if (joint != null)
+                {
+                    joint.useMotor = true;
 
-                rb.useGravity = true;
-              //  rb.freezeRotation = false;
-
-                isHolding = true;
+                   
+                    if (selectedDoor.localPosition.x > 0)
+                        leftDoor = 1;
+                    else
+                        leftDoor = -1;
+                }
             }
         }
-    }
 
-    void HoldDoor()
-    {
-        if (doorHeld == null) return;
-
-        Ray ray = playerCam.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
-
-        Vector3 targetPos = playerCam.transform.position + ray.direction * holdDistance;
-        Vector3 currentPos = doorHeld.transform.position;
-
-        Rigidbody rb = doorHeld.GetComponent<Rigidbody>();
-        rb.linearVelocity = (targetPos - currentPos) * moveForce;
-
-        if (Vector3.Distance(currentPos, playerCam.transform.position) > maxDistance)
+        
+        if (Input.GetMouseButton(0) && selectedDoor != null)
         {
-            DropDoor();
+            HingeJoint joint = selectedDoor.GetComponent<HingeJoint>();
+            JointMotor motor = joint.motor;
+
+            float mouseDelta = -Input.GetAxis("Mouse X");
+
+            motor.targetVelocity = mouseDelta * motorSpeed * leftDoor;
+           
+
+            joint.motor = motor;
         }
-    }
 
-    void DropDoor()
-    {
-        if (doorHeld == null) return;
+      
+        if (Input.GetMouseButtonUp(0) && selectedDoor != null)
+        {
+            HingeJoint joint = selectedDoor.GetComponent<HingeJoint>();
+            JointMotor motor = joint.motor;
 
-        isHolding = false;
-        doorHeld = null;
+            motor.targetVelocity = 0;
+            joint.motor = motor;
+
+            selectedDoor = null;
+        }
     }
 }

@@ -11,6 +11,15 @@ public class ItemBox : MonoBehaviour
 
 
     }
+    public void RemoveItem(int index)
+    {
+        items[index] = null;
+    }
+    public Transform[] GetItems() 
+    {
+        return items;
+    
+    }
     public int GetNullSpace()
     {
         for (int i = 0; i < spaces.Length; i++)

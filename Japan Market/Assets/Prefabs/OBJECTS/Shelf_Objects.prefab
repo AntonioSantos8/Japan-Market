@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: 597346989866871154}
   m_Layer: 0
   m_Name: Visual(Provisory)
-  m_TagString: Untagged
+  m_TagString: Furniture
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -137,8 +137,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 337203909384973651}
+  - component: {fileID: 5568004815533449481}
   m_Layer: 0
-  m_Name: Objects_Shelf
+  m_Name: Shelf_Objects
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -161,6 +162,19 @@ Transform:
   - {fileID: 3313874278406135468}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &5568004815533449481
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4520751274078190725}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6d2b5e40c121c17499e051b86b3dccd2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FurnitureInstance
+  interactionPoint: {fileID: 3313874278406135468}
 --- !u!1 &8959450441488822251
 GameObject:
   m_ObjectHideFlags: 0
@@ -172,7 +186,7 @@ GameObject:
   - component: {fileID: 3313874278406135468}
   - component: {fileID: 8416909651098542334}
   m_Layer: 0
-  m_Name: Front
+  m_Name: InteractionPoint
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
