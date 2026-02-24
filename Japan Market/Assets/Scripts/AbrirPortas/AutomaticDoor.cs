@@ -6,7 +6,7 @@ public class AutomaticDoor : MonoBehaviour
 {
     [SerializeField] Transform doorTransform;
     [SerializeField] Vector3 closePos;
-    [SerializeField] Vector4 openPos;
+    [SerializeField] Vector3 openPos;
     bool isOpen;
     [SerializeField] float duration;
     [SerializeField] float distance;
