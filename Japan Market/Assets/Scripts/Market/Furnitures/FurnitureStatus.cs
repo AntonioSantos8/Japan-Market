@@ -17,6 +17,6 @@ public class FurnitureStatus : MonoBehaviour
     private void Update()
     {
         //teste
-        print(segment.GetNullSpace());
+        //print(segment.GetNullSpace());
     }
 }
