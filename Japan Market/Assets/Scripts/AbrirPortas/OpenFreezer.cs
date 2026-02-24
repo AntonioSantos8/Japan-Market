@@ -27,7 +27,7 @@ public class OpenFreezer : MonoBehaviour
 
         if (Input.GetMouseButton(0) && isDragging && selectedFreezer != null)
         {
-            float mouseX = Input.GetAxis("Mouse X");
+            float mouseX = -Input.GetAxis("Mouse X");
 
             Vector3 pos = selectedFreezer.localPosition;
 
