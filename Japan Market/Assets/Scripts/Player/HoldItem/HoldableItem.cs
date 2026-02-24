@@ -10,10 +10,11 @@ rb = GetComponent<Rigidbody>();
     void OnMouseDown()
     {
 
-        ShelfItem shelfItem = GetComponent<ShelfItem>();
-        if (shelfItem != null)
+
+        if (gameObject.TryGetComponent(out ShelfItem shelfItem))
         {
-            shelfItem.GetSegment().InactiveCollide();
+            shelfItem.GetSegment().SetCanPut(false);
+            shelfItem.GetSegment().ActiveCollider();
             shelfItem.RemoveFromShelf();
         }
 

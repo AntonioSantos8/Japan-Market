@@ -26,7 +26,8 @@ public class SegmentTypeGroup
 public class Segment : MonoBehaviour
 {
     [SerializeField] SegmentTypeGroup[] groups;
-
+    bool canPut = true;
+    public void SetCanPut(bool value) { canPut = value; }
     private void Start()
     {
         for (int i = 0; i < groups.Length; i++)
@@ -34,7 +35,7 @@ public class Segment : MonoBehaviour
     }
 
     private void OnTriggerEnter(Collider other)
-    {
+    {if (!canPut) return;
         if (other.TryGetComponent(out Item item))
         {
             PlaceSingleItem(item.transform, item.GetItemType());
@@ -89,8 +90,6 @@ public class Segment : MonoBehaviour
 
         return false;
     }
-    [SerializeField]
-    GameObject
-        outroCol;
-    public void InactiveCollide() { GetComponent<Collider>().enabled = false; outroCol.SetActive(true); }
+    [SerializeField] GameObject colliderCheck;
+    public void ActiveCollider() => colliderCheck.SetActive(true);
 }
