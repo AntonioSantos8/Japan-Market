@@ -6,12 +6,12 @@ public class AutomaticDoor : MonoBehaviour
 {
     [SerializeField] Transform doorTransform;
     [SerializeField] Vector3 closePos;
-    [SerializeField] Vector3 openPos;
+    [SerializeField] Vector4 openPos;
     bool isOpen;
     [SerializeField] float duration;
     [SerializeField] float distance;
     [SerializeField] LayerMask layerMask;
-    Coroutine cor;
+    Coroutine coroutine;
 
     private void FixedUpdate()
     {
@@ -20,25 +20,25 @@ public class AutomaticDoor : MonoBehaviour
         bool prevBool = isOpen; 
          isOpen = colliders.Length > 0;
 
-        if(isOpen != prevBool)
+        if (isOpen != prevBool)
         {
-           
+
             ToggleDoor();
-        }
+         }
 
     }
     public void ToggleDoor()
     {
-        if (cor != null)
+        if (coroutine != null)
         {
-            StopCoroutine(cor);
+            StopCoroutine(coroutine);
         }
 
-        cor = StartCoroutine(TweenCoroutine(isOpen));
+        coroutine = StartCoroutine(TweenCoroutine(isOpen));
     }
     private IEnumerator TweenCoroutine (bool open)
     {
-        isOpen = open;
+       isOpen = open;
 
         Vector3 starPos = doorTransform.position;   
         Vector3 targetPos = open ? openPos : closePos;

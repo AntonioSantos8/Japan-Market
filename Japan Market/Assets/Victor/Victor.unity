@@ -148,7 +148,7 @@ Transform:
   m_GameObject: {fileID: 147607276}
   serializedVersion: 2
   m_LocalRotation: {x: 0.4969558, y: 0.50302577, z: 0.4969558, w: 0.50302577}
-  m_LocalPosition: {x: -2.7120001, y: 1.22, z: -3.918}
+  m_LocalPosition: {x: -2.489, y: 1.22, z: -3.918}
   m_LocalScale: {x: 0.10000019, y: 2, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -384,9 +384,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::AutomaticDoor
   doorTransform: {fileID: 199281702}
   closePos: {x: -7.8, y: 1.22, z: -5}
-  openPos: {x: -9.302, y: 1.22, z: -5}
+  openPos: {x: -9.302, y: 1.22, z: -5, w: 0}
   duration: 1
-  distance: 1
+  distance: 0.8
   layerMask:
     serializedVersion: 2
     m_Bits: 256
@@ -614,8 +614,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PhysicsInteraction
   maxGrabDistance: 18.2
   maxEmptyDistance: 25
-  grabSpring: 70
-  grabDamper: 11.4
+  grabSpring: 500
+  grabDamper: 440
   throwForce: 3
   emptyMoveSpeed: 0.1
   image1: {fileID: 1899291980}
@@ -918,9 +918,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::AutomaticDoor
   doorTransform: {fileID: 1217632138}
   closePos: {x: -6.76, y: 1.22, z: -5}
-  openPos: {x: -5.281, y: 1.22, z: -5}
+  openPos: {x: -5.281, y: 1.22, z: -5, w: 0}
   duration: 1
-  distance: 1
+  distance: 0.8
   layerMask:
     serializedVersion: 2
     m_Bits: 256
@@ -1165,7 +1165,7 @@ Rigidbody:
   serializedVersion: 5
   m_Mass: 1
   m_LinearDamping: 0
-  m_AngularDamping: 0.05
+  m_AngularDamping: 50
   m_CenterOfMass: {x: 0, y: 0, z: 0}
   m_InertiaTensor: {x: 1, y: 1, z: 1}
   m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
