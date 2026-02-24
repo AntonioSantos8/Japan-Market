@@ -138,6 +138,8 @@ GameObject:
   m_Component:
   - component: {fileID: 337203909384973651}
   - component: {fileID: 5568004815533449481}
+  - component: {fileID: 2217837297652754449}
+  - component: {fileID: 5233296960417024681}
   m_Layer: 0
   m_Name: Shelf_Objects
   m_TagString: Untagged
@@ -175,6 +177,38 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FurnitureInstance
   interactionPoint: {fileID: 3313874278406135468}
+--- !u!114 &2217837297652754449
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4520751274078190725}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5d453eb8eb54a154f92ffb1886dcdef7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FurnitureStatus
+  _type: 0
+  textQnt: {fileID: 0}
+  segment:
+    type: 0
+    allItems: []
+    spaces: []
+--- !u!114 &5233296960417024681
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4520751274078190725}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: acbdce81c75a15743b87bf8bd074af41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Segment
+  groups: []
+  colliderCheck: {fileID: 0}
 --- !u!1 &8959450441488822251
 GameObject:
   m_ObjectHideFlags: 0

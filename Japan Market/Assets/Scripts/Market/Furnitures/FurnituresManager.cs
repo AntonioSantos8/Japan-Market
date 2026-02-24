@@ -74,6 +74,6 @@ public class FurnitureManager : MonoBehaviour
     }
 
     public List<FurnitureInstance> GetPlacedFurnitures() => _placedFurnitures;
-
+    public FurnitureData GetCurrentSelected() => _currentSelected;
     public GameObject GetActiveGhost() => _activeGhost;
 }

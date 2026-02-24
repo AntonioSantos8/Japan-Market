@@ -7,6 +7,7 @@ public class FurnitureData : ScriptableObject
     public string furnitureName;
     public GameObject prefab;
     public GameObject ghostPrefab;
+    public float floorDistance;
 }
 
 public enum FurnitureType
