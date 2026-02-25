@@ -1,61 +1,58 @@
 using UnityEngine;
-using UnityEngine.Events;
-using System.Collections;
-
+using DG.Tweening;
 public class AutomaticDoor : MonoBehaviour
 {
-    [SerializeField] Transform doorTransform;
-    [SerializeField] Vector3 closePos;
-    [SerializeField] Vector3 openPos;
-    bool isOpen;
-    [SerializeField] float duration;
-    [SerializeField] float distance;
-    [SerializeField] LayerMask layerMask;
-    Coroutine coroutine;
-
-    private void FixedUpdate()
+    [SerializeField] private Transform player;
+    [SerializeField] private Vector3 closePos;
+    [SerializeField] private Vector3 openPos;
+    [SerializeField] private float Speed = 1f;
+    [SerializeField] private float distance = 3f;
+    [SerializeField] private float doorCloseTime = 2f;
+    [SerializeField] private Ease easeType = Ease.OutCubic;
+    private bool isOpen;
+    private Tween currentTween;
+    private float closeTimer;
+    
+    private void Update()
     {
-        Collider[] colliders = Physics.OverlapSphere(transform.position, distance, layerMask);
+        float dist = Vector3.Distance(transform.position, player.position);
 
-        bool prevBool = isOpen; 
-         isOpen = colliders.Length > 0;
-
-        if (isOpen != prevBool)
+        if (dist <= distance)
         {
+            closeTimer = 0f;
 
-            ToggleDoor();
-         }
-
-    }
-    public void ToggleDoor()
-    {
-        if (coroutine != null)
-        {
-            StopCoroutine(coroutine);
+            if (!isOpen)
+                OpenDoor();
         }
-
-        coroutine = StartCoroutine(TweenCoroutine(isOpen));
-    }
-    private IEnumerator TweenCoroutine (bool open)
-    {
-       isOpen = open;
-
-        Vector3 starPos = doorTransform.position;   
-        Vector3 targetPos = open ? openPos : closePos;
-
-        float elapsed = 0f;
-
-        while (elapsed < duration)
+        else
         {
-            float t = elapsed / duration;
-            doorTransform.position = Vector3.Lerp(starPos, targetPos,t);
-            elapsed += Time.deltaTime;
-            yield return null;
+            if (isOpen)
+            {
+                closeTimer += Time.deltaTime;
+
+                if (closeTimer >= doorCloseTime)
+                    CloseDoor();
+            }
         }
-
-        doorTransform.position = targetPos;
-
     }
-   
 
+    private void OpenDoor()
+    {
+        isOpen = true;
+
+        currentTween?.Kill();
+
+        currentTween = transform.DOMoveX(openPos.x, Speed)
+       .SetEase(easeType);
+    }
+
+    private void CloseDoor()
+    {
+        isOpen = false;
+
+        currentTween?.Kill();
+
+        currentTween = transform.DOMove(closePos, Speed)
+            .SetEase(Ease.InCubic);
+    }
 }
