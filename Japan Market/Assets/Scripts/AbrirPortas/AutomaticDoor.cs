@@ -23,7 +23,7 @@ public class AutomaticDoorTrigger : MonoBehaviour
         {
             closeTimer += Time.deltaTime;
 
-            if (closeTimer >= doorCloseTime)
+            if (closeTimer <= doorCloseTime)
             {
                 CloseDoors();
             }

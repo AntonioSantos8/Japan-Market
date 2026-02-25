@@ -363,11 +363,11 @@ Transform:
   m_GameObject: {fileID: 199281696}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: 0.7071068, z: -0, w: 0.7071068}
-  m_LocalPosition: {x: -0.4330802, y: 0.02678001, z: -0.05000019}
-  m_LocalScale: {x: 0.1000003, y: 2, z: 1}
+  m_LocalPosition: {x: -8.18, y: 1.22, z: -5}
+  m_LocalScale: {x: 0.10000033, y: 2, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 1263722408}
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &297096465
 GameObject:
@@ -789,7 +789,7 @@ GameObject:
   - component: {fileID: 1217632135}
   m_Layer: 0
   m_Name: PortaAutomatica2
-  m_TagString: Door
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -880,11 +880,11 @@ Transform:
   m_GameObject: {fileID: 1217632132}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: 0.7071068, z: -0, w: 0.7071068}
-  m_LocalPosition: {x: 0.6949196, y: 0.02678001, z: -0.05000019}
-  m_LocalScale: {x: 0.1000003, y: 2, z: 1}
+  m_LocalPosition: {x: -6.76, y: 1.22, z: -5}
+  m_LocalScale: {x: 0.10000033, y: 2, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 1263722408}
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1263722406
 GameObject:
@@ -916,9 +916,7 @@ Transform:
   m_LocalPosition: {x: -7.45492, y: 1.19322, z: -4.95}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 199281702}
-  - {fileID: 1217632138}
+  m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1263722409
@@ -935,12 +933,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::AutomaticDoor
   doorleft: {fileID: 1217632138}
   doorRigth: {fileID: 199281702}
-  leftClosedPos: {x: 0, y: 0.02678001, z: -0.05000019}
-  leftOpenPos: {x: 0, y: 0.02678001, z: -0.05000019}
-  rightClosedPos: {x: 0, y: 0.02678001, z: -0.05000019}
-  rightOpenPos: {x: 0, y: 0.02678001, z: -0.05000019}
-  speed: 1
-  doorCloseTime: 1.6
+  leftClosedPos: {x: -6.76, y: 1.22, z: -5}
+  leftOpenPos: {x: -5.506, y: 1.22, z: -5}
+  rightClosedPos: {x: -8.18, y: 1.22, z: -5}
+  rightOpenPos: {x: -9.36, y: 1.22, z: -5}
+  speed: 1.32
+  doorCloseTime: 1.8
   easeType: 4
 --- !u!65 &1263722410
 BoxCollider:
@@ -961,8 +959,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 3.7893505, y: 1.9122022, z: 3.3434522}
-  m_Center: {x: 0.33115673, y: 0.45610112, z: 1.026225}
+  m_Size: {x: 4.2074356, y: 0.9682542, z: 4.724436}
+  m_Center: {x: 0.20515537, y: 0.20002455, z: 0.40764523}
 --- !u!1 &1310961988
 GameObject:
   m_ObjectHideFlags: 0
@@ -2021,3 +2019,5 @@ SceneRoots:
   - {fileID: 147607277}
   - {fileID: 1472976501}
   - {fileID: 1263722408}
+  - {fileID: 1217632138}
+  - {fileID: 199281702}
