@@ -270,7 +270,6 @@ GameObject:
   - component: {fileID: 199281701}
   - component: {fileID: 199281700}
   - component: {fileID: 199281699}
-  - component: {fileID: 199281703}
   m_Layer: 0
   m_Name: PortaAutomatica1
   m_TagString: Untagged
@@ -364,31 +363,12 @@ Transform:
   m_GameObject: {fileID: 199281696}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: 0.7071068, z: -0, w: 0.7071068}
-  m_LocalPosition: {x: -7.8, y: 1.22, z: -5}
-  m_LocalScale: {x: 0.100000255, y: 2, z: 1}
+  m_LocalPosition: {x: -0.4330802, y: 0.02678001, z: -0.05000019}
+  m_LocalScale: {x: 0.1000003, y: 2, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 1263722408}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &199281703
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 199281696}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c0f4b2f51147b754b98156a97586fab0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::AutomaticDoor
-  player: {fileID: 357698650}
-  closePos: {x: -7.8, y: 1.22, z: -5}
-  openPos: {x: -9.302, y: 1.22, z: -5}
-  Speed: 1.3
-  distance: 3
-  doorCloseTime: 1.6
-  easeType: 2
 --- !u!1 &297096465
 GameObject:
   m_ObjectHideFlags: 0
@@ -474,7 +454,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1894598394441936310, guid: 6570000121465ce44909f6c67cd8478f, type: 3}
       propertyPath: m_Layer
-      value: 8
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3094870548308460522, guid: 6570000121465ce44909f6c67cd8478f, type: 3}
       propertyPath: m_Name
@@ -482,19 +462,23 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3094870548308460522, guid: 6570000121465ce44909f6c67cd8478f, type: 3}
       propertyPath: m_Layer
-      value: 8
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3094870548308460522, guid: 6570000121465ce44909f6c67cd8478f, type: 3}
+      propertyPath: m_TagString
+      value: Player
       objectReference: {fileID: 0}
     - target: {fileID: 3433498047700989207, guid: 6570000121465ce44909f6c67cd8478f, type: 3}
       propertyPath: m_Layer
-      value: 8
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5129473770268326365, guid: 6570000121465ce44909f6c67cd8478f, type: 3}
       propertyPath: m_Layer
-      value: 8
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6062080335333061325, guid: 6570000121465ce44909f6c67cd8478f, type: 3}
       propertyPath: m_Layer
-      value: 8
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6551999053839356294, guid: 6570000121465ce44909f6c67cd8478f, type: 3}
       propertyPath: m_LocalPosition.x
@@ -538,11 +522,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7993319225401863276, guid: 6570000121465ce44909f6c67cd8478f, type: 3}
       propertyPath: m_Layer
-      value: 8
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8967910834431515997, guid: 6570000121465ce44909f6c67cd8478f, type: 3}
       propertyPath: m_Layer
-      value: 8
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -620,11 +604,6 @@ MonoBehaviour:
   image1: {fileID: 1899291980}
   image2: {fileID: 297096467}
   mainCamera: {fileID: 444260563}
---- !u!4 &357698650 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 6551999053839356294, guid: 6570000121465ce44909f6c67cd8478f, type: 3}
-  m_PrefabInstance: {fileID: 357698601}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &444260558
 GameObject:
   m_ObjectHideFlags: 0
@@ -808,7 +787,6 @@ GameObject:
   - component: {fileID: 1217632137}
   - component: {fileID: 1217632136}
   - component: {fileID: 1217632135}
-  - component: {fileID: 1217632139}
   m_Layer: 0
   m_Name: PortaAutomatica2
   m_TagString: Door
@@ -902,31 +880,89 @@ Transform:
   m_GameObject: {fileID: 1217632132}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: 0.7071068, z: -0, w: 0.7071068}
-  m_LocalPosition: {x: -6.76, y: 1.22, z: -5}
-  m_LocalScale: {x: 0.100000255, y: 2, z: 1}
+  m_LocalPosition: {x: 0.6949196, y: 0.02678001, z: -0.05000019}
+  m_LocalScale: {x: 0.1000003, y: 2, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
+  m_Father: {fileID: 1263722408}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1263722406
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1263722408}
+  - component: {fileID: 1263722409}
+  - component: {fileID: 1263722410}
+  m_Layer: 0
+  m_Name: CollisionDoorAutomatic
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1263722408
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1263722406}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -7.45492, y: 1.19322, z: -4.95}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 199281702}
+  - {fileID: 1217632138}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1217632139
+--- !u!114 &1263722409
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1217632132}
+  m_GameObject: {fileID: 1263722406}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c0f4b2f51147b754b98156a97586fab0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AutomaticDoor
-  player: {fileID: 357698650}
-  closePos: {x: -6.76, y: 1.22, z: -5}
-  openPos: {x: -5.281, y: 1.22, z: -5}
-  Speed: 1.3
-  distance: 3
+  doorleft: {fileID: 1217632138}
+  doorRigth: {fileID: 199281702}
+  leftClosedPos: {x: 0, y: 0.02678001, z: -0.05000019}
+  leftOpenPos: {x: 0, y: 0.02678001, z: -0.05000019}
+  rightClosedPos: {x: 0, y: 0.02678001, z: -0.05000019}
+  rightOpenPos: {x: 0, y: 0.02678001, z: -0.05000019}
+  speed: 1
   doorCloseTime: 1.6
-  easeType: 2
+  easeType: 4
+--- !u!65 &1263722410
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1263722406}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 3.7893505, y: 1.9122022, z: 3.3434522}
+  m_Center: {x: 0.33115673, y: 0.45610112, z: 1.026225}
 --- !u!1 &1310961988
 GameObject:
   m_ObjectHideFlags: 0
@@ -1984,5 +2020,4 @@ SceneRoots:
   - {fileID: 357698601}
   - {fileID: 147607277}
   - {fileID: 1472976501}
-  - {fileID: 199281702}
-  - {fileID: 1217632138}
+  - {fileID: 1263722408}
