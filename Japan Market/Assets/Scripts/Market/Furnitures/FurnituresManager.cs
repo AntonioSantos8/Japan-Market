@@ -10,6 +10,7 @@ public class FurnitureManager : MonoBehaviour
     private Dictionary<FurnitureType, FurnitureData> _furnitureLibrary;
     private FurnitureData _currentSelected;
     private GameObject _activeGhost;
+    private GameObject _gameFurniture;
 
     private List<FurnitureInstance> _placedFurnitures = new List<FurnitureInstance>();
     private void Awake()
@@ -76,4 +77,5 @@ public class FurnitureManager : MonoBehaviour
     public List<FurnitureInstance> GetPlacedFurnitures() => _placedFurnitures;
     public FurnitureData GetCurrentSelected() => _currentSelected;
     public GameObject GetActiveGhost() => _activeGhost;
+    public GameObject GetActiveGameFurniture() => _gameFurniture;
 }
