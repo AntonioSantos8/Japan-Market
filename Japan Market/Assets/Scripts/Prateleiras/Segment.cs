@@ -40,7 +40,7 @@ Items mySegment = Items.None;
         if (other.TryGetComponent(out Item item))
         {
             PlaceSingleItem(item.transform, item.GetItemType());
- 	print("colidiu");
+ 	
   }
         else if (other.TryGetComponent(out ItemBox itemBox))
         {
@@ -62,14 +62,14 @@ Items mySegment = Items.None;
     }
     public void FreeSpace(int groupIndex, int spaceIndex)
     {
-        groups[groupIndex].spaces[spaceIndex-1] = null;
+        groups[groupIndex].spaces[spaceIndex] = null;
  
     }
     bool PlaceSingleItem(Transform itemTransform, Items type)
     {
 	
 	if(mySegment != Items.None && type != mySegment) { return false;};
-
+        mySegment = type;
         for (int g = 0; g < groups.Length; g++)
         {
 
@@ -79,9 +79,13 @@ Items mySegment = Items.None;
             if (spaceIndex == -1) {return false;}
 	
  itemTransform.gameObject.layer = LayerMask.NameToLayer("InShelf");  
-  if(itemTransform.GetComponent<Rigidbody>().isKinematic == true) {return false;}
- 
-itemTransform.GetComponent<Rigidbody>().isKinematic = true;
+
+            if (itemTransform.TryGetComponent(out Rigidbody rb))
+            {
+                if (rb.isKinematic == true) return false;
+                rb.isKinematic = true;
+            }
+
 	
             itemTransform.position = groups[g].allItems[spaceIndex].position;
             itemTransform.rotation = groups[g].allItems[spaceIndex].rotation;

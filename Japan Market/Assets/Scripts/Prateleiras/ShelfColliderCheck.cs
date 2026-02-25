@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class ShelfColliderCheck : MonoBehaviour
 {
-    void OnTriggerExit(Collider other)
+    void OnTriggerEnter(Collider other)
 {
 
 	if(other.gameObject.layer == LayerMask.NameToLayer("InShelf"))
