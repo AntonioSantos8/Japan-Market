@@ -5,8 +5,9 @@ public class PlacementFollower : MonoBehaviour
     [SerializeField] private Transform anchor;
     [SerializeField] private float viewDistance = 4f;
     [SerializeField] private float gridSize = 0.5f;
-    [SerializeField] private Transform followPointY;
     private FurnitureManager _manager;
+
+    [SerializeField] private GameObject _follow;
     private void Start()
     {
         _manager = ServiceLocator.Get<FurnitureManager>();
@@ -17,7 +18,7 @@ public class PlacementFollower : MonoBehaviour
         GameObject ghost = _manager.GetActiveGhost();
         if (ghost == null) return;
 
-        UpdateGhostPosition(ghost.transform);
+        UpdateGhostPosition(_follow.transform);
     }
     
     private void UpdateGhostPosition(Transform ghostTransform)
