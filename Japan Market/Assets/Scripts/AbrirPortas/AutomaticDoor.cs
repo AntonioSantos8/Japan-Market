@@ -1,58 +1,69 @@
 using UnityEngine;
 using DG.Tweening;
-public class AutomaticDoor : MonoBehaviour
+
+public class AutomaticDoorTrigger : MonoBehaviour
 {
-    [SerializeField] private Transform player;
-    [SerializeField] private Vector3 closePos;
-    [SerializeField] private Vector3 openPos;
-    [SerializeField] private float Speed = 1f;
-    [SerializeField] private float distance = 3f;
+    [SerializeField] private Transform doorleft;
+    [SerializeField] private Transform doorRigth;
+    [SerializeField] private Vector3 leftClosedPos;
+    [SerializeField] private Vector3 leftOpenPos;
+    [SerializeField] private Vector3 rightClosedPos;
+    [SerializeField] private Vector3 rightOpenPos;
+    [SerializeField] private float speed = 1f;
     [SerializeField] private float doorCloseTime = 2f;
     [SerializeField] private Ease easeType = Ease.OutCubic;
-    private bool isOpen;
-    private Tween currentTween;
+    private Tween leftTween;
+    private Tween rightTween;
+    private bool playerInside;
     private float closeTimer;
-    
+
     private void Update()
     {
-        float dist = Vector3.Distance(transform.position, player.position);
-
-        if (dist <= distance)
+        if (!playerInside)
         {
-            closeTimer = 0f;
+            closeTimer += Time.deltaTime;
 
-            if (!isOpen)
-                OpenDoor();
-        }
-        else
-        {
-            if (isOpen)
+            if (closeTimer >= doorCloseTime)
             {
-                closeTimer += Time.deltaTime;
-
-                if (closeTimer >= doorCloseTime)
-                    CloseDoor();
+                CloseDoors();
             }
         }
     }
 
-    private void OpenDoor()
+    private void OnTriggerEnter(Collider other)
     {
-        isOpen = true;
-
-        currentTween?.Kill();
-
-        currentTween = transform.DOMoveX(openPos.x, Speed)
-       .SetEase(easeType);
+        if (other.CompareTag("Player"))
+        {
+            playerInside = true;
+            closeTimer = 0f;
+            OpenDoors();
+        }
     }
 
-    private void CloseDoor()
+    private void OnTriggerExit(Collider other)
     {
-        isOpen = false;
+        if (other.CompareTag("Player"))
+        {
+            playerInside = false;
+            closeTimer = 0f;
+        }
+    }
 
-        currentTween?.Kill();
+    private void OpenDoors()
+    {
+        leftTween?.Kill();
+        rightTween?.Kill();
 
-        currentTween = transform.DOMove(closePos, Speed)
-            .SetEase(Ease.InCubic);
+        leftTween = doorleft.DOMove(leftOpenPos, speed).SetEase(easeType);
+        rightTween = doorRigth.DOMove(rightOpenPos, speed).SetEase(easeType);
+    }
+
+    private void CloseDoors()
+    {
+        leftTween?.Kill();
+        rightTween?.Kill();
+
+        leftTween = doorleft.DOMove(leftClosedPos, speed).SetEase(Ease.InCubic);
+        rightTween = doorRigth.DOMove(rightClosedPos, speed).SetEase(Ease.InCubic);
     }
 }
