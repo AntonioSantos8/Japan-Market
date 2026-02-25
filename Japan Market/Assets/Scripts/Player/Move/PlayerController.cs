@@ -16,7 +16,11 @@ public class PlayerController : MonoBehaviour, IPlayer
     }
     void Start()
     {
+        if (lockMouseOnStart)
+        {
+            
         CursorLock();
+        }
     }
     public void CursorLock()
     {
