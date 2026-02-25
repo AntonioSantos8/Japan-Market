@@ -17,7 +17,7 @@ public class HoldableItem : MonoBehaviour
         {
             shelfItem.RemoveFromShelf();
         }
-
+        if(rb == null) { rb = gameObject.AddComponent<Rigidbody>(); }
         rb.isKinematic = false;
         Current = this;
     }

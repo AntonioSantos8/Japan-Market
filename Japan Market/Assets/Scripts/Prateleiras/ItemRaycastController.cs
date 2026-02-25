@@ -32,7 +32,7 @@ public class ItemRaycastController : MonoBehaviour
                 }
             }
         }
-
+        if (Input.GetKeyDown(KeyCode.Keypad9)) { Time.timeScale /= 2; }
         if (Input.GetMouseButton(0) && currentItem != null)
         {
             dragSystem.HandleInput(Input.mousePosition);
