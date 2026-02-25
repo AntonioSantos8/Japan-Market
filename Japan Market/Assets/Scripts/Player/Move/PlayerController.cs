@@ -7,6 +7,7 @@ public class PlayerController : MonoBehaviour, IPlayer
     private PlayerInput input;
     private PlayerMotor motor;
     private PlayerLook look;
+    [SerializeField] bool lockMouseOnStart = true;
     void Awake()
     {
         input = GetComponent<PlayerInput>();
