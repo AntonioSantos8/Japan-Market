@@ -2,34 +2,28 @@ using UnityEngine;
 
 public class HoldableItem : MonoBehaviour
 {
+    public static HoldableItem Current;
+
     Rigidbody rb;
-    private void Start()
+
+    void Awake()
     {
-rb = GetComponent<Rigidbody>();
+        rb = GetComponent<Rigidbody>();
     }
-    void OnMouseDown()
+
+    public void BeginHold()
     {
-
-
-        if (gameObject.TryGetComponent(out ShelfItem shelfItem))
+        if (TryGetComponent(out ShelfItem shelfItem))
         {
-            shelfItem.GetSegment().SetCanPut(false);
-            shelfItem.GetSegment().ActiveCollider();
             shelfItem.RemoveFromShelf();
         }
 
         rb.isKinematic = false;
-        ServiceLocator.Get<DragRigidbody>().HandleInputBegin(Input.mousePosition);
-    
+        Current = this;
     }
 
-    void OnMouseUp()
+    public void EndHold()
     {
-        ServiceLocator.Get<DragRigidbody>().HandleInputEnd(Input.mousePosition);
-    }
-
-    void OnMouseDrag()
-    {
-        ServiceLocator.Get<DragRigidbody>().HandleInput(Input.mousePosition);
+        Current = null;
     }
 }

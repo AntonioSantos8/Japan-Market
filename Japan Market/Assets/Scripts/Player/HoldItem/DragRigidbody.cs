@@ -28,7 +28,7 @@ public class DragRigidbody : MonoBehaviour
 		if (Physics.Raycast (ray, out hit, distance)) 
 		{
          
-            if (hit.transform.gameObject.layer == LayerMask.NameToLayer ("Interactive")) {
+            if (hit.transform.gameObject.layer == LayerMask.NameToLayer ("Interactive") || hit.transform.gameObject.layer == LayerMask.NameToLayer ("InShelf")) {
 				dragDepth = CameraPlane.CameraToPointDepth (Camera.main, hit.point);
 				
 				jointTrans = AttachJoint (hit.rigidbody, hit.point);

@@ -131,13 +131,13 @@ GameObject:
   - component: {fileID: 35816607}
   - component: {fileID: 35816606}
   - component: {fileID: 35816608}
-  m_Layer: 2
+  m_Layer: 0
   m_Name: ColliderCheck1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &35816604
 Transform:
   m_ObjectHideFlags: 0
@@ -191,36 +191,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 35816603}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cab0220c7603f754d9cd7ed9124fc8b9, type: 3}
+  m_Script: {fileID: 11500000, guid: 6c9c7c4a793b34c4e932add96efdf5e3, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::OnCollisionExit
-  OnExit:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 35816603}
-        m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
-        m_MethodName: SetActive
-        m_Mode: 6
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-      - m_Target: {fileID: 1686698459}
-        m_TargetAssemblyTypeName: Segment, Assembly-CSharp
-        m_MethodName: SetCanPut
-        m_Mode: 6
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 1
-        m_CallState: 2
+  m_EditorClassIdentifier: Assembly-CSharp::ShelfColliderCheck
 --- !u!1 &40668402
 GameObject:
   m_ObjectHideFlags: 0
@@ -807,22 +780,6 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!114 &151201008
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 151200991}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f8eab10ce526f884d8a7f77df5a6fb19, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DragRigidbody
-  force: 250
-  damping: 10
-  distance: 2.2
-  lineRenderLocation: {fileID: 959437169}
 --- !u!1001 &173345646
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3833,7 +3790,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Segment
   groups: []
-  colliderCheck: {fileID: 0}
 --- !u!1 &753670078 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 4804205780851470777, guid: de39eb5d61f8eab42b11c6363f285b33, type: 3}
@@ -4200,6 +4156,10 @@ PrefabInstance:
     - target: {fileID: 5494588022344090004, guid: 01027dfb49292594ba4e755d7796f92b, type: 3}
       propertyPath: m_Name
       value: Mostarda (8)
+      objectReference: {fileID: 0}
+    - target: {fileID: 5494588022344090004, guid: 01027dfb49292594ba4e755d7796f92b, type: 3}
+      propertyPath: m_Layer
+      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 6629507400787699090, guid: 01027dfb49292594ba4e755d7796f92b, type: 3}
       propertyPath: m_LocalPosition.x
@@ -5631,6 +5591,11 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: de39eb5d61f8eab42b11c6363f285b33, type: 3}
+--- !u!1 &1033404579 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7993319225401863276, guid: 6570000121465ce44909f6c67cd8478f, type: 3}
+  m_PrefabInstance: {fileID: 1837036282}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1044812887
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -7928,7 +7893,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Segment
   groups: []
-  colliderCheck: {fileID: 0}
 --- !u!1 &1686698454
 GameObject:
   m_ObjectHideFlags: 0
@@ -7978,7 +7942,7 @@ BoxCollider:
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 1024
   m_LayerOverridePriority: 0
   m_IsTrigger: 1
   m_ProvidesContacts: 0
@@ -8037,7 +8001,6 @@ MonoBehaviour:
     - {fileID: 267993138}
     - {fileID: 1477378123}
     spaces: []
-  colliderCheck: {fileID: 35816603}
 --- !u!1001 &1702040613
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -8416,6 +8379,38 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 5513121979669134439, guid: 6570000121465ce44909f6c67cd8478f, type: 3}
   m_PrefabInstance: {fileID: 1837036282}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1815005606
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1033404579}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e6a5e1aa86c27c34798803e3dd79bb8a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ItemRaycastController
+  distance: 3
+  interactLayer:
+    serializedVersion: 2
+    m_Bits: 1152
+--- !u!114 &1815005607
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1033404579}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f8eab10ce526f884d8a7f77df5a6fb19, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DragRigidbody
+  force: 250
+  damping: 10
+  distance: 2.2
+  lineRenderLocation: {fileID: 959437169}
 --- !u!1001 &1815500566
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -8505,7 +8500,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1836459040
 Transform:
   m_ObjectHideFlags: 0
@@ -8703,9 +8698,12 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 3094870548308460522, guid: 6570000121465ce44909f6c67cd8478f, type: 3}
       insertIndex: -1
       addedObject: {fileID: 151201000}
-    - targetCorrespondingSourceObject: {fileID: 3094870548308460522, guid: 6570000121465ce44909f6c67cd8478f, type: 3}
+    - targetCorrespondingSourceObject: {fileID: 7993319225401863276, guid: 6570000121465ce44909f6c67cd8478f, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 151201008}
+      addedObject: {fileID: 1815005607}
+    - targetCorrespondingSourceObject: {fileID: 7993319225401863276, guid: 6570000121465ce44909f6c67cd8478f, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1815005606}
   m_SourcePrefab: {fileID: 100100000, guid: 6570000121465ce44909f6c67cd8478f, type: 3}
 --- !u!1 &1839078806
 GameObject:

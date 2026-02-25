@@ -28,6 +28,7 @@ public class Segment : MonoBehaviour
     [SerializeField] SegmentTypeGroup[] groups;
     bool canPut = true;
     public void SetCanPut(bool value) { canPut = value; }
+Items mySegment = Items.None;
     private void Start()
     {
         for (int i = 0; i < groups.Length; i++)
@@ -39,7 +40,8 @@ public class Segment : MonoBehaviour
         if (other.TryGetComponent(out Item item))
         {
             PlaceSingleItem(item.transform, item.GetItemType());
-        }
+ 	print("colidiu");
+  }
         else if (other.TryGetComponent(out ItemBox itemBox))
         {
             Transform[] boxItems = itemBox.GetItems();
@@ -65,15 +67,22 @@ public class Segment : MonoBehaviour
     }
     bool PlaceSingleItem(Transform itemTransform, Items type)
     {
+	
+	if(mySegment != Items.None && type != mySegment) { return false;};
+
         for (int g = 0; g < groups.Length; g++)
         {
+
             if (groups[g].type != type) continue;
-
+		
             int spaceIndex = groups[g].GetNullSpace();
-            if (spaceIndex == -1) return false;
-
-           itemTransform.GetComponent<Rigidbody>().isKinematic = true;
-
+            if (spaceIndex == -1) {return false;}
+	
+ itemTransform.gameObject.layer = LayerMask.NameToLayer("InShelf");  
+  if(itemTransform.GetComponent<Rigidbody>().isKinematic == true) {return false;}
+ 
+itemTransform.GetComponent<Rigidbody>().isKinematic = true;
+	
             itemTransform.position = groups[g].allItems[spaceIndex].position;
             itemTransform.rotation = groups[g].allItems[spaceIndex].rotation;
 
@@ -87,9 +96,9 @@ public class Segment : MonoBehaviour
 
             return true;
         }
-
+	
         return false;
     }
-    [SerializeField] GameObject colliderCheck;
-    public void ActiveCollider() => colliderCheck.SetActive(true);
+
+    
 }
