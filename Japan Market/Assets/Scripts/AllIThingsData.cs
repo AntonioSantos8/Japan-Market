@@ -4,5 +4,6 @@ public class AllIThingsData : ScriptableObject
 {
    public  string itemName, description;
   public   float itemPrice;
+   public  Items itemType;
 
 }
