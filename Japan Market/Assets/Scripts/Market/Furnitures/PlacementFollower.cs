@@ -1,9 +1,5 @@
 using UnityEngine;
-public enum SelectedMode
-{
-    Ghost,
-    GameFurniture
-}
+
 public class PlacementFollower : MonoBehaviour
 {
     [SerializeField] private Transform anchor;
@@ -11,7 +7,6 @@ public class PlacementFollower : MonoBehaviour
     [SerializeField] private float gridSize = 0.5f;
     private FurnitureManager _manager;
 
-    [SerializeField] private GameObject _follow;
     private void Start()
     {
         _manager = ServiceLocator.Get<FurnitureManager>();
@@ -19,14 +14,15 @@ public class PlacementFollower : MonoBehaviour
 
     private void Update()
     {
+        if (!_manager.IsBuildingMode) return;
+
         GameObject ghost = _manager.GetActiveGhost();
-        GameObject gameFurniture = _manager.GetActiveGameFurniture();
         if (ghost == null) return;
 
-        UpdateGhostPosition(ghost.transform, gameFurniture.transform);
+        UpdateGhostPosition(ghost.transform);
     }
-    
-    private void UpdateGhostPosition(Transform ghostTransform, Transform gameFurnitureTransform)
+
+    private void UpdateGhostPosition(Transform ghostTransform)
     {
         FurnitureData currentSelected = _manager.GetCurrentSelected();
         Vector3 targetPoint = anchor.position + anchor.forward * viewDistance;

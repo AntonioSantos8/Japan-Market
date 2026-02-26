@@ -6,13 +6,17 @@ public class FurnitureManager : MonoBehaviour
     [SerializeField] private List<FurnitureData> availableFurniture;
     [SerializeField] private Transform furnitureContainer;
     [SerializeField] private FurniturePlacementValidator ghostValidator;
+    [SerializeField] private LayerMask furnitureLayer;
 
     private Dictionary<FurnitureType, FurnitureData> _furnitureLibrary;
     private FurnitureData _currentSelected;
     private GameObject _activeGhost;
-    private GameObject _gameFurniture;
 
     private List<FurnitureInstance> _placedFurnitures = new List<FurnitureInstance>();
+
+    private FurnitureSaveData _tempSaveData;
+    public bool IsBuildingMode { get; private set; }
+
     private void Awake()
     {
         ServiceLocator.Register(this);
@@ -30,7 +34,16 @@ public class FurnitureManager : MonoBehaviour
 
     private void Update()
     {
+        if (Input.GetKeyDown(KeyCode.B)) ToggleBuildingMode();
+        if (!IsBuildingMode) return;
+
         HandleInput();
+    }
+
+    private void ToggleBuildingMode()
+    {
+        IsBuildingMode = !IsBuildingMode;
+        if (!IsBuildingMode && _activeGhost != null) Destroy(_activeGhost);
     }
 
     private void HandleInput()
@@ -40,7 +53,7 @@ public class FurnitureManager : MonoBehaviour
 
         if (_activeGhost != null)
         {
-            if (Input.GetKeyDown(KeyCode.E) && ghostValidator.IsValid)
+            if (Input.GetMouseButtonDown(0) && ghostValidator.IsValid)
             {
                 PlaceFurniture();
             }
@@ -49,6 +62,10 @@ public class FurnitureManager : MonoBehaviour
             {
                 _activeGhost.transform.Rotate(0, 90, 0);
             }
+        }
+        else
+        {
+            if (Input.GetMouseButtonDown(1)) TryPickUpFurniture();
         }
     }
 
@@ -63,6 +80,24 @@ public class FurnitureManager : MonoBehaviour
         }
     }
 
+    private void TryPickUpFurniture()
+    {
+        Ray ray = Camera.main.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2));
+        if (Physics.Raycast(ray, out RaycastHit hit, 5f, furnitureLayer))
+        {
+            if (hit.collider.TryGetComponent(out FurnitureInstance instance))
+            {
+                _placedFurnitures.Remove(instance);
+
+                _tempSaveData = instance.SaveData;
+
+                SelectFurniture(instance.Data.type);
+                _activeGhost.transform.rotation = instance.transform.rotation;
+                Destroy(instance.gameObject);
+            }
+        }
+    }
+
     private void PlaceFurniture()
     {
         GameObject obj = Instantiate(_currentSelected.prefab, _activeGhost.transform.position, _activeGhost.transform.rotation);
@@ -70,12 +105,22 @@ public class FurnitureManager : MonoBehaviour
 
         if (obj.TryGetComponent(out FurnitureInstance instance))
         {
+            instance.Data = _currentSelected;
+
+            if (_tempSaveData != null)
+            {
+                instance.SaveData = _tempSaveData;
+                _tempSaveData = null;
+            }
+
             _placedFurnitures.Add(instance);
         }
+
+        Destroy(_activeGhost);
+        _activeGhost = null;
     }
 
     public List<FurnitureInstance> GetPlacedFurnitures() => _placedFurnitures;
     public FurnitureData GetCurrentSelected() => _currentSelected;
     public GameObject GetActiveGhost() => _activeGhost;
-    public GameObject GetActiveGameFurniture() => _gameFurniture;
 }

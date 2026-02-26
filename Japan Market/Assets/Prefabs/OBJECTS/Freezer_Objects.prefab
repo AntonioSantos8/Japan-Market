@@ -193,7 +193,8 @@ GameObject:
   - component: {fileID: 545624746613499009}
   - component: {fileID: 1405739877081684768}
   - component: {fileID: 6417594649319239439}
-  m_Layer: 0
+  - component: {fileID: 8285971943148617082}
+  m_Layer: 7
   m_Name: Freezer_Objects
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -229,6 +230,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6d2b5e40c121c17499e051b86b3dccd2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FurnitureInstance
+  SaveData:
+    qntDoces: 0
+    qntSalgadinhos: 0
   interactionPoint: {fileID: 821814557370588587}
 --- !u!114 &1405739877081684768
 MonoBehaviour:
@@ -256,4 +260,24 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Segment
   groups: []
-  colliderCheck: {fileID: 0}
+--- !u!65 &8285971943148617082
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8093647016071138981}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 2.261455, y: 2.7752407, z: 0.67684156}
+  m_Center: {x: -0.016510725, y: 0.0489448, z: -0.000063323976}
