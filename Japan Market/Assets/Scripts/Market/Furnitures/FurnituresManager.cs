@@ -1,5 +1,7 @@
+using DG.Tweening;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class FurnitureManager : MonoBehaviour
 {
@@ -17,6 +19,7 @@ public class FurnitureManager : MonoBehaviour
     private FurnitureSaveData _tempSaveData;
     public bool IsBuildingMode { get; private set; }
 
+    [SerializeField] private Image circle;
     private void Awake()
     {
         ServiceLocator.Register(this);
@@ -65,10 +68,32 @@ public class FurnitureManager : MonoBehaviour
         }
         else
         {
-            if (Input.GetMouseButtonDown(1)) TryPickUpFurniture();
+            VerifyMouseHold();
         }
     }
+    Tween holdTween;
 
+    private void VerifyMouseHold()
+    {
+        
+        if (Input.GetMouseButtonDown(1))
+        {
+            print("holding");
+            holdTween = circle.DOFillAmount(1f, 1f)
+                .OnComplete(() =>
+                {
+                    TryPickUpFurniture();
+                    circle.DOFillAmount(0f, 0.2f);
+                });
+        }
+
+        if (Input.GetMouseButtonUp(1))
+        {
+            print("stop holding");
+            holdTween?.Kill();
+            circle.DOFillAmount(0f, 0.2f);
+        }
+    }
     public void SelectFurniture(FurnitureType type)
     {
         if (_activeGhost != null) Destroy(_activeGhost);
