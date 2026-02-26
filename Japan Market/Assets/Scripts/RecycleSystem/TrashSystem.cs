@@ -3,25 +3,28 @@ using UnityEngine;
 
 public class TrashSystem : MonoBehaviour
 {
-    [SerializeField] private GameObject trashPrefab;
     [SerializeField] private Transform[] spawns;
 
-    private MarketManager marketStatus;
+    [SerializeField] private MarketManager marketManager;
+    [SerializeField] private TrashData[] trashDatas;
     private void Start()
+    {
+        StartSpawningTrash();
+    }
+    public void StartSpawningTrash()
     {
         StartCoroutine(SpawnTrash());
     }
     private IEnumerator SpawnTrash()
     {
-        if(marketStatus.open == false) yield break;
-        while(marketStatus.open)
+        if(marketManager.open == false) yield break;
+        while(marketManager.open)
         {
             int timeToSpawn = Random.Range(30, 40);
             int spawnPlaceIndex = Random.Range(spawns.Length, 0);
+            int trashPrefab = Random.Range(trashDatas.Length, 0);
             yield return new WaitForSeconds(timeToSpawn);
-            print("oi");
-            if(trashPrefab  != null) 
-            Instantiate(trashPrefab, spawns[spawnPlaceIndex]);
+            Instantiate(trashDatas[trashPrefab].prefab, spawns[spawnPlaceIndex]);
         }
     }
 }
