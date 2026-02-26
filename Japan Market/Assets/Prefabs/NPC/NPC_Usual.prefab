@@ -43,7 +43,7 @@ NavMeshAgent:
   m_GameObject: {fileID: 1707092874194882208}
   m_Enabled: 1
   m_AgentTypeID: 0
-  m_Radius: 0.66
+  m_Radius: 0.54
   m_Speed: 3.5
   m_Acceleration: 8
   avoidancePriority: 50
@@ -68,6 +68,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1c58305bc76317d42a7de9a9171d9864, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NpcTraject
+  _pontoFinalEspecifico: {fileID: 0}
+  _tempoDeEsperaNoMovel: 2
 --- !u!1 &2617106325303320367
 GameObject:
   m_ObjectHideFlags: 0

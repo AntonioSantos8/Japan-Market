@@ -10,7 +10,11 @@ public class ShopBuyItems : MonoBehaviour
         for (int i = 0; i < objects.Length; i++)
             objects[i].SetActive(i == currentIndex);
     }
-
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Q)) { Previous(); }
+        if (Input.GetKeyDown(KeyCode.E)) { Next(); }
+    }
     public void Next()
     {
         objects[currentIndex].SetActive(false);

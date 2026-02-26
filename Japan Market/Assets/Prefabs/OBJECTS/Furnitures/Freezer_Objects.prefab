@@ -154,7 +154,7 @@ Transform:
   m_GameObject: {fileID: 5364152477974536730}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0.413}
+  m_LocalPosition: {x: 0, y: 0.95, z: 0.606}
   m_LocalScale: {x: 1.7773, y: 1, z: 0.43524}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -194,6 +194,7 @@ GameObject:
   - component: {fileID: 1405739877081684768}
   - component: {fileID: 6417594649319239439}
   - component: {fileID: 8285971943148617082}
+  - component: {fileID: 2443057047745316267}
   m_Layer: 7
   m_Name: Freezer_Objects
   m_TagString: Untagged
@@ -281,3 +282,19 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 2.261455, y: 2.7752407, z: 0.67684156}
   m_Center: {x: -0.016510725, y: 0.0489448, z: -0.000063323976}
+--- !u!208 &2443057047745316267
+NavMeshObstacle:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8093647016071138981}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Shape: 1
+  m_Extents: {x: 0.85, y: 1.385, z: 0.235}
+  m_MoveThreshold: 0.1
+  m_Carve: 1
+  m_CarveOnlyStationary: 1
+  m_Center: {x: 0, y: 0, z: 0}
+  m_TimeToStationary: 0.5
