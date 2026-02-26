@@ -35,7 +35,7 @@ public class OpenFreezer : MonoBehaviour
             pos.x = Mathf.Clamp(pos.x, minDistanceX, maxDistanceX);
 
             selectedFreezer.localPosition = Vector3.Lerp(selectedFreezer.localPosition, pos, speed*Time.deltaTime);
-            //selectedFreezer.localPosition = pos;
+         
         }
 
         if (Input.GetMouseButtonUp(0))
