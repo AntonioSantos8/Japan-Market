@@ -3203,17 +3203,17 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7223254677078604545}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: -0}
   m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 1303650849924190958}
   m_Father: {fileID: 1981491929575296137}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 542, y: 264}
+  m_AnchoredPosition: {x: 551, y: 260.2}
   m_SizeDelta: {x: 100.8, y: 73.4}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &6247221178271978923
@@ -3373,7 +3373,7 @@ MonoBehaviour:
   duration: 0.25
   ease: 27
   animateScale: 1
-  hoverScale: {x: 0.6, y: 0.6, z: 1}
+  hoverScale: {x: 0.2, y: 0.2, z: 1}
   animateRotation: 0
   hoverRotation: {x: 0, y: 0, z: 10}
   animatePosition: 0
@@ -3493,16 +3493,16 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7291149249958596323}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: -0}
   m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 3064994106539775143}
   m_Father: {fileID: 6377266154130574937}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 542, y: 264}
+  m_AnchoredPosition: {x: 551, y: 260.2}
   m_SizeDelta: {x: 100.8, y: 73.4}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &7471637089279711259
@@ -3635,6 +3635,18 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+      - m_Target: {fileID: 927397694080473152}
+        m_TargetAssemblyTypeName: UIButtonAnimator, Assembly-CSharp
+        m_MethodName: Desselect
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &927397694080473152
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3650,7 +3662,7 @@ MonoBehaviour:
   duration: 0.25
   ease: 27
   animateScale: 1
-  hoverScale: {x: 0.6, y: 0.6, z: 1}
+  hoverScale: {x: 0.2, y: 0.2, z: 1}
   animateRotation: 0
   hoverRotation: {x: 0, y: 0, z: 10}
   animatePosition: 0
