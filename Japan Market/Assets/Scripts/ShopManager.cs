@@ -1,3 +1,4 @@
+using TMPro;
 using UnityEngine;
 using UnityEngine.Audio;
 using UnityEngine.Events;
@@ -6,21 +7,13 @@ using UnityEngine.SceneManagement;
 
     public class ShopManager : MonoBehaviour
 {
- 
+
     static EventSystem eventSystem;
-    [SerializeField] string sceneToLoad;
 
       [SerializeField] GameObject startButtonslecrr;
 
 
-
-
-
-
- 
-    [SerializeField] GameObject mainMenuContent;
-    [SerializeField] GameObject optionsMenuContent;
-
+   
 
     private void Awake()
     {
@@ -35,7 +28,7 @@ using UnityEngine.SceneManagement;
         }
         if (startButtonslecrr != null)
         {
-            print("start selected");
+        
             eventSystem.SetSelectedGameObject(startButtonslecrr);
         }
 
@@ -43,14 +36,6 @@ using UnityEngine.SceneManagement;
     }
  
     public void SelectButton(GameObject btn) { eventSystem.SetSelectedGameObject(btn); }
-    public void OnStartButton()
-    {
-        mainMenuContent.SetActive(true);
-        optionsMenuContent.SetActive(false);
-        if (startButtonslecrr != null)
-            eventSystem.SetSelectedGameObject(startButtonslecrr);
-    }
-
     
 }
 
