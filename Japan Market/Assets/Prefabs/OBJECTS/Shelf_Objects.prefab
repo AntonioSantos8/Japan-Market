@@ -141,6 +141,7 @@ GameObject:
   - component: {fileID: 2217837297652754449}
   - component: {fileID: 5233296960417024681}
   - component: {fileID: 1756473990257753521}
+  - component: {fileID: 1642381514106335099}
   m_Layer: 7
   m_Name: Shelf_Objects
   m_TagString: Untagged
@@ -228,6 +229,22 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 2.3450637, y: 2.8034816, z: 1}
   m_Center: {x: 0.0055077076, y: -0.06626773, z: 0}
+--- !u!208 &1642381514106335099
+NavMeshObstacle:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4520751274078190725}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Shape: 1
+  m_Extents: {x: 1.165, y: 1.295, z: 0.42}
+  m_MoveThreshold: 0.1
+  m_Carve: 0
+  m_CarveOnlyStationary: 1
+  m_Center: {x: 0, y: 0, z: 0}
+  m_TimeToStationary: 0.5
 --- !u!1 &8959450441488822251
 GameObject:
   m_ObjectHideFlags: 0
@@ -254,7 +271,7 @@ Transform:
   m_GameObject: {fileID: 8959450441488822251}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0.597}
+  m_LocalPosition: {x: 0, y: -0.217, z: 0.93}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

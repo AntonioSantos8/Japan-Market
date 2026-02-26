@@ -1,3 +1,5 @@
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -7,30 +9,67 @@ public class NpcTraject : MonoBehaviour
     private NavMeshAgent _agent;
     private FurnitureManager _furnitureManager;
 
-    private void Awake()
-    {
-        _agent = GetComponent<NavMeshAgent>();
-    }
+    [Header("Configurações de Destino")]
+    [SerializeField] private Transform _pontoFinalEspecifico;
+    [SerializeField] private float _tempoDeEsperaNoMovel = 2f;
+
+    private void Awake() => _agent = GetComponent<NavMeshAgent>();
 
     private void Start()
     {
         _furnitureManager = ServiceLocator.Get<FurnitureManager>();
-        Invoke(nameof(SortTraject), 2f);
+        StartCoroutine(RotinaDeMovimentacao());
     }
 
-    public void SortTraject()
+    private IEnumerator RotinaDeMovimentacao()
     {
-        var allFurniture = _furnitureManager.GetPlacedFurnitures();
+        yield return new WaitForSeconds(4f);
 
-        if (allFurniture == null || allFurniture.Count == 0)
+        var todosMoveis = _furnitureManager.GetPlacedFurnitures();
+
+        if (todosMoveis != null && todosMoveis.Count > 0)
         {
-            Debug.LogWarning("Npc nao achou nd");
-            return;
+            int quantidadeParaVisitar = Random.Range(1, todosMoveis.Count + 1);
+
+            List<FurnitureInstance> listaSorteada = SortearMoveisSemRepetir(todosMoveis, quantidadeParaVisitar);
+            foreach (var movel in listaSorteada)
+            {
+                yield return StartCoroutine(IrAteDestino(movel.InteractionPosition));
+
+                yield return new WaitForSeconds(_tempoDeEsperaNoMovel);
+            }
         }
 
-        int randomIndex = Random.Range(0, allFurniture.Count);
-        FurnitureInstance targetFurniture = allFurniture[randomIndex];
+        if (_pontoFinalEspecifico != null)
+        {
+            yield return StartCoroutine(IrAteDestino(_pontoFinalEspecifico.position));
+        }
+    }
 
-        _agent.SetDestination(targetFurniture.InteractionPosition);
+    private IEnumerator IrAteDestino(Vector3 destino)
+    {
+        _agent.SetDestination(destino);
+
+        yield return new WaitUntil(() => !_agent.pathPending);
+            
+        yield return new WaitUntil(() => _agent.remainingDistance <= _agent.stoppingDistance);
+        print("Chegoy");
+    }
+
+    private List<FurnitureInstance> SortearMoveisSemRepetir(List<FurnitureInstance> listaOriginal, int quantidade)
+    {
+        List<FurnitureInstance> copia = new List<FurnitureInstance>(listaOriginal);
+        List<FurnitureInstance> resultado = new List<FurnitureInstance>();
+
+        for (int i = 0; i < quantidade; i++)
+        {
+            if (copia.Count == 0) break;
+
+            int index = Random.Range(0, copia.Count);
+            resultado.Add(copia[index]);
+            copia.RemoveAt(index);
+        }
+
+        return resultado;
     }
 }
