@@ -9,46 +9,46 @@ public class NpcTraject : MonoBehaviour
     private NavMeshAgent _agent;
     private FurnitureManager _furnitureManager;
 
-    [Header("Configurações de Destino")]
-    [SerializeField] private Transform _pontoFinalEspecifico;
-    [SerializeField] private float _tempoDeEsperaNoMovel = 2f;
+    [Header("Dest config")]
+    [SerializeField] private Transform _finalPoint;
+    [SerializeField] private float _waitTime = 2f;
 
     private void Awake() => _agent = GetComponent<NavMeshAgent>();
 
     private void Start()
     {
         _furnitureManager = ServiceLocator.Get<FurnitureManager>();
-        StartCoroutine(RotinaDeMovimentacao());
+        StartCoroutine(MoveRotine());
     }
 
-    private IEnumerator RotinaDeMovimentacao()
+    private IEnumerator MoveRotine()
     {
         yield return new WaitForSeconds(4f);
 
-        var todosMoveis = _furnitureManager.GetPlacedFurnitures();
+        var allFurnitures = _furnitureManager.GetPlacedFurnitures();
 
-        if (todosMoveis != null && todosMoveis.Count > 0)
+        if (allFurnitures != null && allFurnitures.Count > 0)
         {
-            int quantidadeParaVisitar = Random.Range(1, todosMoveis.Count + 1);
+            int quantToVisit = Random.Range(1, allFurnitures.Count + 1);
 
-            List<FurnitureInstance> listaSorteada = SortearMoveisSemRepetir(todosMoveis, quantidadeParaVisitar);
-            foreach (var movel in listaSorteada)
+            List<FurnitureInstance> sortList = SortFurniture(allFurnitures, quantToVisit);
+            foreach (var furniture in sortList)
             {
-                yield return StartCoroutine(IrAteDestino(movel.InteractionPosition));
+                yield return StartCoroutine(GoToDest(furniture.InteractionPosition));
 
-                yield return new WaitForSeconds(_tempoDeEsperaNoMovel);
+                yield return new WaitForSeconds(_waitTime);
             }
         }
 
-        if (_pontoFinalEspecifico != null)
+        if (_finalPoint != null)
         {
-            yield return StartCoroutine(IrAteDestino(_pontoFinalEspecifico.position));
+            yield return StartCoroutine(GoToDest(_finalPoint.position));
         }
     }
 
-    private IEnumerator IrAteDestino(Vector3 destino)
+    private IEnumerator GoToDest(Vector3 dest)
     {
-        _agent.SetDestination(destino);
+        _agent.SetDestination(dest);
 
         yield return new WaitUntil(() => !_agent.pathPending);
             
@@ -56,20 +56,20 @@ public class NpcTraject : MonoBehaviour
         print("Chegoy");
     }
 
-    private List<FurnitureInstance> SortearMoveisSemRepetir(List<FurnitureInstance> listaOriginal, int quantidade)
+    private List<FurnitureInstance> SortFurniture(List<FurnitureInstance> originalList, int quant)
     {
-        List<FurnitureInstance> copia = new List<FurnitureInstance>(listaOriginal);
-        List<FurnitureInstance> resultado = new List<FurnitureInstance>();
+        List<FurnitureInstance> copy = new List<FurnitureInstance>(originalList);
+        List<FurnitureInstance> result = new List<FurnitureInstance>();
 
-        for (int i = 0; i < quantidade; i++)
+        for (int i = 0; i < quant; i++)
         {
-            if (copia.Count == 0) break;
+            if (copy.Count == 0) break;
 
-            int index = Random.Range(0, copia.Count);
-            resultado.Add(copia[index]);
-            copia.RemoveAt(index);
+            int index = Random.Range(0, copy.Count);
+            result.Add(copy[index]);
+            copy.RemoveAt(index);
         }
 
-        return resultado;
+        return result;
     }
 }
