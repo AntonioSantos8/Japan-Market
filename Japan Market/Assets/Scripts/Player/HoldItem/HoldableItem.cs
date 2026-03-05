@@ -10,7 +10,6 @@ public class HoldableItem : MonoBehaviour
     {
         rb = GetComponent<Rigidbody>();
     }
-
     public void BeginHold()
     {
         if (TryGetComponent(out ShelfItem shelfItem))

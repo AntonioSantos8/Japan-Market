@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Security.Cryptography;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -64,7 +65,6 @@ public class NpcTraject : MonoBehaviour
         for (int i = 0; i < quant; i++)
         {
             if (copy.Count == 0) break;
-
             int index = Random.Range(0, copy.Count);
             result.Add(copy[index]);
             copy.RemoveAt(index);
