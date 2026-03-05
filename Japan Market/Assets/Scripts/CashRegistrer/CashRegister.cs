@@ -14,7 +14,7 @@ public class CashRegister : MonoBehaviour
     [SerializeField] Items[] itemsCustomers;
     private Item currentItem;
     private float totalPrice = 0;
-
+    
     void Update()
     {
         if (Input.GetButtonDown("Fire1") && currentItem != null)
