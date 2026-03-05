@@ -30,7 +30,10 @@ public class ItemRaycastController : MonoBehaviour
                     item.BeginHold();
                     dragSystem.HandleInputBegin(Input.mousePosition);
                 }
-
+                if (hit.transform.TryGetComponent(out IInteractable interactable))
+                {
+                    interactable?.Interact();
+                }
 
             }
         }

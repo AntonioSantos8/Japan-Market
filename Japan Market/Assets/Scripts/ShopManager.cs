@@ -4,14 +4,13 @@ using UnityEngine.Audio;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
-
+using System.Collections;
     public class ShopManager : MonoBehaviour
 {
 
     static EventSystem eventSystem;
 
-      [SerializeField] GameObject startButtonslecrr;
-
+    [SerializeField] GameObject startButtonslecrr;
 
    
 
@@ -19,22 +18,24 @@ using UnityEngine.SceneManagement;
     {
         eventSystem = EventSystem.current;
     }
-    void Start()
+  public void SelectButton()
     {
-       
-        if (eventSystem.currentSelectedGameObject == null)
-        {
-            eventSystem.SetSelectedGameObject(eventSystem.firstSelectedGameObject);
-        }
         if (startButtonslecrr != null)
         {
-        
+
             eventSystem.SetSelectedGameObject(startButtonslecrr);
         }
-
-
     }
- 
+    public void DeselectButton()
+    {
+
+
+        EventSystem.current.SetSelectedGameObject(null);
+        
+    }
+
+   
+
     public void SelectButton(GameObject btn) { eventSystem.SetSelectedGameObject(btn); }
     
 }

@@ -3,7 +3,9 @@ using UnityEngine;
 public class AllIThingsData : ScriptableObject
 {
    public  string itemName, description;
-  public   float itemPrice;
+  public   float singleItemPrice, boxPrice;
    public  Items itemType;
+    public GameObject itemPrefab;
+    public GameObject itemBoxPrefab;
 
 }

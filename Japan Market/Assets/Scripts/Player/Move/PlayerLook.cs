@@ -9,7 +9,10 @@ public class PlayerLook : MonoBehaviour
     [SerializeField] private PlayerSettings settings;
     public bool CanLook { get; set; } = true;
     public float xRotation = 0f;
-
+    private void Awake()
+    {
+        ServiceLocator.Register(this);
+    }
     public void Look(Vector2 input)
     {
         if (!CanLook) { return; }

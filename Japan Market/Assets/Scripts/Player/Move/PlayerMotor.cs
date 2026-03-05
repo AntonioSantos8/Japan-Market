@@ -25,6 +25,8 @@ public class PlayerMotor : MonoBehaviour
     [SerializeField] private AudioClip passos;
     [SerializeField] private AudioSource passosSource;
 
+    bool canMove = true;
+    public void SetCanMove(bool value) { canMove = value; }
     private float fovValue = 60f;
     private float currentTilt = 0f;
     private float inputX = 0f;
@@ -33,6 +35,7 @@ public class PlayerMotor : MonoBehaviour
     void Awake()
     {
         controller = GetComponent<CharacterController>();
+        ServiceLocator.Register(this);
     }
 
     void Update()
@@ -45,6 +48,7 @@ public class PlayerMotor : MonoBehaviour
     public void Move(Vector2 input, bool jump, bool run)
     {
         if (!settings.canMove) return;
+        if(!canMove) return;
 
         isGrounded = Physics.CheckSphere(groundCheck.position, groundDistance, settings.groundMask);
 
