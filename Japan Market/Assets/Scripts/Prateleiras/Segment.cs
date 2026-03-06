@@ -23,16 +23,21 @@ public class SegmentTypeGroup
         return -1;
     }
 }
-public class Segment : MonoBehaviour
+public class Segment : InteractableBase
 {
     [SerializeField] SegmentTypeGroup[] groups;
     bool canPut = true;
     public void SetCanPut(bool value) { canPut = value; }
 Items mySegment = Items.None;
+
+ [SerializeField] Material greenMaterial, redMaterial;
+ MeshRenderer meshRenderer;
     private void Start()
     {
         for (int i = 0; i < groups.Length; i++)
             groups[i].Init();
+
+        meshRenderer = GetComponent<MeshRenderer>();
     }
 
     private void OnTriggerEnter(Collider other)
@@ -104,5 +109,18 @@ Items mySegment = Items.None;
         return false;
     }
 
-    
+    public override void Interact()
+    {
+        
+    }
+    public override void OnLookAt()
+    {
+        print("olhou");
+        print(ServiceLocator.Get<ItemRaycastController>().isWithBox);
+       if(ServiceLocator.Get<ItemRaycastController>().isWithBox){meshRenderer.material = greenMaterial; }
+    }
+     public override void OnLookAway()
+    {
+       meshRenderer.material = null;
+    }
 }

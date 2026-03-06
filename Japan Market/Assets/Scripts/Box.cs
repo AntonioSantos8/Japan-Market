@@ -1,22 +1,27 @@
 using System;
 using UnityEngine;
 
-public class Box : MonoBehaviour, IInteractable
+public class Box : InteractableBase
 {
-    Rigidbody rb;
-    bool canInteract = true;
+  
+    
     Animator anim;
-    public void Interact()
+ 
+    public override void Awake()
     {
-        if(!canInteract) return;
-        canInteract = false;
-        ServiceLocator.Get<PlayerHoldManager>().PickItem(rb);
-        anim.SetTrigger("Open");
-    }
-    public void Awake()
-    {
-        rb = GetComponent<Rigidbody>();
+        base.Awake();
         anim = GetComponent<Animator>();
     }
-
+    void Start()
+    {
+        OnPickEvent?.AddListener(()=>{  ServiceLocator.Get<ItemRaycastController>().isWithBox = true ; } );
+         OnDropEvent?.AddListener(()=>{  ServiceLocator.Get<ItemRaycastController>().isWithBox = false ;    } );
+    }
+    public override void Interact()
+    {
+        if(!canInteract) return;
+     
+        ServiceLocator.Get<ItemRaycastController>().PickItem(rb);
+        anim.SetTrigger("Open");
+    }
 }
