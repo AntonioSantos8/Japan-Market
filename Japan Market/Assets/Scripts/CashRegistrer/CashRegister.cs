@@ -4,53 +4,100 @@ using TMPro;
 using DG.Tweening;
 public class CashRegister : MonoBehaviour
 {
-    [SerializeField] private List<AllIThingsData> allItem;
-    [SerializeField] private TextMeshPro nameItemText;
-    [SerializeField] private TextMeshPro priceItemText;
-    [SerializeField] private TextMeshPro totalPriceText;
-    [SerializeField] private Transform conveyorScanerPoint;
-    [SerializeField] private Transform conveyorEndPoint;
-    [SerializeField] private float waitTime = 2f;
-    [SerializeField] Items[] itemsCustomers;
-    private Item currentItem;
-    private float totalPrice = 0;
-    
+    [SerializeField] List<AllIThingsData> allItem;
+    [SerializeField] TextMeshPro nameItemText;
+    [SerializeField] TextMeshPro priceItemText;
+    [SerializeField] TextMeshPro totalPriceText;
+    [SerializeField] Transform bagPoint;
+    [SerializeField] Transform bagTopPoint;
+    Queue<Item> itemsQueue = new Queue<Item>();
+    float totalPrice = 0f;
+    bool playerInRange = false;
+
+    void Start()
+    {
+        totalPriceText.text = "";
+    }
+
     void Update()
     {
-        if (Input.GetButtonDown("Fire1") && currentItem != null)
+        if (!playerInRange) return;
+
+        if (Input.GetButtonDown("Fire1"))
         {
-            SendItemToConveyor(currentItem);
-            currentItem = null;
+            TryProcessClickedItem();
         }
     }
 
+    void TryProcessClickedItem()
+    {
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        RaycastHit hit;
+
+        if (Physics.Raycast(ray, out hit))
+        {
+            Item item = hit.collider.GetComponent<Item>();
+
+            if (item != null && !item.PassedItem())
+            {
+                if (itemsQueue.Contains(item))
+                {
+                    RemoveFromQueue(item);
+                    SendItemToBag(item);
+                }
+            }
+        }
+    }
+    void RemoveFromQueue(Item item)
+    {
+        Queue<Item> newQueue = new Queue<Item>();
+
+        foreach (var i in itemsQueue)
+        {
+            if (i != item)
+                newQueue.Enqueue(i);
+        }
+
+        itemsQueue = newQueue;
+    }
     void OnTriggerEnter(Collider other)
     {
+        if (other.CompareTag("Player"))
+        {
+            playerInRange = true;
+        }
+
         Item item = other.GetComponent<Item>();
 
-        if (item != null)
+        if (item != null && !item.PassedItem())
         {
-            currentItem = item;
+            itemsQueue.Enqueue(item);
+        }
+    }
+    void OnTriggerExit(Collider other)
+    {
+        if (other.CompareTag("Player"))
+        {
+            playerInRange = false;
         }
     }
 
-    void SendItemToConveyor(Item item)
+    void SendItemToBag(Item item)
     {
+        item.MarkAsPast();
+
         Sequence seq = DOTween.Sequence();
 
-        seq.Append(item.transform.DOMove(conveyorScanerPoint.position, 1f));
+        seq.Append(item.transform.DOMove(bagTopPoint.position, 0.3f));
+        seq.Append(item.transform.DOMove(bagPoint.position, 0.4f));
 
         seq.AppendCallback(() =>
         {
-            ProcessItem(item);
+            PastItem(item);
         });
-
-        seq.AppendInterval(waitTime);
-
-        seq.Append(item.transform.DOMove(conveyorEndPoint.position, 1f));
     }
 
-    void ProcessItem(Item item)
+    void PastItem(Item item)
     {
         Items type = item.GetItemType();
 
@@ -62,7 +109,13 @@ public class CashRegister : MonoBehaviour
                 priceItemText.text = "¥" + data.singleItemPrice.ToString("F2");
 
                 totalPrice += data.singleItemPrice;
-                totalPriceText.text = "Total ¥" + totalPrice.ToString("F2");
+
+                if (itemsQueue.Count == 0)
+                {
+                    nameItemText.text = "";
+                    priceItemText.text = "";
+                    totalPriceText.text = "Total ¥" + totalPrice.ToString("F2");
+                }
 
                 break;
             }
