@@ -149,7 +149,7 @@ public void Grab( Items itemType = Items.None)
   
         return rb;
     }
-
+    public Items GetItemType() { return itemType; }
     public GameObject GetGameObject()
     {
         return gameObject;

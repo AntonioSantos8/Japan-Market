@@ -21,7 +21,9 @@ public class ItemRaycastController : MonoBehaviour
     
     public Items currentItemType = Items.None;
     public bool isWithBox;
-   public  ItemBox box;
+    ItemBox lastBoxHeld;
+    public ItemBox LastBox() => lastBoxHeld;
+    
     void Start()
     {
         cam = GetComponent<Camera>();
@@ -74,10 +76,10 @@ public class ItemRaycastController : MonoBehaviour
         }
         else
         {
-                //  if(lastLookedInteractable != null)
-                //  lastLookedInteractable?.OnLookAway();
+                // if(lastLookedInteractable != null)
+                //lastLookedInteractable?.OnLookAway();
 
-                //  lastLookedInteractable = null;
+                //lastLookedInteractable = null;
 
         }
         
@@ -139,11 +141,10 @@ public class ItemRaycastController : MonoBehaviour
         lastLookedInteractable = null;
         heldItemRb.isKinematic = true;
         heldItemRb.useGravity = false;
-        if(heldItem.gameObject.TryGetComponent(out ItemBox ib))
+        if (heldInteractable.GetItemType() == Items.Box) 
         {
-                box = ib;
-
-
+            lastBoxHeld = heldItem.gameObject.GetComponent<ItemBox>();
+        
         }
         heldItem.SetParent(boxHandPivot);
         heldItem.localPosition = Vector3.zero;
@@ -159,18 +160,34 @@ public class ItemRaycastController : MonoBehaviour
     public void DropItem()
     {
         if (heldItem == null) return;
+        if (Physics.Raycast(transform.position, transform.forward, out RaycastHit hit, distance, interactLayer)) 
+        {
+           heldItem.transform.position = hit.point - transform.forward * 0.1f;
+            print("coli");
 
-        heldItem.SetParent(null);
+        }
+        else 
+        {
+            heldItemRb.MovePosition(heldItem.transform.position + transform.forward * .2f);
 
+        }
+
+
+            heldItem.SetParent(null);
+           heldItemRb.gameObject.GetComponent<Collider>().enabled = true;
+       // heldItem.transform.position -= transform.forward * .3f;
+   
+        heldItem.gameObject.layer = 0;
         heldItemRb.isKinematic = false;
         heldItemRb.useGravity = true;
-           heldItemRb.gameObject.GetComponent<Collider>().enabled = true;
+        heldItemRb.angularVelocity = Vector3.zero;
+        heldItemRb.linearVelocity = Vector3.zero;
         if (heldInteractable != null)
         {
             heldInteractable.OnDropEvent?.Invoke();
             heldInteractable.SetCanInteract(true);
         }
-    box = null;
+        lastBoxHeld = null;
         heldItemRb = null;
         heldItem = null;
         heldInteractable = null;

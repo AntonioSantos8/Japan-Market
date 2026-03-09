@@ -30,7 +30,7 @@ public class Segment : InteractableBase
     public void SetCanPut(bool value) { canPut = value; }
 Items mySegment = Items.None;
 
- [SerializeField] Material greenMaterial, redMaterial;
+ [SerializeField] Material greenMaterial, redMaterial, transparentMaterial;
  MeshRenderer meshRenderer;
     private void Start()
     {
@@ -40,33 +40,9 @@ Items mySegment = Items.None;
         meshRenderer = GetComponent<MeshRenderer>();
     }
 
-    private void OnTriggerEnter(Collider other)
-    {if (!canPut) return;
-        if (other.TryGetComponent(out Item item))
-        {
-            PlaceSingleItem(item.transform, item.GetItemType());
- 	
-  }
-        else if (other.TryGetComponent(out ItemBox itemBox))
-        {
-            Transform[] boxItems = itemBox.GetItems();
-
-            for (int i = boxItems.Length - 1; i >= 0; i--)
-            {
-                if (boxItems[i] == null) continue;
-
-                Item itemInBox = boxItems[i].GetComponent<Item>();
-
-                if (PlaceSingleItem(boxItems[i], itemInBox.GetItemType()))
-                {
-                    boxItems[i].parent = null;
-                    itemBox.RemoveItem(i);
-                }
-            }
-        }
-    }
+ 
     public void FreeSpace(int groupIndex, int spaceIndex)
-    {
+    {   
         groups[groupIndex].spaces[spaceIndex] = null;
  
     }
@@ -82,14 +58,6 @@ Items mySegment = Items.None;
 		
             int spaceIndex = groups[g].GetNullSpace();
             if (spaceIndex == -1) {return false;}
-	
- itemTransform.gameObject.layer = LayerMask.NameToLayer("InShelf");  
-
-            if (itemTransform.TryGetComponent(out Rigidbody rb))
-            {
-                if (rb.isKinematic == true) return false;
-                rb.isKinematic = true;
-            }
 
 	
             itemTransform.position = groups[g].allItems[spaceIndex].position;
@@ -108,13 +76,51 @@ Items mySegment = Items.None;
 	
         return false;
     }
+    bool TakeItem(ItemBox box)
+    {
+        for (int g = 0; g < groups.Length; g++)
+        {
+            if (!box.CanReceive(groups[g].type)) continue;
+         
+            for (int i = groups[g].spaces.Count - 1; i >= 0; i--)
+            {
+              
+                Transform item = groups[g].spaces[i];
 
+                if (item == null) continue;
+           
+                int boxIndex = box.GetNullSpace();
+                if (boxIndex == -1) return false;
+           
+                box.GetItems()[boxIndex] = item;
+
+                item.SetParent(box.GetItemsParent());
+                item.localPosition = box.spaces[boxIndex].localPosition;
+                item.localRotation = box.spaces[boxIndex].transform.localRotation;
+
+                groups[g].spaces[i] = null;
+                TakeItem(box);
+                return true;
+            }
+        
+        }
+
+        return false;
+    }
     public override void Interact()
     {
-         if(ServiceLocator.Get<ItemRaycastController>().isWithBox)
+        if (ServiceLocator.Get<ItemRaycastController>().isWithBox)
         {
-            
- Transform[] boxItems = ServiceLocator.Get<ItemRaycastController>().box.GetItems();
+            ItemBox box = ServiceLocator.Get<ItemRaycastController>().LastBox();
+
+            if (box.IsEmpty())
+            {
+                TakeItem(box);
+                return;
+            }
+
+          
+            Transform[] boxItems = box.GetItems();
 
             for (int i = boxItems.Length - 1; i >= 0; i--)
             {
@@ -125,22 +131,29 @@ Items mySegment = Items.None;
                 if (PlaceSingleItem(boxItems[i], itemInBox.GetItemType()))
                 {
                     boxItems[i].parent = null;
-                    ServiceLocator.Get<ItemRaycastController>().box.RemoveItem(i);
+                    box.RemoveItem(i);
                 }
             }
-            
         }
     }
     public override void OnLookAt()
     {
+        if (!ServiceLocator.Get<ItemRaycastController>().isWithBox) return;
 
+        ItemBox box = ServiceLocator.Get<ItemRaycastController>().LastBox();
 
-       if(ServiceLocator.Get<ItemRaycastController>().isWithBox){meshRenderer.material = greenMaterial; }
-      
+        if (box.IsEmpty())
+        {
+            meshRenderer.material = redMaterial;
+        }
+        else
+        {
+            meshRenderer.material = greenMaterial;
+        }
     }
-     public override void OnLookAway()
+    public override void OnLookAway()
     {
       
-       meshRenderer.material = null;
+       meshRenderer.material = transparentMaterial;
     }
 }

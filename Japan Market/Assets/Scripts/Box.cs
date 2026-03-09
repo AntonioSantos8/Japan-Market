@@ -19,10 +19,15 @@ public class Box : InteractableBase
     }
     public override void Interact()
     {
-        if(!canInteract) return;
+       // if(!canInteract) return;
      
         ServiceLocator.Get<ItemRaycastController>().PickItem(rb);
         
         anim.SetTrigger("Open");
+    }
+    public override void OnLookAt()
+    {
+        base.OnLookAt();
+      
     }
 }
