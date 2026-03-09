@@ -60,6 +60,7 @@ public class CashRegister : MonoBehaviour
 
         itemsQueue = newQueue;
     }
+
     void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("Player"))
@@ -74,6 +75,7 @@ public class CashRegister : MonoBehaviour
             itemsQueue.Enqueue(item);
         }
     }
+
     void OnTriggerExit(Collider other)
     {
         if (other.CompareTag("Player"))
@@ -81,22 +83,40 @@ public class CashRegister : MonoBehaviour
             playerInRange = false;
         }
     }
-
     void SendItemToBag(Item item)
     {
         item.MarkAsPast();
 
+        if (item.TryGetComponent(out Collider col)) col.enabled = false;
+
+        if (item.TryGetComponent<Rigidbody>(out var rb))
+        {
+            rb.isKinematic = true;
+            rb.useGravity = false;
+        }
+
         Sequence seq = DOTween.Sequence();
 
-        seq.Append(item.transform.DOMove(bagTopPoint.position, 0.3f));
-        seq.Append(item.transform.DOMove(bagPoint.position, 0.4f));
+      
+        seq.Append(item.transform.DOMoveY(item.transform.position.y + 0.3f, 0.15f)
+            .SetEase(Ease.OutQuad));
+
+       
+        seq.Append(item.transform.DOMove(bagTopPoint.position, 0.25f)
+            .SetEase(Ease.InOutQuad));
+
+        
+        seq.Append(item.transform.DOMove(bagPoint.position, 0.2f)
+            .SetEase(Ease.InQuad));
+
+       
+        seq.Append(item.transform.DOPunchScale(Vector3.one * 0.15f, 0.2f, 5));
 
         seq.AppendCallback(() =>
         {
             PastItem(item);
         });
     }
-
     void PastItem(Item item)
     {
         Items type = item.GetItemType();
@@ -110,15 +130,20 @@ public class CashRegister : MonoBehaviour
 
                 totalPrice += data.singleItemPrice;
 
+                
                 if (itemsQueue.Count == 0)
                 {
-                    nameItemText.text = "";
-                    priceItemText.text = "";
-                    totalPriceText.text = "Total ¥" + totalPrice.ToString("F2");
+                    Invoke(nameof(ShowTotal), 0.5f);
                 }
 
                 break;
             }
         }
+    }
+    void ShowTotal()
+    {
+        nameItemText.text = "";
+        priceItemText.text = "";
+        totalPriceText.text = "Total ¥" + totalPrice.ToString("F2");
     }
 }
