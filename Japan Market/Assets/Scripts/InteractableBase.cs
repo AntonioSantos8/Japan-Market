@@ -9,9 +9,8 @@ public abstract class InteractableBase : MonoBehaviour, IInteractable
     //protected Outline outline;
     protected Vector3 originalScale;
     protected bool isOutlineable = true;
-    protected bool isMarkable = true;
+    protected bool isMarkable = true;   
     protected bool canInteract = true;
-    protected bool goToHand;
     protected bool addOutline = true;
     public string interactionText;
     public Items itemType;
@@ -41,6 +40,7 @@ public abstract class InteractableBase : MonoBehaviour, IInteractable
 
     public virtual void OnLookAt()
     {
+                print("olhou");
         if(!canInteract) {          
           //  ServiceLocator.Get<PlayerInteractions>().GetInteractionText().SetActive(false);
           //outline.enabled = false; return; 
@@ -69,6 +69,7 @@ public abstract class InteractableBase : MonoBehaviour, IInteractable
     }
     public virtual void OnLookAway()
     {
+          print("look away");
          //  ServiceLocator.Get<PlayerInteractions>().GetInteractionText().SetActive(false);
        // if(outline != null)
          //   ServiceLocator.Get<F2FGrabSystem>().CanThrow = true;

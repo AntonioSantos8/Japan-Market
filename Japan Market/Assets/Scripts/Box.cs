@@ -22,6 +22,7 @@ public class Box : InteractableBase
         if(!canInteract) return;
      
         ServiceLocator.Get<ItemRaycastController>().PickItem(rb);
+        
         anim.SetTrigger("Open");
     }
 }

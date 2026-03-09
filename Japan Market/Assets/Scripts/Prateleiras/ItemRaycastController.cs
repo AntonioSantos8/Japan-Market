@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using UnityEngine;
 
 public class ItemRaycastController : MonoBehaviour
@@ -16,11 +17,11 @@ public class ItemRaycastController : MonoBehaviour
     Transform heldItem;
     InteractableBase heldInteractable;
 
-    InteractableBase currentLookInteractable;
+    InteractableBase lastLookedInteractable;
     
     public Items currentItemType = Items.None;
     public bool isWithBox;
-
+   public  ItemBox box;
     void Start()
     {
         cam = GetComponent<Camera>();
@@ -32,39 +33,55 @@ public class ItemRaycastController : MonoBehaviour
     {
         HandleLook();
         HandleRaycast();
-        HandleHeldItemInput();
+       HandleHeldItemInput();
+       print(lastLookedInteractable);
     }
 
     void HandleLook()
-{
-    Ray ray = new Ray(cam.transform.position, cam.transform.forward);
-    RaycastHit hit;
-
-    if (Physics.Raycast(ray, out hit, distance, interactLayer))
     {
-        InteractableBase interactable = hit.transform.GetComponentInParent<InteractableBase>();
 
-        if (interactable != null)
+       if (Physics.Raycast(transform.position, transform.forward, out RaycastHit hit, distance, interactLayer))
         {
-            if (currentLookInteractable != interactable)
+            if (hit.collider.gameObject.TryGetComponent(out InteractableBase interactable))
             {
-                if (currentLookInteractable != null)
-                    currentLookInteractable.OnLookAway();
 
-                currentLookInteractable = interactable;
-                currentLookInteractable.OnLookAt();
+                if (interactable != lastLookedInteractable)
+                {
+                   
+                    if(lastLookedInteractable != null)
+                    lastLookedInteractable?.OnLookAway();
+
+                    lastLookedInteractable = interactable;
+                 
+                    lastLookedInteractable.OnLookAt();
+                    
+                }
+
+
+                if (Input.GetMouseButtonDown(0))
+                 {
+                    lastLookedInteractable.Interact();
+                 }
             }
+            else
+            {
+             
+                if(lastLookedInteractable != null)
+                lastLookedInteractable?.OnLookAway();
 
-            return;
+                lastLookedInteractable = null;
+            }
         }
-    }
+        else
+        {
+                //  if(lastLookedInteractable != null)
+                //  lastLookedInteractable?.OnLookAway();
 
-    if (currentLookInteractable != null)
-    {
-        currentLookInteractable.OnLookAway();
-        currentLookInteractable = null;
+                //  lastLookedInteractable = null;
+
+        }
+        
     }
-}
     void HandleRaycast()
     {
         if (!Input.GetMouseButtonDown(0)) return;
@@ -81,15 +98,9 @@ public class ItemRaycastController : MonoBehaviour
                 dragSystem.HandleInputBegin(Input.mousePosition);
             }
 
-            if (hit.transform.TryGetComponent(out InteractableBase interactable))
-            {
-                interactable.Interact();
-            }
+         
 
-            if (hit.rigidbody != null && heldItem == null)
-            {
-                PickItem(hit.rigidbody);
-            }
+          
         }
     }
 
@@ -122,12 +133,18 @@ public class ItemRaycastController : MonoBehaviour
     {
         heldItemRb = itemRb;
         heldItem = itemRb.transform;
-
+        itemRb.gameObject.layer = 2;
         heldInteractable = itemRb.GetComponent<InteractableBase>();
-
+        itemRb.gameObject.GetComponent<Collider>().enabled = false;
+        lastLookedInteractable = null;
         heldItemRb.isKinematic = true;
         heldItemRb.useGravity = false;
+        if(heldItem.gameObject.TryGetComponent(out ItemBox ib))
+        {
+                box = ib;
 
+
+        }
         heldItem.SetParent(boxHandPivot);
         heldItem.localPosition = Vector3.zero;
         heldItem.localRotation = Quaternion.identity;
@@ -147,15 +164,16 @@ public class ItemRaycastController : MonoBehaviour
 
         heldItemRb.isKinematic = false;
         heldItemRb.useGravity = true;
-
+           heldItemRb.gameObject.GetComponent<Collider>().enabled = true;
         if (heldInteractable != null)
         {
             heldInteractable.OnDropEvent?.Invoke();
             heldInteractable.SetCanInteract(true);
         }
-
+    box = null;
         heldItemRb = null;
         heldItem = null;
         heldInteractable = null;
     }
 }
+

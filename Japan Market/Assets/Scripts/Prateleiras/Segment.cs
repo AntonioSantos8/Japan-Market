@@ -111,16 +111,36 @@ Items mySegment = Items.None;
 
     public override void Interact()
     {
-        
+         if(ServiceLocator.Get<ItemRaycastController>().isWithBox)
+        {
+            
+ Transform[] boxItems = ServiceLocator.Get<ItemRaycastController>().box.GetItems();
+
+            for (int i = boxItems.Length - 1; i >= 0; i--)
+            {
+                if (boxItems[i] == null) continue;
+
+                Item itemInBox = boxItems[i].GetComponent<Item>();
+
+                if (PlaceSingleItem(boxItems[i], itemInBox.GetItemType()))
+                {
+                    boxItems[i].parent = null;
+                    ServiceLocator.Get<ItemRaycastController>().box.RemoveItem(i);
+                }
+            }
+            
+        }
     }
     public override void OnLookAt()
     {
-        print("olhou");
-        print(ServiceLocator.Get<ItemRaycastController>().isWithBox);
+
+
        if(ServiceLocator.Get<ItemRaycastController>().isWithBox){meshRenderer.material = greenMaterial; }
+      
     }
      public override void OnLookAway()
     {
+      
        meshRenderer.material = null;
     }
 }
