@@ -1,4 +1,5 @@
 
+
 using UnityEngine;
 using System.Collections.Generic;
 [System.Serializable]
@@ -93,7 +94,7 @@ Items mySegment = Items.None;
             Transform item = groups[g].spaces[i];
             if (item == null) continue;
 
-            if (!box.AddItem(item, groups[g].type)) return false;
+                if (!box.AddItem(item, groups[g].type)) { mySegment = Items.None; return false; }
 
             groups[g].spaces[i] = null;
 

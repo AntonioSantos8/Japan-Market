@@ -88,6 +88,7 @@ float currentFollowRotSpeed;
             ClearLastLooked();
         }
     }
+    Vector3 velocity;
 void FollowHand()
 {
     if (heldItem == null) return;
@@ -95,18 +96,31 @@ void FollowHand()
     currentFollowPosSpeed = Mathf.Lerp(currentFollowPosSpeed, followPositionSpeed, speedGrowRate * Time.deltaTime);
     currentFollowRotSpeed = Mathf.Lerp(currentFollowRotSpeed, followRotationSpeed, speedGrowRate * Time.deltaTime);
 
-    heldItem.position = Vector3.Lerp(
-        heldItem.position,
-        boxHandPivot.position,
-        currentFollowPosSpeed * Time.deltaTime
-    );
+        //heldItem.position = Vector3.Lerp(
+        //    heldItem.position,
+        //    boxHandPivot.position,
+        //    currentFollowPosSpeed * Time.deltaTime
+        //);
 
-    heldItem.rotation = Quaternion.Slerp(
-        heldItem.rotation,
-        boxHandPivot.rotation,
-        currentFollowRotSpeed * Time.deltaTime
-    );
-}
+        //heldItem.rotation = Quaternion.Slerp(
+        //    heldItem.rotation,
+        //    boxHandPivot.rotation,
+        //    currentFollowRotSpeed * Time.deltaTime
+        //);
+
+        heldItem.position = Vector3.SmoothDamp(
+       heldItem.position,
+       boxHandPivot.position,
+       ref velocity,
+       currentFollowPosSpeed
+   );
+
+        heldItem.rotation = Quaternion.Slerp(
+            heldItem.rotation,
+            boxHandPivot.rotation,
+            currentFollowRotSpeed * Time.deltaTime
+        );
+    }
     private void ClearLastLooked()
     {
         if (lastLookedInteractable != null)
