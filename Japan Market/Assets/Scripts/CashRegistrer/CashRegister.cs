@@ -10,12 +10,15 @@ public class CashRegister : MonoBehaviour
     [SerializeField] TextMeshPro totalPriceText;
     [SerializeField] Transform bagPoint;
     [SerializeField] Transform bagTopPoint;
+    [SerializeField] GameObject creditCard;
     Queue<Item> itemsQueue = new Queue<Item>();
     float totalPrice = 0f;
     bool playerInRange = false;
 
+
     void Start()
     {
+        creditCard.SetActive(false);
         totalPriceText.text = "";
     }
 
@@ -25,11 +28,11 @@ public class CashRegister : MonoBehaviour
 
         if (Input.GetButtonDown("Fire1"))
         {
-            TryProcessClickedItem();
+            ItemClicked();
         }
     }
 
-    void TryProcessClickedItem()
+    void ItemClicked()
     {
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         RaycastHit hit;
@@ -42,13 +45,13 @@ public class CashRegister : MonoBehaviour
             {
                 if (itemsQueue.Contains(item))
                 {
-                    RemoveFromQueue(item);
+                    RemoveQueue(item);
                     SendItemToBag(item);
                 }
             }
         }
     }
-    void RemoveFromQueue(Item item)
+    void RemoveQueue(Item item)
     {
         Queue<Item> newQueue = new Queue<Item>();
 
@@ -86,6 +89,7 @@ public class CashRegister : MonoBehaviour
     void SendItemToBag(Item item)
     {
         item.MarkAsPast();
+       
 
         if (item.TryGetComponent(out Collider col)) col.enabled = false;
 
@@ -114,6 +118,7 @@ public class CashRegister : MonoBehaviour
 
         seq.AppendCallback(() =>
         {
+            item.transform.SetParent(bagPoint);
             PastItem(item);
         });
     }
