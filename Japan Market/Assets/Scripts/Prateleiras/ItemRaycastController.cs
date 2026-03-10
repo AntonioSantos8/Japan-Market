@@ -157,7 +157,7 @@ public class ItemRaycastController : MonoBehaviour
             }
         }
 
-        if (Physics.Raycast(transform.position, transform.forward, out RaycastHit hit, distance, interactLayer)) 
+        if (Physics.Raycast(transform.position, transform.forward, out RaycastHit hit, 1, interactLayer)) 
         {
             heldItem.position = hit.point - transform.forward * 0.2f;
         }
@@ -174,5 +174,9 @@ public class ItemRaycastController : MonoBehaviour
         heldItem = null;
         heldInteractable = null;
         heldItemColliders = null;
+    }
+    public void OnDrawGizmos()
+    {
+        Debug.DrawRay(transform.position, transform.forward, Color.red );
     }
 }

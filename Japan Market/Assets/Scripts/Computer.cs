@@ -2,12 +2,12 @@ using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.Events;
 
-public class Computer : MonoBehaviour, IInteractable
+public class Computer : InteractableBase
 {
     bool isInComputer;
     [SerializeField] CinemachineCamera computerCamera;
     public UnityEvent onEnterComputer, onLeaveComputer;
-    public void Interact()
+    public override void Interact()
     {
         if (!isInComputer) 
         {

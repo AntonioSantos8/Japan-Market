@@ -4,7 +4,8 @@ using UnityEngine;
 public class ItemBox : MonoBehaviour
 {
     [SerializeField]Items boxType;
-    [SerializeField] public Transform[] spaces, items;
+    //public SegmentTypeGroup[] itemsAndSpaces;
+    public Transform[] spaces, items;
     [SerializeField] Transform itemsParent;
     public Transform GetItemsParent() => itemsParent;
     public Transform GetLastItem() 
@@ -13,10 +14,13 @@ public class ItemBox : MonoBehaviour
 
 
     }
-    public void RemoveItem(int index)
-    {
-        items[index] = null;
-    }
+  public void RemoveItem(int index)
+{
+    items[index] = null;
+
+    if (IsEmpty())
+        boxType = Items.None;
+}
     public Transform[] GetItems() 
     {
         return items;
@@ -32,12 +36,25 @@ public class ItemBox : MonoBehaviour
             }
 
         }
+
+    
         return -1;
 
 
 
 
     }
+    public Items GetBoxType()
+{
+    if (IsEmpty()) return Items.None;
+    return boxType;
+}
+
+public void UpdateBoxType(Items newType)
+{
+    if (boxType == Items.None)
+        boxType = newType;
+}
     public bool IsEmpty()
     {
    
@@ -45,13 +62,15 @@ public class ItemBox : MonoBehaviour
         {
             if (items[i] != null) return false;
         }
+        
         return true;
     }
 
-    public bool CanReceive(Items type)
-    {
-        return boxType == type;
-    }
+public bool CanReceive(Items type)
+{
+    if (GetBoxType() == Items.None) return true;
+    return boxType == type;
+}
 
     public bool AddItem(Transform item)
     {
@@ -80,6 +99,7 @@ public class ItemBox : MonoBehaviour
             }
 
         }
+         
         return -1;
 
 

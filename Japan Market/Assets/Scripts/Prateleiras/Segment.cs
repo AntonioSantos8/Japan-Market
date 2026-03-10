@@ -92,8 +92,9 @@ Items mySegment = Items.None;
                 int boxIndex = box.GetNullSpace();
                 if (boxIndex == -1) return false;
            
-                box.GetItems()[boxIndex] = item;
-
+         
+box.GetItems()[boxIndex] = item;
+box.UpdateBoxType(groups[g].type);
                 item.SetParent(box.GetItemsParent());
                 item.localPosition = box.spaces[boxIndex].localPosition;
                 item.localRotation = box.spaces[boxIndex].transform.localRotation;
