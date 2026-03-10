@@ -62,7 +62,7 @@ Items mySegment = Items.None;
 	
             itemTransform.position = groups[g].allItems[spaceIndex].position;
             itemTransform.rotation = groups[g].allItems[spaceIndex].rotation;
-
+            itemTransform.parent = transform;
             groups[g].spaces[spaceIndex] = itemTransform;
 
             ShelfItem shelfItem = itemTransform.GetComponent<ShelfItem>();
@@ -76,67 +76,57 @@ Items mySegment = Items.None;
 	
         return false;
     }
-    bool TakeItem(ItemBox box)
+   bool TakeItem(ItemBox box)
+{
+    for (int g = 0; g < groups.Length; g++)
     {
-        for (int g = 0; g < groups.Length; g++)
+        if (!box.CanReceive(groups[g].type)) continue;
+
+        for (int i = groups[g].spaces.Count - 1; i >= 0; i--)
         {
-            if (!box.CanReceive(groups[g].type)) continue;
-         
-            for (int i = groups[g].spaces.Count - 1; i >= 0; i--)
-            {
-              
-                Transform item = groups[g].spaces[i];
+            Transform item = groups[g].spaces[i];
+            if (item == null) continue;
 
-                if (item == null) continue;
-           
-                int boxIndex = box.GetNullSpace();
-                if (boxIndex == -1) return false;
-           
-         
-box.GetItems()[boxIndex] = item;
-box.UpdateBoxType(groups[g].type);
-                item.SetParent(box.GetItemsParent());
-                item.localPosition = box.spaces[boxIndex].localPosition;
-                item.localRotation = box.spaces[boxIndex].transform.localRotation;
+            if (!box.AddItem(item, groups[g].type)) return false;
 
-                groups[g].spaces[i] = null;
-                TakeItem(box);
-                return true;
-            }
-        
+            groups[g].spaces[i] = null;
+
+            TakeItem(box);
+            return true;
+        }
+    }
+
+    return false;
+}
+   public override void Interact()
+{
+    if (ServiceLocator.Get<ItemRaycastController>().isWithBox)
+    {
+        ItemBox box = ServiceLocator.Get<ItemRaycastController>().LastBox();
+
+        if (box.IsEmpty())
+        {
+            TakeItem(box);
+            return;
         }
 
-        return false;
-    }
-    public override void Interact()
-    {
-        if (ServiceLocator.Get<ItemRaycastController>().isWithBox)
+        Items type = box.GetBoxType();
+
+        while (true)
         {
-            ItemBox box = ServiceLocator.Get<ItemRaycastController>().LastBox();
+            Transform item = box.TakeItemByType(type);
+            if (item == null) break;
 
-            if (box.IsEmpty())
+            Item itemComponent = item.GetComponent<Item>();
+
+            if (!PlaceSingleItem(item, itemComponent.GetItemType()))
             {
-                TakeItem(box);
-                return;
-            }
-
-          
-            Transform[] boxItems = box.GetItems();
-
-            for (int i = boxItems.Length - 1; i >= 0; i--)
-            {
-                if (boxItems[i] == null) continue;
-
-                Item itemInBox = boxItems[i].GetComponent<Item>();
-
-                if (PlaceSingleItem(boxItems[i], itemInBox.GetItemType()))
-                {
-                    boxItems[i].parent = null;
-                    box.RemoveItem(i);
-                }
+                box.AddItem(item, type);
+                break;
             }
         }
     }
+}
     public override void OnLookAt()
     {
         if (!ServiceLocator.Get<ItemRaycastController>().isWithBox) return;
