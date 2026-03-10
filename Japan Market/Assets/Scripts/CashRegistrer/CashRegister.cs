@@ -102,19 +102,19 @@ public class CashRegister : MonoBehaviour
         Sequence seq = DOTween.Sequence();
 
       
-        seq.Append(item.transform.DOMoveY(item.transform.position.y + 0.3f, 0.15f)
+        seq.Append(item.transform.DOMoveY(item.transform.position.y + 0.32f, 0.12f)
             .SetEase(Ease.OutQuad));
 
        
-        seq.Append(item.transform.DOMove(bagTopPoint.position, 0.25f)
+        seq.Append(item.transform.DOMove(bagTopPoint.position, 0.18f)
             .SetEase(Ease.InOutQuad));
 
         
-        seq.Append(item.transform.DOMove(bagPoint.position, 0.2f)
+        seq.Append(item.transform.DOMove(bagPoint.position, 0.19f)
             .SetEase(Ease.InQuad));
 
        
-        seq.Append(item.transform.DOPunchScale(Vector3.one * 0.15f, 0.2f, 5));
+        seq.Append(item.transform.DOPunchScale(Vector3.one * 0.12f, 0.26f, 5));
 
         seq.AppendCallback(() =>
         {
