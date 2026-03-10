@@ -1,3 +1,4 @@
+using Unity.Android.Gradle.Manifest;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -8,6 +9,7 @@ public class ButtonOrganizer : MonoBehaviour
     private void Start()
     {
         eventSystem = EventSystem.current;
+        ServiceLocator.Register(this);
     }
     public void ChangeLastSelected(GameObject button)
     {
