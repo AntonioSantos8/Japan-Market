@@ -1,108 +1,92 @@
-using System.Runtime.InteropServices;
 using UnityEngine;
 
 public class ItemRaycastController : MonoBehaviour
 {
+    [Header("Settings")]
     [SerializeField] float distance = 3f;
     [SerializeField] LayerMask interactLayer;
-    [SerializeField] Transform handPivot;
     [SerializeField] Transform boxHandPivot;
 
-    Camera cam;
-    DragRigidbody dragSystem;
+    private Camera cam;
+    private DragRigidbody dragSystem;
+    private HoldableItem currentItem;
 
-    HoldableItem currentItem;
+    private Rigidbody heldItemRb;
+    private Transform heldItem;
+    private InteractableBase heldInteractable;
+    private InteractableBase lastLookedInteractable;
+    private ItemBox lastBoxHeld;
 
-    Rigidbody heldItemRb;
-    Transform heldItem;
-    InteractableBase heldInteractable;
+    private Collider[] heldItemColliders; 
 
-    InteractableBase lastLookedInteractable;
-    
+    public bool isWithBox; 
     public Items currentItemType = Items.None;
-    public bool isWithBox;
-    ItemBox lastBoxHeld;
+
     public ItemBox LastBox() => lastBoxHeld;
-    
+
+    void Awake() 
+    {
+        ServiceLocator.Register(this);
+    }
+
     void Start()
     {
         cam = GetComponent<Camera>();
         dragSystem = ServiceLocator.Get<DragRigidbody>();
-        ServiceLocator.Register(this);
     }
 
     void Update()
     {
-        HandleLook();
-        HandleRaycast();
-       HandleHeldItemInput();
-       print(lastLookedInteractable);
+        PerformInteractionRaycast();
+        HandleHeldItemInput();
     }
 
-    void HandleLook()
+    private void PerformInteractionRaycast()
     {
-
-       if (Physics.Raycast(transform.position, transform.forward, out RaycastHit hit, distance, interactLayer))
+        Ray ray = cam.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0)); 
+        
+        if (Physics.Raycast(ray, out RaycastHit hit, distance, interactLayer))
         {
-            if (hit.collider.gameObject.TryGetComponent(out InteractableBase interactable))
+            if (hit.collider.TryGetComponent(out InteractableBase interactable))
             {
-
                 if (interactable != lastLookedInteractable)
                 {
-                   
-                    if(lastLookedInteractable != null)
                     lastLookedInteractable?.OnLookAway();
-
                     lastLookedInteractable = interactable;
-                 
                     lastLookedInteractable.OnLookAt();
-                    
                 }
 
-
                 if (Input.GetMouseButtonDown(0))
-                 {
-                    lastLookedInteractable.Interact();
-                 }
+                {
+                    if (hit.transform.TryGetComponent(out HoldableItem holdable))
+                    {
+                        currentItem = holdable;
+                        currentItem.BeginHold();
+                        dragSystem.HandleInputBegin(Input.mousePosition);
+                    }
+                    else 
+                    {
+                        interactable.Interact();
+                    }
+                }
             }
             else
             {
-             
-                if(lastLookedInteractable != null)
-                lastLookedInteractable?.OnLookAway();
-
-                lastLookedInteractable = null;
+                ClearLastLooked();
             }
         }
         else
         {
-                // if(lastLookedInteractable != null)
-                //lastLookedInteractable?.OnLookAway();
-
-                //lastLookedInteractable = null;
-
+            ClearLastLooked();
         }
-        
     }
-    void HandleRaycast()
+
+    private void ClearLastLooked()
     {
-        if (!Input.GetMouseButtonDown(0)) return;
-
-        Ray ray = cam.ScreenPointToRay(Input.mousePosition);
-        RaycastHit hit;
-
-        if (Physics.Raycast(ray, out hit, distance, interactLayer))
+        if (lastLookedInteractable != null)
         {
-            if (hit.transform.TryGetComponent(out HoldableItem item))
-            {
-                currentItem = item;
-                item.BeginHold();
-                dragSystem.HandleInputBegin(Input.mousePosition);
-            }
-
-         
-
-          
+            lastLookedInteractable.OnLookAway();
+            lastLookedInteractable = null;
         }
     }
 
@@ -124,73 +108,71 @@ public class ItemRaycastController : MonoBehaviour
         {
             DropItem();
         }
-
-        if (Input.GetKeyDown(KeyCode.Keypad9))
-        {
-            Time.timeScale /= 2;
-        }
     }
 
     public void PickItem(Rigidbody itemRb)
     {
         heldItemRb = itemRb;
         heldItem = itemRb.transform;
-        itemRb.gameObject.layer = 2;
         heldInteractable = itemRb.GetComponent<InteractableBase>();
-        itemRb.gameObject.GetComponent<Collider>().enabled = false;
-        lastLookedInteractable = null;
+
         heldItemRb.isKinematic = true;
         heldItemRb.useGravity = false;
+        
+        heldItemColliders = heldItem.GetComponentsInChildren<Collider>();
+        foreach(Collider col in heldItemColliders)
+        {
+            col.enabled = false;
+        }
+
         if (heldInteractable.GetItemType() == Items.Box) 
         {
-            lastBoxHeld = heldItem.gameObject.GetComponent<ItemBox>();
-        
+            lastBoxHeld = heldItem.GetComponent<ItemBox>();
+            isWithBox = true;
         }
+
         heldItem.SetParent(boxHandPivot);
         heldItem.localPosition = Vector3.zero;
         heldItem.localRotation = Quaternion.identity;
 
-        if (heldInteractable != null)
-        {
-            heldInteractable.OnPickEvent?.Invoke();
-            heldInteractable.SetCanInteract(false);
-        }
+        heldInteractable.OnPickEvent?.Invoke();
+        heldInteractable.SetCanInteract(false);
+        
+        ClearLastLooked();
     }
 
     public void DropItem()
     {
         if (heldItem == null) return;
-        if (Physics.Raycast(transform.position, transform.forward, out RaycastHit hit, distance, interactLayer)) 
-        {
-           heldItem.transform.position = hit.point - transform.forward * 0.1f;
-            print("coli");
 
-        }
-        else 
-        {
-            heldItemRb.MovePosition(heldItem.transform.position + transform.forward * .2f);
-
-        }
-
-
-            heldItem.SetParent(null);
-           heldItemRb.gameObject.GetComponent<Collider>().enabled = true;
-       // heldItem.transform.position -= transform.forward * .3f;
-   
-        heldItem.gameObject.layer = 0;
+        heldItem.SetParent(null);
         heldItemRb.isKinematic = false;
         heldItemRb.useGravity = true;
+
+        if (heldItemColliders != null)
+        {
+            foreach(Collider col in heldItemColliders)
+            {
+                col.enabled = true;
+            }
+        }
+
+        if (Physics.Raycast(transform.position, transform.forward, out RaycastHit hit, distance, interactLayer)) 
+        {
+            heldItem.position = hit.point - transform.forward * 0.2f;
+        }
+
         heldItemRb.angularVelocity = Vector3.zero;
         heldItemRb.linearVelocity = Vector3.zero;
-        if (heldInteractable != null)
-        {
-            heldInteractable.OnDropEvent?.Invoke();
-            heldInteractable.SetCanInteract(true);
-        }
+
+        heldInteractable.OnDropEvent?.Invoke();
+        heldInteractable.SetCanInteract(true);
+
+        isWithBox = false; 
         lastBoxHeld = null;
         heldItemRb = null;
         heldItem = null;
         heldInteractable = null;
+        heldItemColliders = null;
     }
 }
-
