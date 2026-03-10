@@ -10,6 +10,12 @@ public class SegmentTypeGroup
 
     public void Init()
     {
+
+        spaces = new List<Transform>(new Transform[allItems.Length]);
+    }
+     public void InitWithType(Items item)
+    {
+        if(item!= type)
         spaces = new List<Transform>(new Transform[allItems.Length]);
     }
 

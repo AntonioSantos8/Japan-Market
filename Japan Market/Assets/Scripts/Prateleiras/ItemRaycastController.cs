@@ -21,6 +21,12 @@ public class ItemRaycastController : MonoBehaviour
 
     public bool isWithBox; 
     public Items currentItemType = Items.None;
+  [SerializeField] float followPositionSpeed = 50f;
+[SerializeField] float followRotationSpeed = 50f;
+[SerializeField] float speedGrowRate = 6f;
+
+float currentFollowPosSpeed;
+float currentFollowRotSpeed;
 
     public ItemBox LastBox() => lastBoxHeld;
 
@@ -39,6 +45,8 @@ public class ItemRaycastController : MonoBehaviour
     {
         PerformInteractionRaycast();
         HandleHeldItemInput();
+  
+    FollowHand();
     }
 
     private void PerformInteractionRaycast()
@@ -80,7 +88,25 @@ public class ItemRaycastController : MonoBehaviour
             ClearLastLooked();
         }
     }
+void FollowHand()
+{
+    if (heldItem == null) return;
 
+    currentFollowPosSpeed = Mathf.Lerp(currentFollowPosSpeed, followPositionSpeed, speedGrowRate * Time.deltaTime);
+    currentFollowRotSpeed = Mathf.Lerp(currentFollowRotSpeed, followRotationSpeed, speedGrowRate * Time.deltaTime);
+
+    heldItem.position = Vector3.Lerp(
+        heldItem.position,
+        boxHandPivot.position,
+        currentFollowPosSpeed * Time.deltaTime
+    );
+
+    heldItem.rotation = Quaternion.Slerp(
+        heldItem.rotation,
+        boxHandPivot.rotation,
+        currentFollowRotSpeed * Time.deltaTime
+    );
+}
     private void ClearLastLooked()
     {
         if (lastLookedInteractable != null)
@@ -118,6 +144,9 @@ public class ItemRaycastController : MonoBehaviour
 
         heldItemRb.isKinematic = true;
         heldItemRb.useGravity = false;
+
+        currentFollowPosSpeed = 5f;
+currentFollowRotSpeed = 5f;
         
         heldItemColliders = heldItem.GetComponentsInChildren<Collider>();
         foreach(Collider col in heldItemColliders)
@@ -131,9 +160,9 @@ public class ItemRaycastController : MonoBehaviour
             isWithBox = true;
         }
 
-        heldItem.SetParent(boxHandPivot);
-        heldItem.localPosition = Vector3.zero;
-        heldItem.localRotation = Quaternion.identity;
+        // heldItem.SetParent(boxHandPivot);
+        // heldItem.localPosition = Vector3.zero;
+        // heldItem.localRotation = Quaternion.identity;
 
         heldInteractable.OnPickEvent?.Invoke();
         heldInteractable.SetCanInteract(false);
@@ -157,7 +186,7 @@ public class ItemRaycastController : MonoBehaviour
             }
         }
 
-        if (Physics.Raycast(transform.position, transform.forward, out RaycastHit hit, 1, interactLayer)) 
+        if (Physics.Raycast(transform.position, transform.forward, out RaycastHit hit, .8f, interactLayer)) 
         {
             heldItem.position = hit.point - transform.forward * 0.2f;
         }

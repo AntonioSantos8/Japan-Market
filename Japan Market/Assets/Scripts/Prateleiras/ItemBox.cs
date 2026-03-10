@@ -11,8 +11,8 @@ public class ItemBox : MonoBehaviour
 
     void Start()
     {
-        // for (int i = 0; i < groups.Length; i++)
-        //     groups[i].Init();
+         for (int i = 0; i < groups.Length; i++)
+            groups[i].InitWithType(boxType);
     }
 
     public bool IsEmpty()

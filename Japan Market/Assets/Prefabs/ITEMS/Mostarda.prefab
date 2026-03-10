@@ -12,7 +12,6 @@ GameObject:
   - component: {fileID: 8240124288282067359}
   - component: {fileID: 948166747151191584}
   - component: {fileID: 2548257275112506480}
-  - component: {fileID: 5082022726734878592}
   - component: {fileID: 5601030705684596547}
   - component: {fileID: 5556986757645663292}
   m_Layer: 7
@@ -30,10 +29,10 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5494588022344090004}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.21632622, y: -0.0052483655, z: 0.0010938351, w: 0.9763065}
+  m_LocalRotation: {x: -0.21632999, y: -0.0052498276, z: 0.0010971902, w: 0.9763056}
   m_LocalPosition: {x: -6.437, y: 1.6809678, z: 0.818}
-  m_LocalScale: {x: 0.14064272, y: 0.40622976, z: 0.14803335}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 0.4490787, y: 1.8016287, z: 0.6564986}
+  m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: -24.986, y: -0.678, z: 0.279}
@@ -110,37 +109,10 @@ BoxCollider:
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
   m_ProvidesContacts: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
---- !u!54 &5082022726734878592
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5494588022344090004}
-  serializedVersion: 5
-  m_Mass: 1
-  m_LinearDamping: 0
-  m_AngularDamping: 0.05
-  m_CenterOfMass: {x: 0, y: 0, z: 0}
-  m_InertiaTensor: {x: 1, y: 1, z: 1}
-  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ImplicitCom: 1
-  m_ImplicitTensor: 1
-  m_UseGravity: 1
-  m_IsKinematic: 0
-  m_Interpolate: 1
-  m_Constraints: 0
-  m_CollisionDetection: 2
 --- !u!114 &5601030705684596547
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -148,7 +120,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5494588022344090004}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3b5b663da327bea4787cf5e988bbbb43, type: 3}
   m_Name: 
@@ -160,7 +132,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5494588022344090004}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d104625c51e91c943b984e241d89a65c, type: 3}
   m_Name: 
