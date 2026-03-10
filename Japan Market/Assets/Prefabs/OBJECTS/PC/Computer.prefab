@@ -1285,7 +1285,7 @@ GameObject:
   - component: {fileID: 6377266154130574937}
   - component: {fileID: 635587787148626315}
   m_Layer: 0
-  m_Name: Furniture
+  m_Name: Furniture_Panel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1333,7 +1333,7 @@ MonoBehaviour:
   objects:
   - {fileID: 8906954236970416076}
   - {fileID: 9088510589431756651}
-  - {fileID: 7655635529144014900, guid: 319b6b59b1bc3774da5cd5abb404f8e5, type: 3}
+  - {fileID: 1023663139170193379}
   duration: 0.1
   nameText: {fileID: 7651193566215229928}
   descriptionText: {fileID: 6489522562571844528}
@@ -1626,7 +1626,7 @@ GameObject:
   - component: {fileID: 1474639175046107512}
   - component: {fileID: 7473386598099737385}
   m_Layer: 0
-  m_Name: Opcoes
+  m_Name: Options_Panel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2915,6 +2915,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ShopManager
   startButtonslecrr: {fileID: 7911239317877886614}
+  furniturePanel: {fileID: 1716290870530200857}
+  optionsPanel: {fileID: 2580909428311774793}
 --- !u!1 &6992896654458264588
 GameObject:
   m_ObjectHideFlags: 0
@@ -5845,6 +5847,10 @@ PrefabInstance:
     - target: {fileID: 781678852583286871, guid: 319b6b59b1bc3774da5cd5abb404f8e5, type: 3}
       propertyPath: m_Layer
       value: 12
+      objectReference: {fileID: 0}
+    - target: {fileID: 1008190857576391954, guid: 319b6b59b1bc3774da5cd5abb404f8e5, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -0.264
       objectReference: {fileID: 0}
     - target: {fileID: 2542484489971718542, guid: 319b6b59b1bc3774da5cd5abb404f8e5, type: 3}
       propertyPath: m_Layer
