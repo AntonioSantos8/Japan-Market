@@ -5,17 +5,21 @@ using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 using System.Collections;
-    public class ShopManager : MonoBehaviour
+using UnityEditor.Search;
+public class ShopManager : MonoBehaviour
 {
 
     static EventSystem eventSystem;
 
     [SerializeField] GameObject startButtonslecrr;
 
+    [SerializeField] GameObject furniturePanel;
+    [SerializeField] GameObject optionsPanel;
    
 
     private void Awake()
     {
+        ServiceLocator.Register(this);
         eventSystem = EventSystem.current;
     }
   public void SelectButton()
@@ -29,12 +33,17 @@ using System.Collections;
     public void DeselectButton()
     {
 
-
         EventSystem.current.SetSelectedGameObject(null);
         
     }
 
-   
+    public void ExitFurnitureSesion()
+    {
+        furniturePanel.SetActive(false);
+        optionsPanel.SetActive(true);
+        SelectButton(startButtonslecrr);
+        ServiceLocator.Get<ButtonOrganizer>().SetLastSelectedButton();
+    }
 
     public void SelectButton(GameObject btn) { eventSystem.SetSelectedGameObject(btn); }
     
