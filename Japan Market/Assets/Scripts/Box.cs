@@ -10,7 +10,7 @@ public class Box : InteractableBase
     public override void Awake()
     {
         base.Awake();
-        anim = GetComponent<Animator>();
+        anim = GetComponentInChildren<Animator>();
     }
     void Start()
     {

@@ -102,7 +102,7 @@ Items mySegment = Items.None;
             return true;
         }
     }
-
+    mySegment = Items.None;
     return false;
 }
    public override void Interact()

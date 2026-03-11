@@ -39,6 +39,9 @@ public class ShopManager : MonoBehaviour
 
     public void ExitFurnitureSesion()
     {
+        if (!furniturePanel.activeSelf)
+            return;
+
         furniturePanel.SetActive(false);
         optionsPanel.SetActive(true);
         SelectButton(startButtonslecrr);

@@ -11,7 +11,9 @@ public class ShopBuyItems : MonoBehaviour
     Vector3[] originalScales;
     bool isTweening;
     GameObject currentItemPrefab, currentItemBox;
-    [SerializeField] TMP_Text nameText, descriptionText, singlePriceText, boxPriceText;
+    [SerializeField] TMP_Text nameText, descriptionText,
+     singlePriceText, boxPriceText;
+     [SerializeField] Transform boxesSpawnPoint;
     void Start()
     {
         originalScales = new Vector3[objects.Length];
@@ -42,20 +44,9 @@ public class ShopBuyItems : MonoBehaviour
             boxPriceText.text = at.boxPrice.ToString();
         }
     }
-  
-    public void BuyNormalItem()
-    {
-        Instantiate(currentItemPrefab, new Vector3(0,0,0), Quaternion.identity);
-
-
-
-    }
     public void BuyBox()
     {
-        Instantiate(currentItemBox, new Vector3(0, 0, 0), Quaternion.identity);
-
-
-
+        Instantiate(currentItemBox, boxesSpawnPoint.position, Quaternion.identity);
     }
 
     void Update()
