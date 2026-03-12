@@ -2,34 +2,102 @@
 using System.Collections.Generic;
 using TMPro;
 using DG.Tweening;
+using Unity.Cinemachine;
 public class CashRegister : MonoBehaviour
 {
     [SerializeField] List<AllIThingsData> allItem;
+    [SerializeField] PlayerMotor playerMotor;
+    [SerializeField] PlayerLook playerLook;
     [SerializeField] TextMeshPro nameItemText;
     [SerializeField] TextMeshPro priceItemText;
     [SerializeField] TextMeshPro totalPriceText;
     [SerializeField] Transform bagPoint;
     [SerializeField] Transform bagTopPoint;
     [SerializeField] GameObject creditCard;
+    [SerializeField] GameObject quitButton;
+    [SerializeField] Transform cashPosition;
+    [SerializeField] Vector3 cashRotation;
+    [SerializeField] CinemachineCamera cam;
+    [SerializeField] float zoom = 25f;
+    float zoomOri;
     Queue<Item> itemsQueue = new Queue<Item>();
     float totalPrice = 0f;
     bool playerInRange = false;
-
+    bool cashMode = false;
 
     void Start()
     {
         creditCard.SetActive(false);
+        quitButton.SetActive(false);
+
         totalPriceText.text = "";
+        nameItemText.text = "";
+        priceItemText.text = "";
+
+        zoomOri = cam.Lens.FieldOfView;
     }
 
     void Update()
     {
-        if (!playerInRange) return;
+        if (playerInRange && !cashMode && Input.GetButtonDown("Fire1"))
+        {
+            EnterCashMode();
+        }
 
-        if (Input.GetButtonDown("Fire1"))
+        if (cashMode && Input.GetButtonDown("Fire1"))
         {
             ItemClicked();
         }
+    }
+
+    void EnterCashMode()
+    {
+        cashMode = true;
+
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+
+        quitButton.SetActive(true);
+        playerMotor.SetCanMove(false);
+        playerLook.CanLook = false;
+
+        Transform player = playerMotor.transform;
+
+        Sequence seq = DOTween.Sequence();
+
+        seq.Append(player.DOMove(cashPosition.position, 0.4f)
+            .SetEase(Ease.OutQuad));
+
+        seq.Join(player.DORotate(cashRotation, 0.35f)
+       .SetEase(Ease.OutQuad));
+
+        seq.Join(DOTween.To(
+            () => cam.Lens.FieldOfView,
+            x => cam.Lens.FieldOfView = x,
+            zoom,
+            0.4f).SetEase(Ease.OutQuad));
+    }
+
+    public void ExitCashMode()
+    {
+        cashMode = false;
+
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+
+        quitButton.SetActive(false);
+        playerMotor.SetCanMove(true);
+        playerLook.CanLook = true;
+
+        DOTween.To(
+            () => cam.Lens.FieldOfView,
+            x => cam.Lens.FieldOfView = x,
+            zoomOri,
+            0.35f).SetEase(Ease.OutQuad);
+
+        totalPrice = 0;
+
+     
     }
 
     void ItemClicked()
@@ -51,6 +119,7 @@ public class CashRegister : MonoBehaviour
             }
         }
     }
+
     void RemoveQueue(Item item)
     {
         Queue<Item> newQueue = new Queue<Item>();
@@ -69,6 +138,7 @@ public class CashRegister : MonoBehaviour
         if (other.CompareTag("Player"))
         {
             playerInRange = true;
+            return;
         }
 
         Item item = other.GetComponent<Item>();
@@ -86,12 +156,13 @@ public class CashRegister : MonoBehaviour
             playerInRange = false;
         }
     }
+
     void SendItemToBag(Item item)
     {
         item.MarkAsPast();
-       
 
-        if (item.TryGetComponent(out Collider col)) col.enabled = false;
+        if (item.TryGetComponent(out Collider col))
+            col.enabled = false;
 
         if (item.TryGetComponent<Rigidbody>(out var rb))
         {
@@ -101,19 +172,15 @@ public class CashRegister : MonoBehaviour
 
         Sequence seq = DOTween.Sequence();
 
-      
         seq.Append(item.transform.DOMoveY(item.transform.position.y + 0.32f, 0.12f)
             .SetEase(Ease.OutQuad));
 
-       
         seq.Append(item.transform.DOMove(bagTopPoint.position, 0.18f)
             .SetEase(Ease.InOutQuad));
 
-        
         seq.Append(item.transform.DOMove(bagPoint.position, 0.19f)
             .SetEase(Ease.InQuad));
 
-       
         seq.Append(item.transform.DOPunchScale(Vector3.one * 0.12f, 0.26f, 5));
 
         seq.AppendCallback(() =>
@@ -122,6 +189,7 @@ public class CashRegister : MonoBehaviour
             PastItem(item);
         });
     }
+
     void PastItem(Item item)
     {
         Items type = item.GetItemType();
@@ -135,17 +203,17 @@ public class CashRegister : MonoBehaviour
 
                 totalPrice += data.singleItemPrice;
 
-                
                 if (itemsQueue.Count == 0)
                 {
-                    Invoke(nameof(ShowTotal), 0.5f);
+                    Invoke(nameof(BuyTotal), 0.2f);
+                    creditCard.SetActive(true);
                 }
 
                 break;
             }
         }
     }
-    void ShowTotal()
+    void BuyTotal()
     {
         nameItemText.text = "";
         priceItemText.text = "";
