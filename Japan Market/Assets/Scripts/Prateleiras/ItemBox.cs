@@ -17,6 +17,14 @@ public class ItemBox : MonoBehaviour
 
     public bool IsEmpty()
     {
+        if(boxType == Items.None)
+        {
+            return true;
+
+
+        }else return false;
+
+
         for (int g = 0; g < groups.Length; g++)
             for (int i = 0; i < groups[g].spaces.Count; i++)
                 if (groups[g].spaces[i] != null)
@@ -68,7 +76,12 @@ public class ItemBox : MonoBehaviour
 
         return false;
     }
+public void SetBoxType(Items type)
+    {
+        
+        boxType = type;
 
+    }
     public Transform TakeItemByType(Items type)
     {
         for (int g = 0; g < groups.Length; g++)
@@ -85,10 +98,11 @@ public class ItemBox : MonoBehaviour
                 if (IsEmpty())
                     boxType = Items.None;
 
+
                 return item;
             }
         }
-
+        boxType = Items.None;
         return null;
     }
 }

@@ -2,6 +2,7 @@
 
 using UnityEngine;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 [System.Serializable]
 public class SegmentTypeGroup
 {
@@ -48,7 +49,38 @@ Items mySegment = Items.None;
         meshRenderer = GetComponent<MeshRenderer>();
     }
 
- 
+ public bool IsFull()
+    {
+        if(mySegment == Items.None) return false;
+
+        foreach(SegmentTypeGroup sT in groups)
+        {
+            if(sT.type == mySegment)
+            {
+               
+                    for(int i = 0; i < sT.spaces.Count; i++)
+                {
+                  
+                    if(sT.spaces[i] == null) return false;
+                    print(sT.spaces[i]);
+
+
+                }
+
+                
+            }
+
+
+        }
+        print("chegou totalmente ao fim");
+            return true;
+
+
+    
+     
+    }
+
+    
     public void FreeSpace(int groupIndex, int spaceIndex)
     {   
         groups[groupIndex].spaces[spaceIndex] = null;
@@ -119,6 +151,7 @@ Items mySegment = Items.None;
         if (box.IsEmpty())
         {
             TakeItem(box);
+             OnLookAt();
             return;
         }
 
@@ -127,17 +160,24 @@ Items mySegment = Items.None;
         while (true)
         {
             Transform item = box.TakeItemByType(type);
-            if (item == null) break;
+            if (item == null)
+             {  
+                box.SetBoxType(Items.None);
+                break;
+                }
 
             Item itemComponent = item.GetComponent<Item>();
 
             if (!PlaceSingleItem(item, itemComponent.GetItemType()))
             {
                 box.AddItem(item, type);
+               
                 break;
             }
         }
+        OnLookAt();
     }
+  
 }
     public override void OnLookAt()
     {
@@ -145,7 +185,10 @@ Items mySegment = Items.None;
          ItemBox box = ServiceLocator.Get<ItemRaycastController>().LastBox();
          if(box.IsEmpty() && mySegment == Items.None) return;
        // if (mySegment != Items.None && mySegment != box.GetBoxType() && !box.IsEmpty()) return;
-
+        if(box.GetBoxType() != mySegment && box.GetBoxType() != Items.None && mySegment != Items.None) return;
+       
+        if(IsFull() && box.GetBoxType() != Items.None) return;
+      
         if (box.IsEmpty())
         {
             meshRenderer.material = redMaterial;

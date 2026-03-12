@@ -18,7 +18,7 @@ public class ItemRaycastController : MonoBehaviour
     private InteractableBase lastLookedInteractable;
     private ItemBox lastBoxHeld;
 
-    private Collider[] heldItemColliders; 
+   
 
     public bool isWithBox; 
     public Items currentItemType = Items.None;
@@ -153,12 +153,8 @@ void FollowHand()
         currentFollowPosSpeed = 5f;
 currentFollowRotSpeed = 5f;
         
-        heldItemColliders = heldItem.GetComponentsInChildren<Collider>();
-        foreach(Collider col in heldItemColliders)
-        {
-            col.enabled = false;
-        }
-
+       heldItem.GetComponent<Collider>().enabled = false;
+  
         if (heldInteractable.GetItemType() == Items.Box) 
         {
             lastBoxHeld = heldItem.GetComponent<ItemBox>();
@@ -183,13 +179,7 @@ currentFollowRotSpeed = 5f;
         heldItemRb.isKinematic = false;
         heldItemRb.useGravity = true;
 
-        if (heldItemColliders != null)
-        {
-            foreach(Collider col in heldItemColliders)
-            {
-                col.enabled = true;
-            }
-        }
+              heldItem.GetComponent<Collider>().enabled = true;
 
         if (Physics.Raycast(transform.position, transform.forward, out RaycastHit hit, .8f, interactLayer)) 
         {
@@ -207,7 +197,7 @@ currentFollowRotSpeed = 5f;
         heldItemRb = null;
         heldItem = null;
         heldInteractable = null;
-        heldItemColliders = null;
+
     }
     public void OnDrawGizmos()
     {
