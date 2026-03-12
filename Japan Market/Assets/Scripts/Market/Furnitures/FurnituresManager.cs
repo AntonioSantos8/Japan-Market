@@ -1,5 +1,6 @@
 using DG.Tweening;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -21,6 +22,8 @@ public class FurnitureManager : MonoBehaviour
 
     [SerializeField] private Image circle;
     public bool hasFurnitureInInventory;
+
+    [SerializeField] private TMP_Text furnitureSlotName;
     private void Awake()
     {
         ServiceLocator.Register(this);
@@ -40,12 +43,15 @@ public class FurnitureManager : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.B) && hasFurnitureInInventory)
         {
-            hasFurnitureInInventory = true; 
             ToggleBuildingMode();
             return;
         }
+        if (hasFurnitureInInventory)
+             furnitureSlotName.text = $"Inventory: {_currentSelected.name} (press B)";
+        else
+             furnitureSlotName.text = "Inventory: none";
         if (!IsBuildingMode) return;
-
+        
         HandleInput();
     }
 
