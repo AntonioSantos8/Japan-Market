@@ -21,9 +21,8 @@ public class Box : InteractableBase
     {
        // if(!canInteract) return;
      
-        ServiceLocator.Get<ItemRaycastController>().PickItem(rb);
-        
-        anim.SetTrigger("Open");
+       if(ServiceLocator.Get<ItemRaycastController>().PickItem(rb))
+             anim.SetTrigger("Open");
     }
     public override void OnLookAt()
     {

@@ -15,6 +15,7 @@ public abstract class InteractableBase : MonoBehaviour, IInteractable
     public string interactionText;
     public Items itemType;
     
+    
     public virtual void Awake()
     {
         rb = GetComponent<Rigidbody>();
@@ -40,7 +41,7 @@ public abstract class InteractableBase : MonoBehaviour, IInteractable
 
     public virtual void OnLookAt()
     {
-                print("olhou");
+                
         if(!canInteract) {          
           //  ServiceLocator.Get<PlayerInteractions>().GetInteractionText().SetActive(false);
           //outline.enabled = false; return; 
@@ -69,7 +70,7 @@ public abstract class InteractableBase : MonoBehaviour, IInteractable
     }
     public virtual void OnLookAway()
     {
-          print("look away");
+
          //  ServiceLocator.Get<PlayerInteractions>().GetInteractionText().SetActive(false);
        // if(outline != null)
          //   ServiceLocator.Get<F2FGrabSystem>().CanThrow = true;

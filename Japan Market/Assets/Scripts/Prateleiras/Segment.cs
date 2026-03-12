@@ -36,6 +36,7 @@ public class Segment : InteractableBase
     bool canPut = true;
     public void SetCanPut(bool value) { canPut = value; }
 Items mySegment = Items.None;
+[SerializeField] Shelf shelf;
 
  [SerializeField] Material greenMaterial, redMaterial, transparentMaterial;
  MeshRenderer meshRenderer;
@@ -55,7 +56,7 @@ Items mySegment = Items.None;
     }
     bool PlaceSingleItem(Transform itemTransform, Items type)
     {
-	
+	//colocar item na prateleira
 	if(mySegment != Items.None && type != mySegment) { return false;};
         mySegment = type;
         for (int g = 0; g < groups.Length; g++)
@@ -69,22 +70,25 @@ Items mySegment = Items.None;
 	
             itemTransform.position = groups[g].allItems[spaceIndex].position;
             itemTransform.rotation = groups[g].allItems[spaceIndex].rotation;
+                // itemTransform.parent = null;
             itemTransform.parent = transform;
             groups[g].spaces[spaceIndex] = itemTransform;
-
+          
             ShelfItem shelfItem = itemTransform.GetComponent<ShelfItem>();
             if (shelfItem == null)
                 shelfItem = itemTransform.gameObject.AddComponent<ShelfItem>();
 
+    shelf.RegisterSegment(type, this);
             shelfItem.Setup(this, g, spaceIndex);
 
             return true;
         }
+
 	
         return false;
     }
    bool TakeItem(ItemBox box)
-{
+{//colocar item na caixa
     for (int g = 0; g < groups.Length; g++)
     {
         if (!box.CanReceive(groups[g].type)) continue;
@@ -103,6 +107,7 @@ Items mySegment = Items.None;
         }
     }
     mySegment = Items.None;
+    shelf.RemoveSegment(this);
     return false;
 }
    public override void Interact()
@@ -137,8 +142,9 @@ Items mySegment = Items.None;
     public override void OnLookAt()
     {
         if (!ServiceLocator.Get<ItemRaycastController>().isWithBox) return;
-
-        ItemBox box = ServiceLocator.Get<ItemRaycastController>().LastBox();
+         ItemBox box = ServiceLocator.Get<ItemRaycastController>().LastBox();
+         if(box.IsEmpty() && mySegment == Items.None) return;
+       // if (mySegment != Items.None && mySegment != box.GetBoxType() && !box.IsEmpty()) return;
 
         if (box.IsEmpty())
         {

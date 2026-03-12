@@ -45,6 +45,7 @@ public class ItemBox : MonoBehaviour
 
     public bool AddItem(Transform item, Items type)
     {
+        //botar item na caixa
         for (int g = 0; g < groups.Length; g++)
         {
             if (groups[g].type != type) continue;

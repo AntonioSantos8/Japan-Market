@@ -140,8 +140,9 @@ void FollowHand()
         }
     }
 
-    public void PickItem(Rigidbody itemRb)
+    public bool PickItem(Rigidbody itemRb)
     {
+        if(heldItem != null) return false;
         heldItemRb = itemRb;
         heldItem = itemRb.transform;
         heldInteractable = itemRb.GetComponent<InteractableBase>();
@@ -171,6 +172,7 @@ currentFollowRotSpeed = 5f;
         heldInteractable.SetCanInteract(false);
         
         ClearLastLooked();
+        return true;
     }
 
     public void DropItem()
