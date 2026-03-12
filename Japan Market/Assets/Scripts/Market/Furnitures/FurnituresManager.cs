@@ -20,6 +20,7 @@ public class FurnitureManager : MonoBehaviour
     public bool IsBuildingMode { get; private set; }
 
     [SerializeField] private Image circle;
+    private bool hasFurnitureInInventory;
     private void Awake()
     {
         ServiceLocator.Register(this);
@@ -47,7 +48,10 @@ public class FurnitureManager : MonoBehaviour
         IsBuildingMode = !IsBuildingMode;
         if (!IsBuildingMode && _activeGhost != null) Destroy(_activeGhost);
     }
-
+    private void KeepFurniture()
+    {
+        
+    }
     private void HandleInput()
     {
 
