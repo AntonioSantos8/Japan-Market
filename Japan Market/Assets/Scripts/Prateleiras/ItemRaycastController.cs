@@ -47,7 +47,7 @@ float currentFollowRotSpeed;
         PerformInteractionRaycast();
         HandleHeldItemInput();
   
-    FollowHand();
+        FollowHand();
     }
 
     private void PerformInteractionRaycast()

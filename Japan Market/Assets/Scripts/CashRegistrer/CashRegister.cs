@@ -16,7 +16,6 @@ public class CashRegister : MonoBehaviour
     [SerializeField] GameObject creditCard;
     [SerializeField] GameObject quitButton;
     [SerializeField] Transform cashPosition;
-    [SerializeField] Vector3 cashRotation;
     [SerializeField] CinemachineCamera cam;
     [SerializeField] float zoom = 25f;
     float zoomOri;
@@ -53,6 +52,7 @@ public class CashRegister : MonoBehaviour
     void EnterCashMode()
     {
         cashMode = true;
+        cam.Priority = 6;
 
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
@@ -65,12 +65,10 @@ public class CashRegister : MonoBehaviour
 
         Sequence seq = DOTween.Sequence();
 
-        seq.Append(player.DOMove(cashPosition.position, 0.4f)
+        seq.Append(player.DOMove(cashPosition.position, 0.3f)
             .SetEase(Ease.OutQuad));
 
-        seq.Join(player.DORotate(cashRotation, 0.35f)
-       .SetEase(Ease.OutQuad));
-
+      
         seq.Join(DOTween.To(
             () => cam.Lens.FieldOfView,
             x => cam.Lens.FieldOfView = x,
@@ -81,6 +79,7 @@ public class CashRegister : MonoBehaviour
     public void ExitCashMode()
     {
         cashMode = false;
+        cam.Priority = 0;
 
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
@@ -200,12 +199,12 @@ public class CashRegister : MonoBehaviour
             {
                 nameItemText.text = data.itemName;
                 priceItemText.text = "¥" + data.singleItemPrice.ToString("F2");
-
+                totalPriceText.text = "Total ¥" + totalPrice.ToString("F2");
                 totalPrice += data.singleItemPrice;
 
                 if (itemsQueue.Count == 0)
                 {
-                    Invoke(nameof(BuyTotal), 0.2f);
+                    Invoke(nameof(BuyTotal), 0.4f);
                     creditCard.SetActive(true);
                 }
 
