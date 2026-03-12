@@ -37,13 +37,12 @@ public class FurnitureManager : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.B)) ToggleBuildingMode();
         if (!IsBuildingMode) return;
 
         HandleInput();
     }
 
-    private void ToggleBuildingMode()
+    public void ToggleBuildingMode()
     {
         IsBuildingMode = !IsBuildingMode;
         if (!IsBuildingMode && _activeGhost != null) Destroy(_activeGhost);
@@ -51,8 +50,6 @@ public class FurnitureManager : MonoBehaviour
 
     private void HandleInput()
     {
-        if (Input.GetKeyDown(KeyCode.Alpha1)) SelectFurniture(FurnitureType.Shelf);
-        if (Input.GetKeyDown(KeyCode.Alpha2)) SelectFurniture(FurnitureType.Freezer);
 
         if (_activeGhost != null)
         {
@@ -137,6 +134,7 @@ public class FurnitureManager : MonoBehaviour
                 instance.SaveData = _tempSaveData;
                 _tempSaveData = null;
             }
+
 
             _placedFurnitures.Add(instance);
         }

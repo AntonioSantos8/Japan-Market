@@ -124,6 +124,32 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 6629507400787699090, guid: 01027dfb49292594ba4e755d7796f92b, type: 3}
   m_PrefabInstance: {fileID: 2054030693}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &44384454 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1142349613450540775, guid: 2c3f3c67b37a724438f46eb2f72569b4, type: 3}
+  m_PrefabInstance: {fileID: 6777437151304314168}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &44384460
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 44384454}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cf30aff9f9b70244c88ad73d5e643970, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FurnitureBox
+  OnDropEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  OnPickEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  interactionText: 
+  itemType: 3
+  type: 0
 --- !u!1001 &51884763
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4139,10 +4165,15 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 1144449157320220540, guid: 2c3f3c67b37a724438f46eb2f72569b4, type: 3}
+    - {fileID: 4089661706559726091, guid: 2c3f3c67b37a724438f46eb2f72569b4, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1142349613450540775, guid: 2c3f3c67b37a724438f46eb2f72569b4, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 44384460}
   m_SourcePrefab: {fileID: 100100000, guid: 2c3f3c67b37a724438f46eb2f72569b4, type: 3}
 --- !u!1001 &7162708167376436149
 PrefabInstance:
