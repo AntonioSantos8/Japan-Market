@@ -1,4 +1,5 @@
 using System.Collections;
+using Unity.Android.Gradle.Manifest;
 using UnityEngine;
 public class FurnitureBox : InteractableBase
 {
@@ -9,6 +10,7 @@ public class FurnitureBox : InteractableBase
     }
     IEnumerator BuildModeCoroutine()
     {
+        ServiceLocator.Get<FurnitureManager>().hasFurnitureInInventory = true;
         ServiceLocator.Get<FurnitureManager>().ToggleBuildingMode();
         yield return new WaitForSeconds(0.1f);
         ServiceLocator.Get<FurnitureManager>().SelectFurniture(type);

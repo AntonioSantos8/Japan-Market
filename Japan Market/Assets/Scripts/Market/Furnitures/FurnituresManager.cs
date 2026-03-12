@@ -20,7 +20,7 @@ public class FurnitureManager : MonoBehaviour
     public bool IsBuildingMode { get; private set; }
 
     [SerializeField] private Image circle;
-    private bool hasFurnitureInInventory;
+    public bool hasFurnitureInInventory;
     private void Awake()
     {
         ServiceLocator.Register(this);
@@ -38,6 +38,12 @@ public class FurnitureManager : MonoBehaviour
 
     private void Update()
     {
+        if (Input.GetKeyDown(KeyCode.B) && hasFurnitureInInventory)
+        {
+            hasFurnitureInInventory = true; 
+            ToggleBuildingMode();
+            return;
+        }
         if (!IsBuildingMode) return;
 
         HandleInput();
@@ -46,11 +52,7 @@ public class FurnitureManager : MonoBehaviour
     public void ToggleBuildingMode()
     {
         IsBuildingMode = !IsBuildingMode;
-        if (!IsBuildingMode && _activeGhost != null) Destroy(_activeGhost);
-    }
-    private void KeepFurniture()
-    {
-        
+        _activeGhost?.SetActive(IsBuildingMode);
     }
     private void HandleInput()
     {
@@ -101,12 +103,13 @@ public class FurnitureManager : MonoBehaviour
 
         if (_furnitureLibrary.TryGetValue(type, out _currentSelected))
         {
+
             _activeGhost = Instantiate(_currentSelected.ghostPrefab);
             ghostValidator = _activeGhost.GetComponent<FurniturePlacementValidator>();
         }
     }
 
-    private void TryPickUpFurniture()
+    private void TryPickUpFurniture()  
     {
         Ray ray = Camera.main.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2));
         if (Physics.Raycast(ray, out RaycastHit hit, 5f, furnitureLayer))
@@ -142,7 +145,8 @@ public class FurnitureManager : MonoBehaviour
 
             _placedFurnitures.Add(instance);
         }
-
+        ToggleBuildingMode();
+        hasFurnitureInInventory = false; 
         Destroy(_activeGhost);
         _activeGhost = null;
     }
