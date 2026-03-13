@@ -41,7 +41,7 @@ public class FurnitureManager : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.B) && hasFurnitureInInventory)
+        if (Input.GetKeyDown(KeyCode.B))
         {
             ToggleBuildingMode();
             return;
@@ -145,6 +145,7 @@ public class FurnitureManager : MonoBehaviour
             if (_tempSaveData != null)
             {
                 instance.SaveData = _tempSaveData;
+                _currentSelected = null;
                 _tempSaveData = null;
             }
 

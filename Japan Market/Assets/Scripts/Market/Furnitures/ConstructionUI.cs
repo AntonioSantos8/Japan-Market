@@ -21,12 +21,14 @@ public class ConstructionUI : MonoBehaviour
     {
         bool isBuilding = _manager.IsBuildingMode;
         panelMode.SetActive(isBuilding);
-
-        if (isBuilding)
+        if (isBuilding && _manager.hasFurnitureInInventory)
         {
-            statusIndicator.color = activeColor;
             var current = _manager.GetCurrentSelected();
-            textCurrentItem.text = current != null ? "Item: " + current.furnitureName : "Nenhum selecionado";
+            textCurrentItem.text = "Item: " + current.furnitureName;
+        }
+        else
+        {
+            textCurrentItem.text = "Nenhum selecionado";
         }
     }
 }

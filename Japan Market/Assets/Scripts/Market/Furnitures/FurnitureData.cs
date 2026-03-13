@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 
 [CreateAssetMenu(fileName = "Furniture", menuName = "Scriptable Objects/Furniture")]
 public class FurnitureData : ScriptableObject
@@ -8,7 +9,8 @@ public class FurnitureData : ScriptableObject
     public GameObject prefab;
     public GameObject ghostPrefab;
     public float floorDistance;
-}
+    public Sprite furnitureImage;
+}   
 
 public enum FurnitureType
 {
