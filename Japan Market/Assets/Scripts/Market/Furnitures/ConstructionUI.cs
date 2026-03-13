@@ -14,6 +14,7 @@ public class ConstructionUI : MonoBehaviour
 
     private void Start()
     {
+        ServiceLocator.Register(this);
         _manager = ServiceLocator.Get<FurnitureManager>();
     }
 
@@ -23,12 +24,16 @@ public class ConstructionUI : MonoBehaviour
         panelMode.SetActive(isBuilding);
         if (isBuilding && _manager.hasFurnitureInInventory)
         {
-            var current = _manager.GetCurrentSelected();
-            textCurrentItem.text = "Item: " + current.furnitureName;
+           SetText();
         }
         else
         {
             textCurrentItem.text = "Nenhum selecionado";
         }
+    }
+    public void SetText()
+    {
+        var current = _manager.GetCurrentSelected();
+        textCurrentItem.text = "Item: " + current.furnitureName;
     }
 }
