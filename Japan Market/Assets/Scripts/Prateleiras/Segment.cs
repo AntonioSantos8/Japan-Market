@@ -223,7 +223,7 @@ visualDelay = 0;
     }
     public override void OnLookAway()
     {
-      
+      if(meshRenderer == null) return;  
        meshRenderer.material = transparentMaterial;
     }
 }

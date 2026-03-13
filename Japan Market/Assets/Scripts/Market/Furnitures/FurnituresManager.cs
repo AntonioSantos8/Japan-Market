@@ -120,15 +120,16 @@ public class FurnitureManager : MonoBehaviour
         Ray ray = Camera.main.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2));
         if (Physics.Raycast(ray, out RaycastHit hit, 5f, furnitureLayer))
         {
-            if (hit.collider.TryGetComponent(out FurnitureInstance instance))
+            if (hit.collider.GetComponentInParent<FurnitureInstance>() != null)
             {
+                FurnitureInstance instance = hit.collider.GetComponentInParent<FurnitureInstance>();
                 _placedFurnitures.Remove(instance);
-
+                hasFurnitureInInventory = true;
                 _tempSaveData = instance.SaveData;
-
                 SelectFurniture(instance.Data.type);
                 _activeGhost.transform.rotation = instance.transform.rotation;
                 Destroy(instance.gameObject);
+                ServiceLocator.Get<ConstructionUI>().SetText();
             }
         }
     }
