@@ -194,7 +194,7 @@ public class CashRegister : MonoBehaviour
 
                 if (itemsQueue.Count == 0)
                 {
-                    Invoke(nameof(BuyTotal), 0.4f);
+                    Invoke(nameof(BuyTotal), 0.43f);
                     creditCard.SetActive(true);
                 }
 
