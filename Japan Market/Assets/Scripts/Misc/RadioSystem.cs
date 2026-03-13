@@ -1,7 +1,9 @@
 using UnityEngine;
 public class RadioSystem : MonoBehaviour
 {
+    [SerializeField] private AudioClip[] songs;
     private AudioSource audioSource;
+
     private void Start()
     {
         audioSource = GetComponent<AudioSource>();
@@ -10,20 +12,24 @@ public class RadioSystem : MonoBehaviour
     {
         if (audioSource.isPlaying)
         {
-            audioSource.Pause();
+            StopRadio();
         }
         else
         {
-            audioSource.Play();
+            PlayRandomSong();
         }
     }
-    public void StopRadio()
+    private void StopRadio()
     {
         audioSource.Stop();
     }   
-    public bool IsPlaying()
+    public void PlayRandomSong()
     {
-        return audioSource.isPlaying;
+        if (songs.Length > 0)
+        {
+            audioSource.clip = songs[Random.Range(0, songs.Length)];
+            audioSource.Play();
+        }
     }
 
 }

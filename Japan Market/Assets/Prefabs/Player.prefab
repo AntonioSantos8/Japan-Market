@@ -687,6 +687,7 @@ GameObject:
   - component: {fileID: 2113716524849612446}
   - component: {fileID: 1831174590976072526}
   - component: {fileID: 7717004529775947348}
+  - component: {fileID: 6500693336694945929}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -885,6 +886,21 @@ MonoBehaviour:
   followPositionSpeed: 60
   followRotationSpeed: 10
   speedGrowRate: 2
+--- !u!114 &6500693336694945929
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7993319225401863276}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 97274ed864d333b4bb1be7d6936860d5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlacementFollower
+  anchor: {fileID: 6265047335781970512}
+  viewDistance: 4
+  gridSize: 0.5
 --- !u!1 &8967910834431515997
 GameObject:
   m_ObjectHideFlags: 0
