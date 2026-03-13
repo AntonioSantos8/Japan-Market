@@ -2,7 +2,7 @@
 
 using UnityEngine;
 using System.Collections.Generic;
-using Unity.VisualScripting;
+using DG.Tweening;
 [System.Serializable]
 public class SegmentTypeGroup
 {
@@ -38,8 +38,10 @@ public class Segment : InteractableBase
     public void SetCanPut(bool value) { canPut = value; }
 Items mySegment = Items.None;
 [SerializeField] Shelf shelf;
-
+float visualDelay;
+[SerializeField] float delayBetweenItems = 0.08f;
  [SerializeField] Material greenMaterial, redMaterial, transparentMaterial;
+[SerializeField] Transform paiDeTodos;
  MeshRenderer meshRenderer;
     private void Start()
     {
@@ -86,39 +88,59 @@ Items mySegment = Items.None;
         groups[groupIndex].spaces[spaceIndex] = null;
  
     }
-    bool PlaceSingleItem(Transform itemTransform, Items type)
+ bool PlaceSingleItem(Transform itemTransform, Items type)
+{
+    if(mySegment != Items.None && type != mySegment) return false;
+
+    mySegment = type;
+
+    for (int g = 0; g < groups.Length; g++)
     {
-	//colocar item na prateleira
-	if(mySegment != Items.None && type != mySegment) { return false;};
-        mySegment = type;
-        for (int g = 0; g < groups.Length; g++)
-        {
+        if (groups[g].type != type) continue;
 
-            if (groups[g].type != type) continue;
-		
-            int spaceIndex = groups[g].GetNullSpace();
-            if (spaceIndex == -1) {return false;}
+        int spaceIndex = groups[g].GetNullSpace();
+        if (spaceIndex == -1) return false;
 
-	
-            itemTransform.position = groups[g].allItems[spaceIndex].position;
-            itemTransform.rotation = groups[g].allItems[spaceIndex].rotation;
-                // itemTransform.parent = null;
-            itemTransform.parent = transform;
-            groups[g].spaces[spaceIndex] = itemTransform;
-          
-            ShelfItem shelfItem = itemTransform.GetComponent<ShelfItem>();
-            if (shelfItem == null)
-                shelfItem = itemTransform.gameObject.AddComponent<ShelfItem>();
+        Transform target = groups[g].allItems[spaceIndex];
 
-    shelf.RegisterSegment(type, this);
-            shelfItem.Setup(this, g, spaceIndex);
+        itemTransform.SetParent(target.transform.parent);
 
-            return true;
-        }
+        groups[g].spaces[spaceIndex] = itemTransform;
 
-	
-        return false;
+        Sequence seq = DOTween.Sequence();
+
+        seq.SetDelay(visualDelay);
+
+        seq.Append(
+            itemTransform.DOMove(target.position, 0.25f).SetEase(Ease.OutCubic)
+        );
+
+        seq.Join(
+            itemTransform.DORotateQuaternion(target.rotation, 0.2f)
+        );
+
+        seq.Join(
+            itemTransform.DOScale(target.localScale, 0.25f).SetEase(Ease.OutCubic)
+        );
+
+       // seq.Append(
+            //itemTransform.DOPunchScale(Vector3.one * 0.15f, 0.15f, 6, 0.8f)
+        //);
+
+        visualDelay += delayBetweenItems;
+
+        ShelfItem shelfItem = itemTransform.GetComponent<ShelfItem>();
+        if (shelfItem == null)
+            shelfItem = itemTransform.gameObject.AddComponent<ShelfItem>();
+
+        shelf.RegisterSegment(type, this);
+        shelfItem.Setup(this, g, spaceIndex);
+
+        return true;
     }
+
+    return false;
+}
    bool TakeItem(ItemBox box)
 {//colocar item na caixa
     for (int g = 0; g < groups.Length; g++)
@@ -177,6 +199,7 @@ Items mySegment = Items.None;
         }
         OnLookAt();
     }
+visualDelay = 0;
   
 }
     public override void OnLookAt()
