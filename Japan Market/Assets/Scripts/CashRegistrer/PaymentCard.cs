@@ -8,7 +8,6 @@ public class PaymentCard : MonoBehaviour
     [SerializeField] CashRegister cashRegister;
     string currentValue = "";
     float totalPrice;
-
     void Start()
     {
         imagepayment.SetActive(false);
