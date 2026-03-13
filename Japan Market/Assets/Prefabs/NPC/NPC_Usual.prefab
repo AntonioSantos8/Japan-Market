@@ -11,6 +11,8 @@ GameObject:
   - component: {fileID: 5357283785407107266}
   - component: {fileID: 8068461814871618964}
   - component: {fileID: 963320538010885476}
+  - component: {fileID: 8472884177749701048}
+  - component: {fileID: 6120337374120264471}
   m_Layer: 0
   m_Name: NPC_Usual
   m_TagString: Untagged
@@ -71,6 +73,33 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::NpcTraject
   _finalPoint: {fileID: 0}
   _waitTime: 2
+--- !u!114 &8472884177749701048
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1707092874194882208}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 37c8c69aab636e54389b22a4684ba07c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NpcPhrases
+  phraseText: {fileID: 6950234991855799908}
+  _data: {fileID: 11400000, guid: 5888b0bd416ca764d86feef5b162ce76, type: 2}
+--- !u!114 &6120337374120264471
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1707092874194882208}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e1b9905e4f2293142a474361f63a246d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NpcInstance
+  _data: {fileID: 11400000, guid: 5888b0bd416ca764d86feef5b162ce76, type: 2}
 --- !u!1 &2146375764187590872
 GameObject:
   m_ObjectHideFlags: 0
