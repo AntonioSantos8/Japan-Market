@@ -23,7 +23,6 @@ public class CashRegister : MonoBehaviour
     float totalPrice = 0f;
     bool playerInRange = false;
     bool cashMode = false;
-
     void Start()
     {
         creditCard.SetActive(false);
@@ -35,7 +34,6 @@ public class CashRegister : MonoBehaviour
 
         zoomOri = cam.Lens.FieldOfView;
     }
-
     void Update()
     {
         if (playerInRange && !cashMode && Input.GetButtonDown("Fire1"))
@@ -48,7 +46,6 @@ public class CashRegister : MonoBehaviour
             ItemClicked();
         }
     }
-
     void EnterCashMode()
     {
         cashMode = true;
@@ -75,7 +72,6 @@ public class CashRegister : MonoBehaviour
             zoom,
             0.4f).SetEase(Ease.OutQuad));
     }
-
     public void ExitCashMode()
     {
         cashMode = false;
@@ -98,7 +94,6 @@ public class CashRegister : MonoBehaviour
 
      
     }
-
     void ItemClicked()
     {
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
@@ -118,7 +113,6 @@ public class CashRegister : MonoBehaviour
             }
         }
     }
-
     void RemoveQueue(Item item)
     {
         Queue<Item> newQueue = new Queue<Item>();
@@ -131,7 +125,6 @@ public class CashRegister : MonoBehaviour
 
         itemsQueue = newQueue;
     }
-
     void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("Player"))
@@ -147,7 +140,6 @@ public class CashRegister : MonoBehaviour
             itemsQueue.Enqueue(item);
         }
     }
-
     void OnTriggerExit(Collider other)
     {
         if (other.CompareTag("Player"))
@@ -155,7 +147,6 @@ public class CashRegister : MonoBehaviour
             playerInRange = false;
         }
     }
-
     void SendItemToBag(Item item)
     {
         item.MarkAsPast();
@@ -188,7 +179,6 @@ public class CashRegister : MonoBehaviour
             PastItem(item);
         });
     }
-
     void PastItem(Item item)
     {
         Items type = item.GetItemType();
@@ -217,5 +207,15 @@ public class CashRegister : MonoBehaviour
         nameItemText.text = "";
         priceItemText.text = "";
         totalPriceText.text = "Total ¥" + totalPrice.ToString("F2");
+    }
+    public float GetTotalPrice()
+    {
+        return totalPrice;
+    }
+    public void FinishPayment()
+    {
+        creditCard.SetActive(false);
+        totalPriceText.text = "";
+        totalPrice = 0;
     }
 }
