@@ -1,5 +1,3 @@
-
-
 using UnityEngine;
 using System.Collections.Generic;
 using DG.Tweening;
@@ -38,18 +36,21 @@ public class Segment : InteractableBase
     public void SetCanPut(bool value) { canPut = value; }
 Items mySegment = Items.None;
 [SerializeField] Shelf shelf;
+public bool isAnimating;
+int activeTweens;
 float visualDelay;
 [SerializeField] float delayBetweenItems = 0.08f;
  [SerializeField] Material greenMaterial, redMaterial, transparentMaterial;
 [SerializeField] Transform paiDeTodos;
  MeshRenderer meshRenderer;
+ bool isLooking;
     private void Start()
     {
         for (int i = 0; i < groups.Length; i++)
             groups[i].Init();
 
         meshRenderer = GetComponent<MeshRenderer>();
-    }
+    }   
 
  public bool IsFull()
     {
@@ -64,7 +65,7 @@ float visualDelay;
                 {
                   
                     if(sT.spaces[i] == null) return false;
-                    print(sT.spaces[i]);
+             
 
 
                 }
@@ -74,7 +75,7 @@ float visualDelay;
 
 
         }
-        print("chegou totalmente ao fim");
+  
             return true;
 
 
@@ -88,7 +89,7 @@ float visualDelay;
         groups[groupIndex].spaces[spaceIndex] = null;
  
     }
- bool PlaceSingleItem(Transform itemTransform, Items type)
+bool PlaceSingleItem(Transform itemTransform, Items type)
 {
     if(mySegment != Items.None && type != mySegment) return false;
 
@@ -103,29 +104,83 @@ float visualDelay;
 
         Transform target = groups[g].allItems[spaceIndex];
 
-        itemTransform.SetParent(target.transform.parent);
+        itemTransform.SetParent(target.parent);
 
         groups[g].spaces[spaceIndex] = itemTransform;
 
-        Sequence seq = DOTween.Sequence();
+        Vector3 start = itemTransform.position;
+Vector3 end = target.position;
 
-        seq.SetDelay(visualDelay);
+float height = Vector3.Distance(start, end) * 0.21f;
 
-        seq.Append(
-            itemTransform.DOMove(target.position, 0.25f).SetEase(Ease.OutCubic)
-        );
+Vector3 mid = (start + end) * 0.5f;
+mid += Vector3.up * height;
 
-        seq.Join(
-            itemTransform.DORotateQuaternion(target.rotation, 0.2f)
-        );
+Vector3[] path = new Vector3[]
+{
+    start,
+    mid,
+    end
+};
 
-        seq.Join(
-            itemTransform.DOScale(target.localScale, 0.25f).SetEase(Ease.OutCubic)
-        );
+Sequence seq = DOTween.Sequence();
 
-       // seq.Append(
-            //itemTransform.DOPunchScale(Vector3.one * 0.15f, 0.15f, 6, 0.8f)
-        //);
+seq.SetDelay(visualDelay + Random.Range(0f,0.025f));
+
+seq.Append(
+    itemTransform.DOPath(path, 0.34f, PathType.CatmullRom)
+    .SetEase(Ease.OutCubic)
+);
+
+seq.Join(
+    itemTransform.DORotateQuaternion(
+        target.rotation * Quaternion.Euler(
+            Random.Range(-6f,6f),
+            Random.Range(-12f,12f),
+            Random.Range(-4f,4f)
+        ),
+        0.26f
+    ).SetEase(Ease.OutSine)
+);
+
+seq.Join(
+    itemTransform.DOScale(target.localScale * 1.12f, 0.18f)
+    .SetEase(Ease.OutQuad)
+);
+
+seq.Append(
+    itemTransform.DOMove(end, 0.05f)
+    .SetEase(Ease.InQuad)
+);
+
+seq.Join(
+    itemTransform.DORotateQuaternion(target.rotation, 0.05f)
+);
+
+seq.Append(
+    itemTransform.DOScale(target.localScale, 0.12f)
+    .SetEase(Ease.OutBack)
+);
+
+seq.Append(
+    itemTransform.DOPunchPosition(Vector3.up * 0.02f, 0.09f, 5, 0.8f)
+);
+
+        //transform.DOPunchPosition(Vector3.back * 0.015f, 0.12f, 3, 0.6f);
+
+        activeTweens++;
+        isAnimating = true;
+
+        seq.OnComplete(() =>
+        {
+            activeTweens--;
+
+            if(activeTweens <= 0)
+            {
+                isAnimating = false;
+                OnLookAtWithRestriction();
+            }
+        });
 
         visualDelay += delayBetweenItems;
 
@@ -141,7 +196,8 @@ float visualDelay;
 
     return false;
 }
-   bool TakeItem(ItemBox box)
+
+ bool TakeItem(ItemBox box)
 {//colocar item na caixa
     for (int g = 0; g < groups.Length; g++)
     {
@@ -152,7 +208,7 @@ float visualDelay;
             Transform item = groups[g].spaces[i];
             if (item == null) continue;
 
-                if (!box.AddItem(item, groups[g].type)) { mySegment = Items.None; return false; }
+                if (!box.AddItem(item, groups[g].type, this)) { mySegment = Items.None; return false; }
 
             groups[g].spaces[i] = null;
 
@@ -162,21 +218,24 @@ float visualDelay;
     }
     mySegment = Items.None;
     shelf.RemoveSegment(this);
+	
     return false;
 }
-   public override void Interact()
+ public override void Interact()
 {
+    if (isAnimating) return;
     if (ServiceLocator.Get<ItemRaycastController>().isWithBox)
     {
         ItemBox box = ServiceLocator.Get<ItemRaycastController>().LastBox();
 
         if (box.IsEmpty())
-        {
-            TakeItem(box);
-             OnLookAt();
-            return;
-        }
-
+{
+    isAnimating = true;
+    TakeItem(box);
+    OnLookAtWithRestriction();
+    return;
+}
+if(box.isAnimating) return;
         Items type = box.GetBoxType();
 
         while (true)
@@ -192,18 +251,24 @@ float visualDelay;
 
             if (!PlaceSingleItem(item, itemComponent.GetItemType()))
             {
-                box.AddItem(item, type);
+                box.AddItem(item, type, this);
                
                 break;
             }
         }
-        OnLookAt();
+        OnLookAtWithRestriction();
     }
 visualDelay = 0;
   
 }
     public override void OnLookAt()
     {
+        isLooking = true;
+if(isAnimating)
+    {
+        meshRenderer.material = transparentMaterial;
+        return;
+    }
         if (!ServiceLocator.Get<ItemRaycastController>().isWithBox) return;
          ItemBox box = ServiceLocator.Get<ItemRaycastController>().LastBox();
          if(box.IsEmpty() && mySegment == Items.None) return;
@@ -223,7 +288,10 @@ visualDelay = 0;
     }
     public override void OnLookAway()
     {
-      if(meshRenderer == null) return;  
+
+      isLooking = false;
        meshRenderer.material = transparentMaterial;
     }
+    public void OnLookAtWithRestriction(){if(isLooking) OnLookAt();}
+   
 }
