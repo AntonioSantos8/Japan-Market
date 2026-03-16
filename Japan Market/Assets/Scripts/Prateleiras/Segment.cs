@@ -31,7 +31,7 @@ public class SegmentTypeGroup
 }
 public class Segment : InteractableBase
 {
-    [SerializeField] SegmentTypeGroup[] groups;
+    [SerializeField] SegmentTypeGroup[] groups; 
     bool canPut = true;
     public void SetCanPut(bool value) { canPut = value; }
 Items mySegment = Items.None;
@@ -43,7 +43,7 @@ float visualDelay;
  [SerializeField] Material greenMaterial, redMaterial, transparentMaterial;
 [SerializeField] Transform paiDeTodos;
  MeshRenderer meshRenderer;
- bool isLooking;
+bool isLooking;
     private void Start()
     {
         for (int i = 0; i < groups.Length; i++)
