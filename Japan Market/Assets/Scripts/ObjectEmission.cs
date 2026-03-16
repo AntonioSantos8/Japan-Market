@@ -3,7 +3,6 @@ public class ObjectEmission : MonoBehaviour
 {
     Renderer rend;
     Material mat;
-
     void Start()
     {
         rend = GetComponent<Renderer>();

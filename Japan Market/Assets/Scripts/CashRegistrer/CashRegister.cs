@@ -51,6 +51,8 @@ public class CashRegister : MonoBehaviour
         cashMode = true;
         cam.Priority = 6;
 
+        playerLook.ResetLook(); 
+
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
 
@@ -65,7 +67,6 @@ public class CashRegister : MonoBehaviour
         seq.Append(player.DOMove(cashPosition.position, 0.3f)
             .SetEase(Ease.OutQuad));
 
-      
         seq.Join(DOTween.To(
             () => cam.Lens.FieldOfView,
             x => cam.Lens.FieldOfView = x,
@@ -189,7 +190,6 @@ public class CashRegister : MonoBehaviour
             {
                 nameItemText.text = data.itemName;
                 priceItemText.text = "¥" + data.singleItemPrice.ToString("F2");
-                totalPriceText.text = "Total ¥" + totalPrice.ToString("F2");
                 totalPrice += data.singleItemPrice;
 
                 if (itemsQueue.Count == 0)
