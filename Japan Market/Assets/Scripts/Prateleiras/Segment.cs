@@ -21,12 +21,14 @@ public class SegmentTypeGroup
 
     public int GetNullSpace()
     {
-        for (int i = 0; i < spaces.Count; i++)
-        {
-            if (spaces[i] == null)
+         for (int i = 0; i < spaces.Count; i++)
+         {
+             if (spaces[i] == null)
                 return i;
-        }
-        return -1;
+    }
+         return -1;
+       
+        
     }
 }
 public class Segment : InteractableBase
@@ -36,7 +38,7 @@ public class Segment : InteractableBase
     public void SetCanPut(bool value) { canPut = value; }
 Items mySegment = Items.None;
 [SerializeField] Shelf shelf;
-public bool isAnimating;
+public bool isAnimating;    
 int activeTweens;
 float visualDelay;
 [SerializeField] float delayBetweenItems = 0.08f;
@@ -143,10 +145,10 @@ seq.Join(
     ).SetEase(Ease.OutSine)
 );
 
-seq.Join(
-    itemTransform.DOScale(target.localScale * 1.12f, 0.18f)
-    .SetEase(Ease.OutQuad)
-);
+// seq.Join(
+//     itemTransform.DOScaleY(target.localScale.y * 1.2f, 0.18f)
+//     .SetEase(Ease.OutQuad)
+// );
 
 seq.Append(
     itemTransform.DOMove(end, 0.05f)
@@ -156,15 +158,18 @@ seq.Append(
 seq.Join(
     itemTransform.DORotateQuaternion(target.rotation, 0.05f)
 );
-
+seq.Join(
+    itemTransform.DOScaleY(target.localScale.y * 1.2f, 0.18f)
+    .SetEase(Ease.OutQuad)
+);
 seq.Append(
     itemTransform.DOScale(target.localScale, 0.12f)
     .SetEase(Ease.OutBack)
 );
 
-seq.Append(
-    itemTransform.DOPunchPosition(Vector3.up * 0.02f, 0.09f, 5, 0.8f)
-);
+// seq.Append(
+//     itemTransform.DOPunchPosition(Vector3.up * 0.02f, 0.09f, 5, 0.8f)
+// );
 
         //transform.DOPunchPosition(Vector3.back * 0.015f, 0.12f, 3, 0.6f);
 
@@ -227,15 +232,15 @@ seq.Append(
     if (ServiceLocator.Get<ItemRaycastController>().isWithBox)
     {
         ItemBox box = ServiceLocator.Get<ItemRaycastController>().LastBox();
+         if(box.isAnimating) return;
 
         if (box.IsEmpty())
-{
-    isAnimating = true;
-    TakeItem(box);
-    OnLookAtWithRestriction();
-    return;
-}
-if(box.isAnimating) return;
+        {
+            isAnimating = true;
+            TakeItem(box);
+            OnLookAtWithRestriction();
+            return;
+        }
         Items type = box.GetBoxType();
 
         while (true)

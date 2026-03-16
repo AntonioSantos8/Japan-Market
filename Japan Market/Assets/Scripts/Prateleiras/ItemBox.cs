@@ -25,12 +25,12 @@ public class ItemBox : MonoBehaviour
         }else return false;
 
 
-        for (int g = 0; g < groups.Length; g++)
-            for (int i = 0; i < groups[g].spaces.Count; i++)
-                if (groups[g].spaces[i] != null)
-                    return false;
+        // for (int g = 0; g < groups.Length; g++)
+        //     for (int i = 0; i < groups[g].spaces.Count; i++)
+        //         if (groups[g].spaces[i] != null)
+        //             return false;
 
-        return true;
+        // return true;
     }
 float visualDelay;
 [SerializeField] float delayBetweenItems = 0.08f;
