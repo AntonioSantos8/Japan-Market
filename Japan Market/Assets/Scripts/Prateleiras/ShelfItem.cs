@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class ShelfItem : MonoBehaviour
 {
-    Segment segment;
+   public  Segment segment;
     int groupIndex;
     int spaceIndex;
 

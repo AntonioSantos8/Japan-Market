@@ -26,5 +26,12 @@ public class PlayerLook : MonoBehaviour
         cameraHolder.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
         playerBody.Rotate(Vector3.up * mouseX);
     }
+    public void ResetLook()
+    {
+        xRotation = 0f;
+      cameraHolder.localRotation = Quaternion.Euler(0f, 0f, 0f);
+
+      playerBody.rotation = Quaternion.Euler(0f, 180f, 0f);
+    }
 
 }
