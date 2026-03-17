@@ -269,7 +269,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 19e0c2304afc4c340b59e1123332b107, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -6.36
+      value: -5.86
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 19e0c2304afc4c340b59e1123332b107, type: 3}
       propertyPath: m_LocalPosition.y
@@ -277,7 +277,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 19e0c2304afc4c340b59e1123332b107, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -0.95
+      value: -0.78
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 19e0c2304afc4c340b59e1123332b107, type: 3}
       propertyPath: m_LocalRotation.w
@@ -524,6 +524,11 @@ MonoBehaviour:
       m_Calls: []
   interactionText: 
   itemType: 4
+  followForce: 700
+  followDrag: 16.5
+  canBreak: 0
+  maxResistance: 100
+  breakThreshold: 15
 --- !u!54 &5675862496085248479
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -548,7 +553,7 @@ Rigidbody:
   m_ImplicitTensor: 1
   m_UseGravity: 1
   m_IsKinematic: 0
-  m_Interpolate: 0
+  m_Interpolate: 1
   m_Constraints: 0
   m_CollisionDetection: 0
 --- !u!95 &305177529483307913

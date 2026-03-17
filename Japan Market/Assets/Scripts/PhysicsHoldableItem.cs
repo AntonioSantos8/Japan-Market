@@ -1,12 +1,12 @@
-using System;
 using UnityEngine;
 
-public class Box : InteractableBase
+public class PhysicsHoldableItem : InteractableBase
 {
+  
     public float followForce = 150f;
     public float followDrag = 2f;
 
-
+  
     public bool canBreak = true;
     public float maxResistance = 100f;
     public float breakThreshold = 15f;
@@ -17,7 +17,11 @@ public class Box : InteractableBase
 
     bool isBroken;
 
-   
+    public override void Awake()
+    {
+        base.Awake();
+        currentResistance = maxResistance;
+    }
 
     public override void Interact()
     {
@@ -71,9 +75,6 @@ public class Box : InteractableBase
         rb.useGravity = true;
         rb.isKinematic = false;
         rb.linearDamping = followDrag;
-
-        //if (ServiceLocator.Get<ItemRaycastController>().PickItem(rb))
-            anim.SetTrigger("Open");
     }
 
     public void StopHolding()
@@ -81,27 +82,6 @@ public class Box : InteractableBase
         isHeld = false;
         holdPoint = null;
 
-
         rb.linearDamping = 0f;
-    }
-
-    Animator anim;
- 
-    public override void Awake()
-    {
-        base.Awake();
-        anim = GetComponentInChildren<Animator>();
-        currentResistance = maxResistance;
-    }
-    void Start()
-    {
-        OnPickEvent?.AddListener(()=>{  ServiceLocator.Get<ItemRaycastController>().isWithBox = true ; } );
-         OnDropEvent?.AddListener(()=>{  ServiceLocator.Get<ItemRaycastController>().isWithBox = false ;    } );
-    }
-   
-    public override void OnLookAt()
-    {
-        base.OnLookAt();
-      
     }
 }

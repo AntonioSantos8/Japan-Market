@@ -93,15 +93,15 @@ float currentFollowRotSpeed;
 void FollowHand()
 {
     if (heldItem == null) return;
-
-    currentFollowPosSpeed = Mathf.Lerp(currentFollowPosSpeed, followPositionSpeed, speedGrowRate * Time.deltaTime);
+    
+    //currentFollowPosSpeed = Mathf.Lerp(currentFollowPosSpeed, followPositionSpeed, speedGrowRate * Time.deltaTime);
     currentFollowRotSpeed = Mathf.Lerp(currentFollowRotSpeed, followRotationSpeed, speedGrowRate * Time.deltaTime);
 
-        heldItem.position = Vector3.Lerp(
-           heldItem.position,
-           boxHandPivot.position,
-           currentFollowPosSpeed * Time.deltaTime
-        );
+        //heldItem.position = Vector3.Lerp(
+        //   heldItem.position,
+        //   boxHandPivot.position,
+        //   currentFollowPosSpeed * Time.deltaTime
+        //);
 
         heldItem.rotation = Quaternion.Slerp(
            heldItem.rotation,
@@ -143,12 +143,23 @@ void FollowHand()
     public bool PickItem(Rigidbody itemRb)
     {
         if(heldItem != null) return false;
+
         heldItemRb = itemRb;
         heldItem = itemRb.transform;
         heldInteractable = itemRb.GetComponent<InteractableBase>();
 
-        heldItemRb.isKinematic = true;
-        heldItemRb.useGravity = false;
+        //heldItemRb.isKinematic = true;
+        //heldItemRb.useGravity = false;
+        var phys = heldItemRb.GetComponent<Box>();
+        if (phys != null)
+        {
+            phys.StartHolding(boxHandPivot);
+        }
+        else
+        {
+            heldItemRb.isKinematic = true;
+            heldItemRb.useGravity = false;
+        }
 
         currentFollowPosSpeed = 5f;
 currentFollowRotSpeed = 5f;
@@ -176,10 +187,20 @@ currentFollowRotSpeed = 5f;
         if (heldItem == null) return;
 
         heldItem.SetParent(null);
-        heldItemRb.isKinematic = false;
-        heldItemRb.useGravity = true;
+        //heldItemRb.isKinematic = false;
+        //heldItemRb.useGravity = true;
+        var phys = heldItemRb.GetComponent<Box>();
+        if (phys != null)
+        {
+            phys.StopHolding();
+        }
+        else
+        {
+            heldItemRb.isKinematic = false;
+            heldItemRb.useGravity = true;
+        }
 
-              heldItem.GetComponent<Collider>().enabled = true;
+        heldItem.GetComponent<Collider>().enabled = true;
 
         if (Physics.Raycast(transform.position, transform.forward, out RaycastHit hit, .8f, interactLayer)) 
         {
