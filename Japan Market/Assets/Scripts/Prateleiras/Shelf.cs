@@ -20,7 +20,7 @@ public class Shelf : MonoBehaviour
    [ContextMenu("Tirar Item")]
        public Items TakeRandomItem()
         {
-        if (shelf.Count == 0) return Items.None;
+        if (shelf.Count == 0) {print("SEM ITEM");return Items.None;}
 
         int index = Random.Range(0, shelf.Count);
 
@@ -40,8 +40,7 @@ public class Shelf : MonoBehaviour
                     {
                         Transform item = segment.groups[g].spaces[s];
                         if (item == null) continue;
-                        segment.groups[g].spaces[s] = null;
-
+                       segment.RemoveItem(g, s);
                         Destroy(item.gameObject);
                         lastItemSegment = segment;
 

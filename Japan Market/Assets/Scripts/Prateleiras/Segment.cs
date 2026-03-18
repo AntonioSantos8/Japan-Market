@@ -57,6 +57,30 @@ public bool IsEmpty()
 {
     return mySegment == Items.None;
 }
+public void RemoveItem(int groupIndex, int spaceIndex)
+{
+    groups[groupIndex].spaces[spaceIndex] = null;
+
+    bool hasAny = false;
+
+    for (int g = 0; g < groups.Length; g++)
+    {
+        for (int i = 0; i < groups[g].spaces.Count; i++)
+        {
+            if (groups[g].spaces[i] != null)
+            {
+                hasAny = true;
+                break;
+            }
+        }
+        if (hasAny) break;
+    }
+
+    if (!hasAny)
+    {
+        mySegment = Items.None;
+    }
+}
  public bool IsFull()
     {
         if(mySegment == Items.None) return false;
