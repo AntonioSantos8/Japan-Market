@@ -93,7 +93,7 @@ float currentFollowRotSpeed;
 void FollowHand()
 {
     if (heldItem == null) return;
-    
+        return;
     //currentFollowPosSpeed = Mathf.Lerp(currentFollowPosSpeed, followPositionSpeed, speedGrowRate * Time.deltaTime);
     currentFollowRotSpeed = Mathf.Lerp(currentFollowRotSpeed, followRotationSpeed, speedGrowRate * Time.deltaTime);
 

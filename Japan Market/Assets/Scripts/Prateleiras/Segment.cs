@@ -282,7 +282,7 @@ if(mySegment==Items.None && box.IsEmpty()) return;
 
             Item itemComponent = item.GetComponent<Item>();
 
-            if (!PlaceSingleItem(item, itemComponent.GetItemType()))
+            if (!PlaceSingleItem(item,itemComponent.GetItemType()))
             {
                 box.AddItem(item, type, this);
                
