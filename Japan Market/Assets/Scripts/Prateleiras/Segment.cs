@@ -259,6 +259,7 @@ seq.Append(
     if (ServiceLocator.Get<ItemRaycastController>().isWithBox)
     {
         ItemBox box = ServiceLocator.Get<ItemRaycastController>().LastBox();
+if(mySegment==Items.None && box.IsEmpty()) return;
          if(box.isAnimating) return;
 
         if (box.IsEmpty())
