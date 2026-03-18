@@ -33,7 +33,7 @@ public class SegmentTypeGroup
 }
 public class Segment : InteractableBase
 {
-    [SerializeField] SegmentTypeGroup[] groups; 
+    [SerializeField] public SegmentTypeGroup[] groups; 
     bool canPut = true;
     public void SetCanPut(bool value) { canPut = value; }
 Items mySegment = Items.None;
@@ -53,7 +53,10 @@ bool isLooking;
 
         meshRenderer = GetComponent<MeshRenderer>();
     }   
-
+public bool IsEmpty()
+{
+    return mySegment == Items.None;
+}
  public bool IsFull()
     {
         if(mySegment == Items.None) return false;

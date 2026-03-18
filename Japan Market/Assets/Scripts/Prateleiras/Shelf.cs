@@ -17,8 +17,9 @@ public class Shelf : MonoBehaviour
 
     public Segment lastItemSegment;
 
-    public Items TakeRandomItem()
-    {
+   [ContextMenu("Tirar Item")]
+       public Items TakeRandomItem()
+        {
         if (shelf.Count == 0) return Items.None;
 
         int index = Random.Range(0, shelf.Count);
@@ -28,14 +29,39 @@ public class Shelf : MonoBehaviour
         {
             if (i == index)
             {
-                lastItemSegment = pair.Key;
-                return pair.Value;
+                Segment segment = pair.Key;
+                Items itemType = pair.Value;
+
+                for (int g = 0; g < segment.groups.Length; g++)
+                {
+                    if (segment.groups[g].type != itemType) continue;
+
+                    for (int s = segment.groups[g].spaces.Count - 1; s >= 0; s--)
+                    {
+                        Transform item = segment.groups[g].spaces[s];
+                        if (item == null) continue;
+                        segment.groups[g].spaces[s] = null;
+
+                        Destroy(item.gameObject);
+                        lastItemSegment = segment;
+
+                        if(segment.IsEmpty())
+    {
+        RemoveSegment(segment);
+    }
+                        
+                        return itemType;
+                    }
+                }
+
+                return Items.None;
             }
             i++;
         }
 
         return Items.None;
     }
+        
 
     public void RegisterSegment(Items item, Segment segment)
     {
