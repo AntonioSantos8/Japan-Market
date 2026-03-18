@@ -32,13 +32,13 @@ public class Shelf : MonoBehaviour
                 Segment segment = pair.Key;
                 Items itemType = pair.Value;
 
-                for (int g = 0; g < segment.groups.Length; g++)
+                for (int g = 0; g < segment.Groups.Length; g++)
                 {
-                    if (segment.groups[g].type != itemType) continue;
+                    if (segment.Groups[g].type != itemType) continue;
 
-                    for (int s = segment.groups[g].spaces.Count - 1; s >= 0; s--)
+                    for (int s = segment.Groups[g].spaces.Count - 1; s >= 0; s--)
                     {
-                        Transform item = segment.groups[g].spaces[s];
+                        Transform item = segment.Groups[g].spaces[s];
                         if (item == null) continue;
                        segment.RemoveItem(g, s);
                         Destroy(item.gameObject);

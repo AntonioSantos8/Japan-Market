@@ -143,7 +143,7 @@ seq.Append(
             activeTweens--;
             if (activeTweens <= 0){
                 isAnimating = false;
-		segment.isAnimating = false;
+		segment.IsAnimating = false;
 segment.OnLookAtWithRestriction();
 }
         });

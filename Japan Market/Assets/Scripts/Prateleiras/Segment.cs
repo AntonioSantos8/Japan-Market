@@ -33,19 +33,26 @@ public class SegmentTypeGroup
 }
 public class Segment : InteractableBase
 {
-    [SerializeField] public SegmentTypeGroup[] groups; 
-    bool canPut = true;
-    public void SetCanPut(bool value) { canPut = value; }
-Items mySegment = Items.None;
-[SerializeField] Shelf shelf;
-public bool isAnimating;    
-int activeTweens;
-float visualDelay;
-[SerializeField] float delayBetweenItems = 0.08f;
- [SerializeField] Material greenMaterial, redMaterial, transparentMaterial;
-[SerializeField] Transform paiDeTodos;
- MeshRenderer meshRenderer;
-bool isLooking;
+    [SerializeField] SegmentTypeGroup[] groups; 
+    [SerializeField] float delayBetweenItems = 0.08f;
+    [SerializeField] Material greenMaterial, redMaterial, transparentMaterial;
+    [SerializeField] Shelf shelf;
+    [SerializeField]FurnitureType myType;
+
+
+    public SegmentTypeGroup[] Groups { get { return groups; } set => groups = value; }
+    public bool IsAnimating { set => isAnimating = value; }
+
+
+    MeshRenderer meshRenderer;
+
+    int activeTweens;
+    float visualDelay;
+    bool isLooking;
+    bool isAnimating;    
+  
+    Items mySegment = Items.None;
+
     private void Start()
     {
         for (int i = 0; i < groups.Length; i++)
@@ -53,10 +60,10 @@ bool isLooking;
 
         meshRenderer = GetComponent<MeshRenderer>();
     }   
-public bool IsEmpty()
-{
-    return mySegment == Items.None;
-}
+    public bool IsEmpty()
+    {
+        return mySegment == Items.None;
+    }
 public void RemoveItem(int groupIndex, int spaceIndex)
 {
     groups[groupIndex].spaces[spaceIndex] = null;
