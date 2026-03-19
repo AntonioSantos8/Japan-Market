@@ -1,7 +1,7 @@
 using UnityEngine;
 using DG.Tweening;
 
-public class AutomaticDoorTrigger : MonoBehaviour
+public class AutomaticDoor : MonoBehaviour
 {
     [SerializeField] private Transform doorleft;
     [SerializeField] private Transform doorRigth;

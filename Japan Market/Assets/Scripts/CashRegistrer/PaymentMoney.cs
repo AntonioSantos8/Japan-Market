@@ -147,7 +147,7 @@ public class PaymentMoney : MonoBehaviour
         Sequence seq = DOTween.Sequence();
 
         seq.Append(givingText.DOColor(Color.red, 0.2f));
-        seq.Join(givingText.transform.DOShakePosition(0.3f,0.03f, 15));
+        seq.Join(givingText.transform.DOShakePosition(0.3f,0.02f, 15));
 
         seq.Append(givingText.DOColor(Color.white, 0.2f));
         seq.OnComplete(() =>
