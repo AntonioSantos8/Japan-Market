@@ -352,8 +352,8 @@ ChangeMaterialColor(transparent);
    public void ChangeMaterialColor(Color to)
     {
         
-  materialColorTween?.Kill();
+         materialColorTween?.Kill();
 
-    materialColorTween = meshRenderer.material.DOColor(to, .25f).SetEase(Ease.OutBack);
+         materialColorTween = meshRenderer.material.DOColor(to, .25f).SetEase(Ease.OutBack);
     }
 }
