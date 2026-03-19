@@ -53,6 +53,10 @@ public class Segment : InteractableBase
   
     Items mySegment = Items.None;
 
+
+Tween materialColorTween;
+    [SerializeField] Color green, red, transparent;
+
     private void Start()
     {
         for (int i = 0; i < groups.Length; i++)
@@ -125,116 +129,116 @@ public void RemoveItem(int groupIndex, int spaceIndex)
         groups[groupIndex].spaces[spaceIndex] = null;
  
     }
-bool PlaceSingleItem(Transform itemTransform, Items type)
-{
-    if(mySegment != Items.None && type != mySegment) return false;
-
-    mySegment = type;
-
-    for (int g = 0; g < groups.Length; g++)
+    bool PlaceSingleItem(Transform itemTransform, Items type)
     {
-        if (groups[g].type != type) continue;
+        if(mySegment != Items.None && type != mySegment) return false;
 
-        int spaceIndex = groups[g].GetNullSpace();
-        if (spaceIndex == -1) return false;
+        mySegment = type;
 
-        Transform target = groups[g].allItems[spaceIndex];
-
-        itemTransform.SetParent(target.parent);
-
-        groups[g].spaces[spaceIndex] = itemTransform;
-
-        Vector3 start = itemTransform.position;
-Vector3 end = target.position;
-
-float height = Vector3.Distance(start, end) * 0.21f;
-
-Vector3 mid = (start + end) * 0.5f;
-mid += Vector3.up * height;
-
-Vector3[] path = new Vector3[]
-{
-    start,
-    mid,
-    end
-};
-
-Sequence seq = DOTween.Sequence();
-
-seq.SetDelay(visualDelay + Random.Range(0f,0.025f));
-
-seq.Append(
-    itemTransform.DOPath(path, 0.34f, PathType.CatmullRom)
-    .SetEase(Ease.OutCubic)
-);
-
-seq.Join(
-    itemTransform.DORotateQuaternion(
-        target.rotation * Quaternion.Euler(
-            Random.Range(-6f,6f),
-            Random.Range(-12f,12f),
-            Random.Range(-4f,4f)
-        ),
-        0.26f
-    ).SetEase(Ease.OutSine)
-);
-
-// seq.Join(
-//     itemTransform.DOScaleY(target.localScale.y * 1.2f, 0.18f)
-//     .SetEase(Ease.OutQuad)
-// );
-
-seq.Append(
-    itemTransform.DOMove(end, 0.05f)
-    .SetEase(Ease.InQuad)
-);
-
-seq.Join(
-    itemTransform.DORotateQuaternion(target.rotation, 0.05f)
-);
-seq.Join(
-    itemTransform.DOScaleY(target.localScale.y * 1.2f, 0.18f)
-    .SetEase(Ease.OutQuad)
-);
-seq.Append(
-    itemTransform.DOScale(target.localScale, 0.12f)
-    .SetEase(Ease.OutBack)
-);
-
-// seq.Append(
-//     itemTransform.DOPunchPosition(Vector3.up * 0.02f, 0.09f, 5, 0.8f)
-// );
-
-        //transform.DOPunchPosition(Vector3.back * 0.015f, 0.12f, 3, 0.6f);
-
-        activeTweens++;
-        isAnimating = true;
-
-        seq.OnComplete(() =>
+        for (int g = 0; g < groups.Length; g++)
         {
-            activeTweens--;
+            if (groups[g].type != type) continue;
 
-            if(activeTweens <= 0)
+            int spaceIndex = groups[g].GetNullSpace();
+            if (spaceIndex == -1) return false;
+
+            Transform target = groups[g].allItems[spaceIndex];
+
+            itemTransform.SetParent(target.parent);
+
+            groups[g].spaces[spaceIndex] = itemTransform;
+
+            Vector3 start = itemTransform.position;
+    Vector3 end = target.position;
+
+    float height = Vector3.Distance(start, end) * 0.21f;
+
+    Vector3 mid = (start + end) * 0.5f;
+    mid += Vector3.up * height;
+
+    Vector3[] path = new Vector3[]
+    {
+        start,
+        mid,
+        end
+    };
+
+    Sequence seq = DOTween.Sequence();
+
+    seq.SetDelay(visualDelay + Random.Range(0f,0.025f));
+
+    seq.Append(
+        itemTransform.DOPath(path, 0.34f, PathType.CatmullRom)
+        .SetEase(Ease.OutCubic)
+    );
+
+    seq.Join(
+        itemTransform.DORotateQuaternion(
+            target.rotation * Quaternion.Euler(
+                Random.Range(-6f,6f),
+                Random.Range(-12f,12f),
+                Random.Range(-4f,4f)
+            ),
+            0.26f
+        ).SetEase(Ease.OutSine)
+    );
+
+    // seq.Join(
+    //     itemTransform.DOScaleY(target.localScale.y * 1.2f, 0.18f)
+    //     .SetEase(Ease.OutQuad)
+    // );
+
+    seq.Append(
+        itemTransform.DOMove(end, 0.05f)
+        .SetEase(Ease.InQuad)
+    );
+
+    seq.Join(
+        itemTransform.DORotateQuaternion(target.rotation, 0.05f)
+    );
+    seq.Join(
+        itemTransform.DOScaleY(target.localScale.y * 1.2f, 0.18f)
+        .SetEase(Ease.OutQuad)
+    );
+    seq.Append(
+        itemTransform.DOScale(target.localScale, 0.12f)
+        .SetEase(Ease.OutBack)
+    );
+
+    // seq.Append(
+    //     itemTransform.DOPunchPosition(Vector3.up * 0.02f, 0.09f, 5, 0.8f)
+    // );
+
+            //transform.DOPunchPosition(Vector3.back * 0.015f, 0.12f, 3, 0.6f);
+
+            activeTweens++;
+            isAnimating = true;
+
+            seq.OnComplete(() =>
             {
-                isAnimating = false;
-                OnLookAtWithRestriction();
-            }
-        });
+                activeTweens--;
 
-        visualDelay += delayBetweenItems;
+                if(activeTweens <= 0)
+                {
+                    isAnimating = false;
+                    OnLookAtWithRestriction();
+                }
+            });
 
-        ShelfItem shelfItem = itemTransform.GetComponent<ShelfItem>();
-        if (shelfItem == null)
-            shelfItem = itemTransform.gameObject.AddComponent<ShelfItem>();
+            visualDelay += delayBetweenItems;
 
-        shelf.RegisterSegment(type, this);
-        shelfItem.Setup(this, g, spaceIndex);
+            ShelfItem shelfItem = itemTransform.GetComponent<ShelfItem>();
+            if (shelfItem == null)
+                shelfItem = itemTransform.gameObject.AddComponent<ShelfItem>();
 
-        return true;
+            shelf.RegisterSegment(type, this);
+            shelfItem.Setup(this, g, spaceIndex);
+
+            return true;
+        }
+
+        return false;
     }
-
-    return false;
-}
 
  bool TakeItem(ItemBox box)
 {//colocar item na caixa
@@ -263,21 +267,25 @@ seq.Append(
  public override void Interact()
 {
     if (isAnimating) return;
-    if (ServiceLocator.Get<ItemRaycastController>().isWithBox)
+    if (!ServiceLocator.Get<ItemRaycastController>().isWithBox) return;
+    
+    ItemBox box = ServiceLocator.Get<ItemRaycastController>().LastBox();
+        
+    if(mySegment==Items.None && box.IsEmpty()) return;
+    if(box.AllowedFurniture != myType){ print("Furniture Errada"); return;}
+    if(box.isAnimating) return;
+
+    if (box.IsEmpty())
     {
-        ItemBox box = ServiceLocator.Get<ItemRaycastController>().LastBox();
-if(mySegment==Items.None && box.IsEmpty()) return;
-         if(box.isAnimating) return;
-
-        if (box.IsEmpty())
-        {
-            isAnimating = true;
-            TakeItem(box);
-            OnLookAtWithRestriction();
-            return;
-        }
-        Items type = box.GetBoxType();
-
+        isAnimating = true;
+         TakeItem(box);
+         
+         OnLookAtWithRestriction();
+         return;
+    }
+    
+    Items type = box.GetBoxType();
+        box.transform.DOPunchScale(-Vector3.right * .05f, .3f, 2);
         while (true)
         {
             Transform item = box.TakeItemByType(type);
@@ -297,7 +305,7 @@ if(mySegment==Items.None && box.IsEmpty()) return;
             }
         }
         OnLookAtWithRestriction();
-    }
+    
 visualDelay = 0;
   
 }
@@ -307,6 +315,8 @@ visualDelay = 0;
 if(isAnimating)
     {
         meshRenderer.material = transparentMaterial;
+               materialColorTween?.Kill();
+   ChangeMaterialColor(transparent);
         return;
     }
         if (!ServiceLocator.Get<ItemRaycastController>().isWithBox) return;
@@ -319,19 +329,31 @@ if(isAnimating)
       
         if (box.IsEmpty())
         {
-            meshRenderer.material = redMaterial;
+          //  meshRenderer.material = redMaterial;
+                 materialColorTween?.Kill();
+        ChangeMaterialColor(red);
         }
         else
         {
-            meshRenderer.material = greenMaterial;
+            // meshRenderer.material = greenMaterial;
+            ChangeMaterialColor(green);
         }
     }
     public override void OnLookAway()
     {
 
       isLooking = false;
-       meshRenderer.material = transparentMaterial;
+       //meshRenderer.material = transparentMaterial;
+     
+ChangeMaterialColor(transparent);
+
     }
     public void OnLookAtWithRestriction(){if(isLooking) OnLookAt();}
-   
+   public void ChangeMaterialColor(Color to)
+    {
+        
+  materialColorTween?.Kill();
+
+    materialColorTween = meshRenderer.material.DOColor(to, .15f).SetEase(Ease.OutBack);
+    }
 }

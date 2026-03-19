@@ -4,9 +4,17 @@ using DG.Tweening;
 public class ItemBox : MonoBehaviour
 {
     [SerializeField] Items boxType;
-    public SegmentTypeGroup[] groups;
-    [SerializeField] Transform itemsParent;
+    [SerializeField] FurnitureType allowedFurniture;
 
+    [SerializeField] Transform itemsParent;
+    [SerializeField] float delayBetweenItems = 0.08f;
+   
+    float visualDelay;
+    public bool isAnimating;
+    int activeTweens;	
+
+    public SegmentTypeGroup[] groups;
+    public FurnitureType AllowedFurniture => allowedFurniture;
     public Transform GetItemsParent() => itemsParent;
 
     void Start()
@@ -32,11 +40,6 @@ public class ItemBox : MonoBehaviour
 
         // return true;
     }
-float visualDelay;
-[SerializeField] float delayBetweenItems = 0.08f;
-
-public bool isAnimating;
-int activeTweens;	
     public Items GetBoxType()
     {
         if (IsEmpty()) return Items.None;
