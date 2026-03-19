@@ -11,7 +11,7 @@ public class NpcTraject : MonoBehaviour
 
     [Header("Dest config")]
     [SerializeField] private Transform _finalPoint;
-    [SerializeField] private float _waitTime = 10f;
+    [SerializeField] private float _waitTime = 5;
 
     [Header("Inventory")]
     private List<Items> _inventory = new List<Items>();

@@ -43,7 +43,7 @@ public class Shelf : MonoBehaviour
                        segment.RemoveItem(g, s);
                         Destroy(item.gameObject);
                         lastItemSegment = segment;
-
+                        print("TIRANDO ITEM: " + itemType);
                         if(segment.IsEmpty())
     {
         RemoveSegment(segment);
