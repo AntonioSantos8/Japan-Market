@@ -11,7 +11,7 @@ public class ObjectEmission : MonoBehaviour
     public void ActiveEmission()
     {
         mat.EnableKeyword("_EMISSION");
-        mat.SetColor("_EmissionColor", Color.white * 0.16f);
+        mat.SetColor("_EmissionColor", Color.white * 0.20f);
     }
     public void DisableEmission()
     {
