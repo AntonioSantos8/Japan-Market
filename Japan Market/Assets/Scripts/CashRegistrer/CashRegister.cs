@@ -14,6 +14,7 @@ public class CashRegister : MonoBehaviour
     [SerializeField] Transform bagPoint;
     [SerializeField] Transform bagTopPoint;
     [SerializeField] GameObject creditCard;
+    [SerializeField] GameObject money;
     [SerializeField] GameObject quitButton;
     [SerializeField] Transform cashPosition;
     [SerializeField] CinemachineCamera cam;
@@ -26,6 +27,7 @@ public class CashRegister : MonoBehaviour
     void Start()
     {
         creditCard.SetActive(false);
+        money.SetActive(false);
         quitButton.SetActive(false);
 
         totalPriceText.text = "";
@@ -194,8 +196,9 @@ public class CashRegister : MonoBehaviour
 
                 if (itemsQueue.Count == 0)
                 {
-                    Invoke(nameof(BuyTotal), 0.43f);
+                    Invoke(nameof(BuyTotal), 0.34f);
                     creditCard.SetActive(true);
+                    money.SetActive(true);
                 }
 
                 break;
@@ -215,6 +218,7 @@ public class CashRegister : MonoBehaviour
     public void FinishPayment()
     {
         creditCard.SetActive(false);
+        money.SetActive(false);
         totalPriceText.text = "";
         totalPrice = 0;
     }
