@@ -55,14 +55,20 @@ public class Segment : InteractableBase
 
 Outline outline;
 Tween materialColorTween;
-    [SerializeField] Color green, red, transparent;
-
+Tween outlineWidhtTween;
+Tween outlineColorTween;
     private void Start()
     {
         for (int i = 0; i < groups.Length; i++)
             groups[i].Init();
 
         meshRenderer = GetComponent<MeshRenderer>();
+
+
+        outline = gameObject.AddComponent<Outline>();
+
+        outline.OutlineWidth =0;
+        
     }   
     public bool IsEmpty()
     {
@@ -316,7 +322,7 @@ if(isAnimating)
     {
        // meshRenderer.material = transparentMaterial;
              
-   ChangeMaterialColor(transparent);
+   ChangeMaterialColor(ServiceLocator.Get<FurnitureManager>().TransparentSegment, true);
         return;
     }
         if (!ServiceLocator.Get<ItemRaycastController>().isWithBox) return;
@@ -331,12 +337,12 @@ if(isAnimating)
         {
           //  meshRenderer.material = redMaterial;
                
-        ChangeMaterialColor(red);
+        ChangeMaterialColor(ServiceLocator.Get<FurnitureManager>().RedSegment);
         }
         else
         {
             // meshRenderer.material = greenMaterial;
-            ChangeMaterialColor(green);
+            ChangeMaterialColor(ServiceLocator.Get<FurnitureManager>().GreenSegment);
         }
     }
     public override void OnLookAway()
@@ -345,15 +351,36 @@ if(isAnimating)
       isLooking = false;
        //meshRenderer.material = transparentMaterial;
      
-ChangeMaterialColor(transparent);
+        ChangeMaterialColor(ServiceLocator.Get<FurnitureManager>().TransparentSegment, true);
+
 
     }
     public void OnLookAtWithRestriction(){if(isLooking) OnLookAt();}
-   public void ChangeMaterialColor(Color to)
+    void ChangeMaterialColor(Color to,bool isTransparent = false)
     {
-        
+        HandleOutlineWidht(isTransparent);
          materialColorTween?.Kill();
 
          materialColorTween = meshRenderer.material.DOColor(to, .25f).SetEase(Ease.OutBack);
+         
     }
-}
+    void HandleOutlineWidht(bool isTransparent)
+    {
+        outlineWidhtTween?.Kill();
+        if(isTransparent)
+        {
+            outlineWidhtTween = DOTween.To(() => outline.OutlineWidth, x => outline.OutlineWidth = x, 0, 0.25f);
+
+
+
+        }else
+        {
+            
+            outlineWidhtTween = DOTween.To(() => outline.OutlineWidth, x => outline.OutlineWidth = x, 10, 0.25f);
+
+        }
+
+
+    }
+    
+    }
