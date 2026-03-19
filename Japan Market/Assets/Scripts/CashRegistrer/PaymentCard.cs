@@ -83,7 +83,7 @@ public class PaymentCard : MonoBehaviour
 
         seq.Append(valueText.DOColor(Color.darkGreen, 0.2f));
         seq.AppendInterval(0.2f);
-        seq.Append(imagepayment.transform.DOScale(0f,0.6f).SetEase(Ease.InBack));
+        seq.Append(imagepayment.transform.DOScale(0f,0.6f).SetEase(Ease.InOutBack));
 
         seq.OnComplete(() =>
         {
