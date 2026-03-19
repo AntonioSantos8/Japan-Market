@@ -10,22 +10,27 @@ public class NpcTraject : MonoBehaviour
     private FurnitureManager _furnitureManager;
 
     [Header("Dest config")]
-    [SerializeField] private Transform _finalPoint;
+    private Transform _finalPoint;
+    [SerializeField] private Transform someExitPoint;
     [SerializeField] private float _waitTime = 5;
+    [Header("Queue config")]
+    private int _queueIndex = -1;
 
     [Header("Inventory")]
     private List<Items> _inventory = new List<Items>();
-
+    private CashRegister _cashRegister;
     private void Awake() => _agent = GetComponent<NavMeshAgent>();
 
     private void Start()
     {
+        _cashRegister = ServiceLocator.Get<CashRegister>();
         _furnitureManager = ServiceLocator.Get<FurnitureManager>();
+        _finalPoint = _cashRegister.queuePoints[_cashRegister.queuePoints.Length - 1];
         if (_furnitureManager == null)
         {
             _furnitureManager = FindAnyObjectByType<FurnitureManager>();
             if (_furnitureManager == null)
-            {                
+            {
                 Debug.LogError("FurnitureManager not found in the scene.");
                 return;
             }
@@ -71,10 +76,21 @@ public class NpcTraject : MonoBehaviour
         if (_finalPoint != null)
         {
             yield return StartCoroutine(GoToDest(_finalPoint.position));
-            Debug.Log("NPC chegou no caixa com " + _inventory.Count + " itens");
+
+            _cashRegister.EnterQueue(GetComponent<NpcInstance>());
+
+            Debug.Log("NPC entrou na fila");
         }
     }
-
+    public void GoAway()
+    {
+        _agent.SetDestination(someExitPoint.position);
+    }
+    public void SetTarget(Transform target, int index)
+    {
+        _queueIndex = index;
+        _agent.SetDestination(target.position);
+    }
     private IEnumerator GoToDest(Vector3 dest)
     {
         _agent.SetDestination(dest);
