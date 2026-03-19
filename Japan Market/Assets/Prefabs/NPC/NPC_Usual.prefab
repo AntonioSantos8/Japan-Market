@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 963320538010885476}
   - component: {fileID: 8472884177749701048}
   - component: {fileID: 6120337374120264471}
+  - component: {fileID: 4266508029118493449}
   m_Layer: 0
   m_Name: NPC_Usual
   m_TagString: Untagged
@@ -71,8 +72,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1c58305bc76317d42a7de9a9171d9864, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NpcTraject
-  _finalPoint: {fileID: 0}
-  _waitTime: 2
+  someExitPoint: {fileID: 0}
+  _waitTime: 5
 --- !u!114 &8472884177749701048
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -100,6 +101,33 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NpcInstance
   _data: {fileID: 11400000, guid: 5888b0bd416ca764d86feef5b162ce76, type: 2}
+--- !u!54 &4266508029118493449
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1707092874194882208}
+  serializedVersion: 5
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 0
+  m_IsKinematic: 1
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
 --- !u!1 &2146375764187590872
 GameObject:
   m_ObjectHideFlags: 0

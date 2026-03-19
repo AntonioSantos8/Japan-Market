@@ -24,7 +24,7 @@ public class FurnitureManager : MonoBehaviour
     public bool hasFurnitureInInventory;
 
     [SerializeField] private TMP_Text furnitureSlotName;
-    
+
 
     [SerializeField] Color greenSegment, redSegment, transparentSegment, greenOutline, redOutline;
     public Color GreenSegment => greenSegment;
@@ -60,11 +60,11 @@ public class FurnitureManager : MonoBehaviour
             return;
         }
         if (hasFurnitureInInventory)
-             furnitureSlotName.text = $"Inventory: {_currentSelected.name} (press B)";
+            furnitureSlotName.text = $"Inventory: {_currentSelected.name} (press B)";
         else
-             furnitureSlotName.text = "Inventory: none";
+            furnitureSlotName.text = "Inventory: none";
         if (!IsBuildingMode) return;
-        
+
         HandleInput();
     }
 
@@ -97,7 +97,7 @@ public class FurnitureManager : MonoBehaviour
 
     private void VerifyMouseHold()
     {
-        
+
         if (Input.GetMouseButtonDown(1))
         {
             print("holding");
@@ -128,7 +128,7 @@ public class FurnitureManager : MonoBehaviour
         }
     }
 
-    private void TryPickUpFurniture()  
+    private void TryPickUpFurniture()
     {
         Ray ray = Camera.main.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2));
         if (Physics.Raycast(ray, out RaycastHit hit, 5f, furnitureLayer))
@@ -167,7 +167,7 @@ public class FurnitureManager : MonoBehaviour
             _placedFurnitures.Add(instance);
         }
         ToggleBuildingMode();
-        hasFurnitureInInventory = false; 
+        hasFurnitureInInventory = false;
         Destroy(_activeGhost);
         _activeGhost = null;
     }
