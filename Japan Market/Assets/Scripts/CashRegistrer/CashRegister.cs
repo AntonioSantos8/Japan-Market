@@ -43,6 +43,7 @@ public class CashRegister : MonoBehaviour
         if (playerInRange && !cashMode && Input.GetButtonDown("Fire1"))
         {
             EnterCashMode();
+            print("Enter Cash Mode");   
         }
 
         if (cashMode && Input.GetButtonDown("Fire1"))
@@ -52,6 +53,7 @@ public class CashRegister : MonoBehaviour
     }
     void EnterCashMode()
     {
+        print("Enter Cash Mode");   
         cashMode = true;
         cam.Priority = 6;
 
