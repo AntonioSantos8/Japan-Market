@@ -10,7 +10,6 @@ public class TrashSystem : MonoBehaviour
     [SerializeField] private int maxTrashCount = 10;
 
     private List<GameObject> activeTrashes = new List<GameObject>();
-
     private void Start() => StartSpawningTrash();
 
     public void StartSpawningTrash() => StartCoroutine(SpawnTrashRoutine());
@@ -33,7 +32,13 @@ public class TrashSystem : MonoBehaviour
         int spawnIndex = Random.Range(0, spawns.Length);
         int dataIndex = Random.Range(0, trashDatas.Length);
 
-        GameObject go = Instantiate(trashDatas[dataIndex].prefab, spawns[spawnIndex].position, Quaternion.identity);
+        GameObject go = Instantiate(
+    trashDatas[dataIndex].prefab,
+    spawns[spawnIndex].position,
+    Quaternion.identity,
+    this.transform
+
+);
 
         if (go.TryGetComponent(out TrashInstance instance))
         {

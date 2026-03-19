@@ -48,6 +48,7 @@ float currentFollowRotSpeed;
         HandleHeldItemInput();
   
         FollowHand();
+        if(Input.GetKeyDown(KeyCode.Keypad9)) Time.timeScale = Time.timeScale /2;
     }
 
     private void PerformInteractionRaycast()

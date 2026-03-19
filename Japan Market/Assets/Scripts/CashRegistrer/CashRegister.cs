@@ -20,6 +20,7 @@ public class CashRegister : MonoBehaviour
     [SerializeField] GameObject quitButton;
     [SerializeField] Transform cashPosition;
     [SerializeField] CinemachineCamera cam;
+    public Transform itemPosition;
     [SerializeField] float zoom = 25f;
     float zoomOri;
     Queue<Item> itemsQueue = new Queue<Item>();
@@ -28,6 +29,7 @@ public class CashRegister : MonoBehaviour
     bool cashMode = false;
     public Transform[] queuePoints;
     private List<NpcTraject> queue = new List<NpcTraject>();
+    public bool hasClient;
 
     void Awake()
     {
@@ -274,6 +276,6 @@ public class CashRegister : MonoBehaviour
 
         LeaveQueue(npc);
 
-      //  npc.GoAway();
+        npc.GoAway();
     }
 }

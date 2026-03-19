@@ -361,26 +361,100 @@ if(isAnimating)
         HandleOutlineWidht(isTransparent);
          materialColorTween?.Kill();
 
-         materialColorTween = meshRenderer.material.DOColor(to, .25f).SetEase(Ease.OutBack);
-         
+       //  materialColorTween = meshRenderer.material.DOColor(to, .25f).SetEase(Ease.OutBack);
+           Material mat = meshRenderer.materials[1];
+
+mat.EnableKeyword("_EMISSION");
+
+if(to == ServiceLocator.Get<FurnitureManager>().GreenSegment)
+        {
+      
+
+
+
+    DOTween.To(
+    () => mat.GetColor("_EmissionColor"),
+    x => mat.SetColor("_EmissionColor", x),
+    ServiceLocator.Get<FurnitureManager>().GreenSegment,
+    0.25f
+).SetEase(Ease.OutBack);
+HandleOutlineColor(  ServiceLocator.Get<FurnitureManager>().GreenOutline);
+}else if(to == ServiceLocator.Get<FurnitureManager>().RedSegment)
+        {
+            
+DOTween.To(
+    () => mat.GetColor("_EmissionColor"),
+    x => mat.SetColor("_EmissionColor", x),
+   ServiceLocator.Get<FurnitureManager>().RedSegment,
+    0.25f).SetEase(Ease.OutBack);
+HandleOutlineColor(  ServiceLocator.Get<FurnitureManager>().RedOutline);
+
+        }
+
     }
     void HandleOutlineWidht(bool isTransparent)
     {
+        Material mat = meshRenderer.materials[1];
         outlineWidhtTween?.Kill();
         if(isTransparent)
         {
-            outlineWidhtTween = DOTween.To(() => outline.OutlineWidth, x => outline.OutlineWidth = x, 0, 0.25f);
-
+            isOutlineTransiting = true;
+         outlineWidhtTween = DOTween.To(
+    () => mat.GetFloat("_OutlineWidth"),
+    x =>mat.SetFloat("_OutlineWidth", x),
+    0f,
+    0.25f
+).OnComplete(() => { isOutlineTransiting = false; });
+           
+            DOTween.To(
+    () => meshRenderer.material.GetColor("_EmissionColor"),
+    x => meshRenderer.material.SetColor("_EmissionColor", x),
+    new Color(0f, 0f, 0f),
+    0.25f);
 
 
         }else
         {
-            
-            outlineWidhtTween = DOTween.To(() => outline.OutlineWidth, x => outline.OutlineWidth = x, 10, 0.25f);
-
+               isOutlineTransiting = true;
+            outlineWidhtTween = DOTween.To(
+    () => mat.GetFloat("_OutlineWidth"),
+    x => mat.SetFloat("_OutlineWidth", x),
+    10f,
+    0.25f
+).OnComplete(() => { isOutlineTransiting = false; });
         }
 
 
     }
-    
+    bool isOutlineTransiting;
+     void HandleOutlineColor(Color to)
+    {
+        Color targetColor = to;
+        Material mat = meshRenderer.materials[2];
+
+if(isOutlineTransiting)
+        {
+        outlineColorTween?.Kill();
+       
+             outlineColorTween= DOTween.To(
+    () => mat.GetColor("_OutlineColor"),
+    x => mat.SetColor("_OutlineColor", x),
+    targetColor,
+    0.25f
+    );
+
+
+        }else{
+            
+    outlineColorTween= DOTween.To(
+    () => mat.GetColor("_OutlineColor"),
+    x => mat.SetColor("_OutlineColor", x),
+    targetColor,
+    0.25f
+    );
+        }
+
+    }
+   
+
     }

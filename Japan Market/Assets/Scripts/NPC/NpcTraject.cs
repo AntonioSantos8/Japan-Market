@@ -36,10 +36,43 @@ public class NpcTraject : MonoBehaviour
                 return;
             }
         }
-
+        StartCoroutine(WaitInFrontOfCashRegister());
         StartCoroutine(MoveRoutine());
     }
-
+    private IEnumerator WaitInFrontOfCashRegister()
+    {
+        while (true)
+        {
+            VerifyIsInCashRegister();
+            yield return new WaitForSeconds(1f);
+        }
+    }
+    private void VerifyIsInCashRegister()
+    {
+        if (_cashRegister.GetCurrentCustomer() != null && _cashRegister.hasClient)
+        {
+            NpcTraject npc = _cashRegister.GetCurrentCustomer();
+            npc._inventory.ForEach(item => Debug.Log("Item no caixa: " + item));
+            //Instantiate(npc._inventory[0], _cashRegister.itemPosition.position, Quaternion.identity);
+        }
+    }
+    #region Trigger
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("CashRegister"))
+        {
+            print("Entrou no caixa");
+            _cashRegister.hasClient = true;
+        }
+    }
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.CompareTag("CashRegister"))
+        {
+            _cashRegister.hasClient = false;
+        }
+    }
+    #endregion
     private IEnumerator MoveRoutine()
     {
         if (_furnitureManager == null)
