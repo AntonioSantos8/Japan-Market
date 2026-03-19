@@ -26,6 +26,39 @@ public class CashRegister : MonoBehaviour
     float totalPrice = 0f;
     bool playerInRange = false;
     bool cashMode = false;
+    public Transform[] queuePoints;
+    private List<NpcInstance> queue = new List<NpcInstance>();
+
+    void Awake()
+    {
+        ServiceLocator.Register(this);
+    }
+    public void EnterQueue(NpcInstance npc)
+    {
+        queue.Add(npc);
+        UpdateQueue();
+    }
+
+    public void LeaveQueue(NpcInstance npc)
+    {
+        queue.Remove(npc);
+        UpdateQueue();
+    }
+
+    void UpdateQueue()
+    {
+        for (int i = 0; i < queue.Count; i++)
+        {
+            queue[i].GetComponent<NpcTraject>().SetTarget(queuePoints[i], i);
+        }
+    }
+    public NpcInstance GetCurrentCustomer()
+    {
+        if (queue.Count > 0)
+            return queue[0];
+
+        return null;
+    }
     void Start()
     {
         creditCard.SetActive(false);
@@ -43,6 +76,7 @@ public class CashRegister : MonoBehaviour
         if (playerInRange && !cashMode && Input.GetButtonDown("Fire1"))
         {
             EnterCashMode();
+            print("Enter Cash Mode");
         }
 
         if (cashMode && Input.GetButtonDown("Fire1"))
@@ -52,10 +86,11 @@ public class CashRegister : MonoBehaviour
     }
     void EnterCashMode()
     {
+        print("Enter Cash Mode");
         cashMode = true;
         cam.Priority = 6;
 
-        playerLook.ResetLook(); 
+        playerLook.ResetLook();
 
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
@@ -97,7 +132,7 @@ public class CashRegister : MonoBehaviour
 
         totalPrice = 0;
 
-        if (paymentMoney != null && paymentCard != null) 
+        if (paymentMoney != null && paymentCard != null)
         {
             paymentMoney.ClosePaymentMoney();
             paymentCard.ClosePaymentCredi();
@@ -229,5 +264,15 @@ public class CashRegister : MonoBehaviour
         money.SetActive(false);
         totalPriceText.text = "";
         totalPrice = 0;
+    }
+    public void FinishCustomer()
+    {
+        if (queue.Count == 0) return;
+
+        var npc = queue[0];
+
+        LeaveQueue(npc);
+
+        npc.GoAway();
     }
 }

@@ -5,7 +5,7 @@ using AYellowpaper.SerializedCollections;
 
 public enum Items
 {
-    None, Ketchup, Mostard, Shelf, Box
+    None, Ketchup, Mostard, Shelf, Box, Fish
 }
 
 public class Shelf : MonoBehaviour
@@ -17,10 +17,10 @@ public class Shelf : MonoBehaviour
 
     public Segment lastItemSegment;
 
-   [ContextMenu("Tirar Item")]
-       public Items TakeRandomItem()
-        {
-        if (shelf.Count == 0) {print("SEM ITEM");return Items.None;}
+    [ContextMenu("Tirar Item")]
+    public Items TakeRandomItem()
+    {
+        if (shelf.Count == 0) { print("SEM ITEM"); return Items.None; }
 
         int index = Random.Range(0, shelf.Count);
 
@@ -40,15 +40,15 @@ public class Shelf : MonoBehaviour
                     {
                         Transform item = segment.Groups[g].spaces[s];
                         if (item == null) continue;
-                       segment.RemoveItem(g, s);
+                        segment.RemoveItem(g, s);
                         Destroy(item.gameObject);
                         lastItemSegment = segment;
+                        print("TIRANDO ITEM: " + itemType);
+                        if (segment.IsEmpty())
+                        {
+                            RemoveSegment(segment);
+                        }
 
-                        if(segment.IsEmpty())
-    {
-        RemoveSegment(segment);
-    }
-                        
                         return itemType;
                     }
                 }
@@ -60,7 +60,7 @@ public class Shelf : MonoBehaviour
 
         return Items.None;
     }
-        
+
 
     public void RegisterSegment(Items item, Segment segment)
     {

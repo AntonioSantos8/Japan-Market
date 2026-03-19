@@ -93,9 +93,9 @@ float currentFollowRotSpeed;
 void FollowHand()
 {
     if (heldItem == null) return;
-        return;
+     
     //currentFollowPosSpeed = Mathf.Lerp(currentFollowPosSpeed, followPositionSpeed, speedGrowRate * Time.deltaTime);
-    currentFollowRotSpeed = Mathf.Lerp(currentFollowRotSpeed, followRotationSpeed, speedGrowRate * Time.deltaTime);
+   // currentFollowRotSpeed = Mathf.Lerp(currentFollowRotSpeed, followRotationSpeed, speedGrowRate * Time.deltaTime);
 
         //heldItem.position = Vector3.Lerp(
         //   heldItem.position,
@@ -103,11 +103,11 @@ void FollowHand()
         //   currentFollowPosSpeed * Time.deltaTime
         //);
 
-        heldItem.rotation = Quaternion.Slerp(
-           heldItem.rotation,
-           boxHandPivot.rotation,
-           currentFollowRotSpeed * Time.deltaTime
-        );
+        // heldItem.rotation = Quaternion.Slerp(
+        //    heldItem.rotation,
+        //    boxHandPivot.rotation,
+        //    currentFollowRotSpeed * Time.deltaTime
+        // );
 
 
     }
