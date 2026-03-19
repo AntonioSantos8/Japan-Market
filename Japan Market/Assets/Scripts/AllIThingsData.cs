@@ -7,5 +7,5 @@ public class AllIThingsData : ScriptableObject
    public  Items itemType;
     public GameObject itemPrefab;
     public GameObject itemBoxPrefab;
-
+    public Sprite itemSprite;
 }

@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 using DG.Tweening;
+using UnityEngine.UI;
 public class ItemBox : MonoBehaviour
 {
     [SerializeField] Items boxType;
@@ -15,14 +16,41 @@ public class ItemBox : MonoBehaviour
 
     public SegmentTypeGroup[] groups;
     public FurnitureType AllowedFurniture => allowedFurniture;
+    [SerializeField] private Image itemIconImage;
     public Transform GetItemsParent() => itemsParent;
 
     void Start()
     {
-         for (int i = 0; i < groups.Length; i++)
+        for (int i = 0; i < groups.Length; i++)
             groups[i].InitWithType(boxType);
-    }
 
+        UpdateVisual();
+    }
+    public void UpdateVisual()
+    {
+        if (itemIconImage == null) return;
+
+        if (boxType == Items.None)
+        {
+            itemIconImage.enabled = false;
+            return;
+        }
+
+        var itemManager = ServiceLocator.Get<ItemManager>();
+        if (itemManager == null) return;
+
+        Sprite icon = itemManager.GetItemIcon(boxType);
+
+        if (icon != null)
+        {
+            itemIconImage.sprite = icon;
+            itemIconImage.enabled = true;
+        }
+        else
+        {
+            itemIconImage.enabled = false;
+        }
+    }
     public bool IsEmpty()
     {
         if(boxType == Items.None)
@@ -48,10 +76,12 @@ public class ItemBox : MonoBehaviour
 
     public void UpdateBoxType(Items newType)
     {
-        if (boxType == Items.None)
+        if (boxType != newType)
+        {
             boxType = newType;
+            UpdateVisual();
+        }
     }
-
     public bool CanReceive(Items type)
     {
         if (GetBoxType() == Items.None) return true;
@@ -183,7 +213,10 @@ visualDelay = 0;
                 groups[g].spaces[i] = null;
 
                 if (IsEmpty())
+                {
                     boxType = Items.None;
+                    UpdateVisual();
+                }
 
 
                 return item;

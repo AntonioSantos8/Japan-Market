@@ -266,7 +266,6 @@ public class CashRegister : MonoBehaviour
         GameObject prefab = GetItemPrefab(itemType);
         if (prefab == null) return;
 
-        // GUARDAMOS A ESCALA REAL QUE ESTÁ NO PREFAB
         Vector3 originalPrefabScale = prefab.transform.localScale;
 
         Vector3 randomOffset = new Vector3(Random.Range(-0.15f, 0.15f), 0.05f, Random.Range(-0.15f, 0.15f));
@@ -274,15 +273,12 @@ public class CashRegister : MonoBehaviour
 
         GameObject newItem = Instantiate(prefab, spawnPos, Quaternion.identity);
 
-        // COMEÇA EM ZERO
         newItem.transform.localScale = Vector3.zero;
 
-        // ANIMA ATÉ A ESCALA ORIGINAL DO PREFAB (Em vez de 1, 1, 1)
         newItem.transform.DOScale(originalPrefabScale, 0.4f)
             .SetEase(Ease.OutBack)
             .OnComplete(() =>
             {
-                // O PunchScale também deve ser baseado na escala original
                 newItem.transform.DOPunchScale(originalPrefabScale * 0.15f, 0.2f, 5, 1);
             });
 
