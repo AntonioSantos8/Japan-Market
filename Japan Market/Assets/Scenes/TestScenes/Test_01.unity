@@ -1958,6 +1958,7 @@ Transform:
   - {fileID: 1102728242}
   - {fileID: 720928083}
   - {fileID: 1123907156}
+  - {fileID: 1635071749}
   m_Father: {fileID: 1658214575}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1123907155
@@ -3338,6 +3339,37 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 6629507400787699090, guid: 01027dfb49292594ba4e755d7796f92b, type: 3}
   m_PrefabInstance: {fileID: 1450558440}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1635071748
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1635071749}
+  m_Layer: 0
+  m_Name: ExitPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1635071749
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1635071748}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 12.83, y: 0, z: -4.31}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1112738993}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1658214574
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4472,6 +4504,10 @@ PrefabInstance:
       propertyPath: _finalPoint
       value: 
       objectReference: {fileID: 1112738993}
+    - target: {fileID: 963320538010885476, guid: b233dca5da2ff484b94b6389c27c9883, type: 3}
+      propertyPath: someExitPoint
+      value: 
+      objectReference: {fileID: 1635071749}
     - target: {fileID: 1707092874194882208, guid: b233dca5da2ff484b94b6389c27c9883, type: 3}
       propertyPath: m_Name
       value: NPC_Usual (1)
@@ -5287,6 +5323,10 @@ PrefabInstance:
       propertyPath: _finalPoint
       value: 
       objectReference: {fileID: 1112738993}
+    - target: {fileID: 963320538010885476, guid: b233dca5da2ff484b94b6389c27c9883, type: 3}
+      propertyPath: someExitPoint
+      value: 
+      objectReference: {fileID: 1635071749}
     - target: {fileID: 1707092874194882208, guid: b233dca5da2ff484b94b6389c27c9883, type: 3}
       propertyPath: m_Name
       value: NPC_Usual
