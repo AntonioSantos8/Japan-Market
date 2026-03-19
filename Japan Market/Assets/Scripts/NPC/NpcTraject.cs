@@ -20,8 +20,13 @@ public class NpcTraject : MonoBehaviour
     [Header("Inventory")]
     private List<Items> _inventory = new List<Items>();
     private CashRegister _cashRegister;
-    private void Awake() => _agent = GetComponent<NavMeshAgent>();
-
+    private bool _itemsPlaced = false;
+    private NpcInstance _npcInstance;
+    private void Awake()
+    {
+        _agent = GetComponent<NavMeshAgent>();
+        _npcInstance = GetComponent<NpcInstance>();
+    }
     private void Start()
     {
         _cashRegister = ServiceLocator.Get<CashRegister>();
@@ -49,12 +54,32 @@ public class NpcTraject : MonoBehaviour
     }
     private void VerifyIsInCashRegister()
     {
-        if (_cashRegister.GetCurrentCustomer() != null && _cashRegister.hasClient)
+        if (!_itemsPlaced && _cashRegister.GetCurrentCustomer() == this && _cashRegister.hasClient)
         {
-            NpcTraject npc = _cashRegister.GetCurrentCustomer();
-            npc._inventory.ForEach(item => Debug.Log("Item no caixa: " + item));
-            //Instantiate(npc._inventory[0], _cashRegister.itemPosition.position, Quaternion.identity);
+            PlaceItemsOnCounter();
         }
+    }
+    private void PlaceItemsOnCounter()
+    {
+        _itemsPlaced = true;
+
+        StartCoroutine(UnloadInventoryRoutine());
+    }
+    private IEnumerator UnloadInventoryRoutine()
+    {
+        yield return new WaitForSeconds(0.2f);
+
+        for (int i = 0; i < _inventory.Count; i++)
+        {
+            Items itemType = _inventory[i];
+
+            _cashRegister.SpawnItemWithAnimation(itemType);
+
+            yield return new WaitForSeconds(0.2f);
+        }
+
+        _inventory.Clear();
+        Debug.Log("NPC terminou de colocar os itens no balcão.");
     }
     #region Trigger
     private void OnTriggerEnter(Collider other)
@@ -95,11 +120,14 @@ public class NpcTraject : MonoBehaviour
 
                 if (furniture.shelf != null)
                 {
-                    Items item = furniture.shelf.TakeRandomItem();
-                    if (item != Items.None)
+                    if (_inventory.Count < 5)
                     {
-                        _inventory.Add(item);
-                        Debug.Log("NPC pegou: " + item);
+                        Items item = furniture.shelf.TakeRandomItem();
+                        if (item != Items.None)
+                        {
+                            _inventory.Add(item);
+                            Debug.Log("NPC pegou: " + item);
+                        }
                     }
                 }
 
@@ -107,12 +135,17 @@ public class NpcTraject : MonoBehaviour
             }
         }
 
+        if (_inventory.Count == 0)
+        {
+            Debug.Log("NPC não encontrou itens e está indo embora direto.");
+            GoAway();
+            yield break;
+        }
+
         if (_finalPoint != null)
         {
             yield return StartCoroutine(GoToDest(_finalPoint.position));
-
             _cashRegister.EnterQueue(this);
-
             Debug.Log("NPC entrou na fila");
         }
     }

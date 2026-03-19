@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 using DG.Tweening;
+
 [System.Serializable]
 public class SegmentTypeGroup
 {
@@ -10,134 +11,105 @@ public class SegmentTypeGroup
 
     public void Init()
     {
-
         spaces = new List<Transform>(new Transform[allItems.Length]);
     }
-     public void InitWithType(Items item)
+
+    public void InitWithType(Items item)
     {
-        if(item!= type)
-        spaces = new List<Transform>(new Transform[allItems.Length]);
+        if (item != type)
+            spaces = new List<Transform>(new Transform[allItems.Length]);
     }
 
     public int GetNullSpace()
     {
-         for (int i = 0; i < spaces.Count; i++)
-         {
-             if (spaces[i] == null)
+        for (int i = 0; i < spaces.Count; i++)
+        {
+            if (spaces[i] == null)
                 return i;
-    }
-         return -1;
-       
-        
+        }
+        return -1;
     }
 }
+
 public class Segment : InteractableBase
 {
-    [SerializeField] SegmentTypeGroup[] groups; 
+    [SerializeField] SegmentTypeGroup[] groups;
     [SerializeField] float delayBetweenItems = 0.08f;
     [SerializeField] Material greenMaterial, redMaterial, transparentMaterial;
     [SerializeField] Shelf shelf;
-    [SerializeField]FurnitureType myType;
-
+    [SerializeField] FurnitureType myType;
 
     public SegmentTypeGroup[] Groups { get { return groups; } set => groups = value; }
     public bool IsAnimating { set => isAnimating = value; }
 
-
     MeshRenderer meshRenderer;
-
     int activeTweens;
     float visualDelay;
     bool isLooking;
-    bool isAnimating;    
-  
+    bool isAnimating;
     Items mySegment = Items.None;
 
-Outline outline;
-Tween materialColorTween;
-Tween outlineWidhtTween;
-Tween outlineColorTween;
+    Material materialDeEmissao; 
+    Material materialDeOutline; 
+
+    Outline outline;
+    Tween materialColorTween;
+    Tween outlineWidthTween;
+    Tween outlineColorTween;
+
+    bool isOutlineTransiting;
+
     private void Start()
     {
         for (int i = 0; i < groups.Length; i++)
             groups[i].Init();
 
         meshRenderer = GetComponent<MeshRenderer>();
-
+        if (meshRenderer.materials.Length >= 2) materialDeEmissao = meshRenderer.materials[1];
+        if (meshRenderer.materials.Length >= 3) materialDeOutline = meshRenderer.materials[2];
 
         outline = gameObject.AddComponent<Outline>();
-
-        outline.OutlineWidth =0;
-        
-    }   
-    public bool IsEmpty()
-    {
-        return mySegment == Items.None;
-    }
-public void RemoveItem(int groupIndex, int spaceIndex)
-{
-    groups[groupIndex].spaces[spaceIndex] = null;
-
-    bool hasAny = false;
-
-    for (int g = 0; g < groups.Length; g++)
-    {
-        for (int i = 0; i < groups[g].spaces.Count; i++)
-        {
-            if (groups[g].spaces[i] != null)
-            {
-                hasAny = true;
-                break;
-            }
-        }
-        if (hasAny) break;
+        outline.OutlineWidth = 0;
     }
 
-    if (!hasAny)
+    public bool IsEmpty() => mySegment == Items.None;
+
+    public void RemoveItem(int groupIndex, int spaceIndex)
     {
-        mySegment = Items.None;
-    }
-}
- public bool IsFull()
-    {
-        if(mySegment == Items.None) return false;
-
-        foreach(SegmentTypeGroup sT in groups)
-        {
-            if(sT.type == mySegment)
-            {
-               
-                    for(int i = 0; i < sT.spaces.Count; i++)
-                {
-                  
-                    if(sT.spaces[i] == null) return false;
-             
-
-
-                }
-
-                
-            }
-
-
-        }
-  
-            return true;
-
-
-    
-     
-    }
-
-    
-    public void FreeSpace(int groupIndex, int spaceIndex)
-    {   
         groups[groupIndex].spaces[spaceIndex] = null;
- 
+        bool hasAny = false;
+        for (int g = 0; g < groups.Length; g++)
+        {
+            for (int i = 0; i < groups[g].spaces.Count; i++)
+            {
+                if (groups[g].spaces[i] != null) { hasAny = true; break; }
+            }
+            if (hasAny) break;
+        }
+        if (!hasAny) mySegment = Items.None;
     }
+
+    public bool IsFull()
+    {
+        if (mySegment == Items.None) return false;
+        foreach (SegmentTypeGroup sT in groups)
+        {
+            if (sT.type == mySegment)
+            {
+                for (int i = 0; i < sT.spaces.Count; i++)
+                {
+                    if (sT.spaces[i] == null) return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    public void FreeSpace(int groupIndex, int spaceIndex) => groups[groupIndex].spaces[spaceIndex] = null;
+
     bool PlaceSingleItem(Transform itemTransform, Items type)
     {
-        if(mySegment != Items.None && type != mySegment) return false;
+        if (mySegment != Items.None && type != mySegment) return false;
 
         mySegment = type;
 
@@ -149,73 +121,25 @@ public void RemoveItem(int groupIndex, int spaceIndex)
             if (spaceIndex == -1) return false;
 
             Transform target = groups[g].allItems[spaceIndex];
-
             itemTransform.SetParent(target.parent);
-
             groups[g].spaces[spaceIndex] = itemTransform;
 
             Vector3 start = itemTransform.position;
-    Vector3 end = target.position;
+            Vector3 end = target.position;
+            float height = Vector3.Distance(start, end) * 0.21f;
+            Vector3 mid = (start + end) * 0.5f + Vector3.up * height;
 
-    float height = Vector3.Distance(start, end) * 0.21f;
+            Vector3[] path = new Vector3[] { start, mid, end };
 
-    Vector3 mid = (start + end) * 0.5f;
-    mid += Vector3.up * height;
+            Sequence seq = DOTween.Sequence();
+            seq.SetDelay(visualDelay + Random.Range(0f, 0.025f));
 
-    Vector3[] path = new Vector3[]
-    {
-        start,
-        mid,
-        end
-    };
-
-    Sequence seq = DOTween.Sequence();
-
-    seq.SetDelay(visualDelay + Random.Range(0f,0.025f));
-
-    seq.Append(
-        itemTransform.DOPath(path, 0.34f, PathType.CatmullRom)
-        .SetEase(Ease.OutCubic)
-    );
-
-    seq.Join(
-        itemTransform.DORotateQuaternion(
-            target.rotation * Quaternion.Euler(
-                Random.Range(-6f,6f),
-                Random.Range(-12f,12f),
-                Random.Range(-4f,4f)
-            ),
-            0.26f
-        ).SetEase(Ease.OutSine)
-    );
-
-    // seq.Join(
-    //     itemTransform.DOScaleY(target.localScale.y * 1.2f, 0.18f)
-    //     .SetEase(Ease.OutQuad)
-    // );
-
-    seq.Append(
-        itemTransform.DOMove(end, 0.05f)
-        .SetEase(Ease.InQuad)
-    );
-
-    seq.Join(
-        itemTransform.DORotateQuaternion(target.rotation, 0.05f)
-    );
-    seq.Join(
-        itemTransform.DOScaleY(target.localScale.y * 1.2f, 0.18f)
-        .SetEase(Ease.OutQuad)
-    );
-    seq.Append(
-        itemTransform.DOScale(target.localScale, 0.12f)
-        .SetEase(Ease.OutBack)
-    );
-
-    // seq.Append(
-    //     itemTransform.DOPunchPosition(Vector3.up * 0.02f, 0.09f, 5, 0.8f)
-    // );
-
-            //transform.DOPunchPosition(Vector3.back * 0.015f, 0.12f, 3, 0.6f);
+            seq.Append(itemTransform.DOPath(path, 0.34f, PathType.CatmullRom).SetEase(Ease.OutCubic));
+            seq.Join(itemTransform.DORotateQuaternion(target.rotation * Quaternion.Euler(Random.Range(-6f, 6f), Random.Range(-12f, 12f), Random.Range(-4f, 4f)), 0.26f).SetEase(Ease.OutSine));
+            seq.Append(itemTransform.DOMove(end, 0.05f).SetEase(Ease.InQuad));
+            seq.Join(itemTransform.DORotateQuaternion(target.rotation, 0.05f));
+            seq.Join(itemTransform.DOScaleY(target.localScale.y * 1.2f, 0.18f).SetEase(Ease.OutQuad));
+            seq.Append(itemTransform.DOScale(target.localScale, 0.12f).SetEase(Ease.OutBack));
 
             activeTweens++;
             isAnimating = true;
@@ -223,8 +147,7 @@ public void RemoveItem(int groupIndex, int spaceIndex)
             seq.OnComplete(() =>
             {
                 activeTweens--;
-
-                if(activeTweens <= 0)
+                if (activeTweens <= 0)
                 {
                     isAnimating = false;
                     OnLookAtWithRestriction();
@@ -233,228 +156,148 @@ public void RemoveItem(int groupIndex, int spaceIndex)
 
             visualDelay += delayBetweenItems;
 
-            ShelfItem shelfItem = itemTransform.GetComponent<ShelfItem>();
-            if (shelfItem == null)
-                shelfItem = itemTransform.gameObject.AddComponent<ShelfItem>();
-
+            ShelfItem shelfItem = itemTransform.GetComponent<ShelfItem>() ?? itemTransform.gameObject.AddComponent<ShelfItem>();
             shelf.RegisterSegment(type, this);
             shelfItem.Setup(this, g, spaceIndex);
 
             return true;
         }
-
         return false;
     }
 
- bool TakeItem(ItemBox box)
-{//colocar item na caixa
-    for (int g = 0; g < groups.Length; g++)
+    bool TakeItem(ItemBox box)
     {
-        if (!box.CanReceive(groups[g].type)) continue;
-
-        for (int i = groups[g].spaces.Count - 1; i >= 0; i--)
+        for (int g = 0; g < groups.Length; g++)
         {
-            Transform item = groups[g].spaces[i];
-            if (item == null) continue;
+            if (!box.CanReceive(groups[g].type)) continue;
+
+            for (int i = groups[g].spaces.Count - 1; i >= 0; i--)
+            {
+                Transform item = groups[g].spaces[i];
+                if (item == null) continue;
 
                 if (!box.AddItem(item, groups[g].type, this)) { mySegment = Items.None; return false; }
 
-            groups[g].spaces[i] = null;
-
-            TakeItem(box);
-            return true;
+                groups[g].spaces[i] = null;
+                TakeItem(box);
+                return true;
+            }
         }
+        mySegment = Items.None;
+        shelf.RemoveSegment(this);
+        return false;
     }
-    mySegment = Items.None;
-    shelf.RemoveSegment(this);
-	
-    return false;
-}
- public override void Interact()
-{
-    if (isAnimating) return;
-    if (!ServiceLocator.Get<ItemRaycastController>().isWithBox) return;
-    
-    ItemBox box = ServiceLocator.Get<ItemRaycastController>().LastBox();
-        
-    if(mySegment==Items.None && box.IsEmpty()) return;
-    if(box.AllowedFurniture != myType){ print("Furniture Errada"); return;}
-    if(box.isAnimating) return;
 
-    if (box.IsEmpty())
+    public override void Interact()
     {
-        isAnimating = true;
-         TakeItem(box);
-         
-         OnLookAtWithRestriction();
-         return;
-    }
-    
-    Items type = box.GetBoxType();
+        if (isAnimating) return;
+        if (!ServiceLocator.Get<ItemRaycastController>().isWithBox) return;
+
+        ItemBox box = ServiceLocator.Get<ItemRaycastController>().LastBox();
+        if (mySegment == Items.None && box.IsEmpty()) return;
+        if (box.AllowedFurniture != myType) return;
+        if (box.isAnimating) return;
+
+        if (box.IsEmpty())
+        {
+            isAnimating = true;
+            TakeItem(box);
+            OnLookAtWithRestriction();
+            return;
+        }
+
+        Items type = box.GetBoxType();
         box.transform.DOPunchScale(-Vector3.right * .05f, .3f, 2);
         while (true)
         {
             Transform item = box.TakeItemByType(type);
-            if (item == null)
-             {  
-                box.SetBoxType(Items.None);
-                break;
-                }
+            if (item == null) { box.SetBoxType(Items.None); break; }
 
             Item itemComponent = item.GetComponent<Item>();
-
-            if (!PlaceSingleItem(item,itemComponent.GetItemType()))
+            if (!PlaceSingleItem(item, itemComponent.GetItemType()))
             {
                 box.AddItem(item, type, this);
-               
                 break;
             }
         }
         OnLookAtWithRestriction();
-    
-visualDelay = 0;
-  
-}
+        visualDelay = 0;
+    }
+
     public override void OnLookAt()
     {
         isLooking = true;
-if(isAnimating)
-    {
-       // meshRenderer.material = transparentMaterial;
-             
-   ChangeMaterialColor(ServiceLocator.Get<FurnitureManager>().TransparentSegment, true);
-        return;
-    }
+        if (isAnimating)
+        {
+            ChangeMaterialColor(Color.black, true);
+            return;
+        }
+
         if (!ServiceLocator.Get<ItemRaycastController>().isWithBox) return;
-         ItemBox box = ServiceLocator.Get<ItemRaycastController>().LastBox();
-         if(box.IsEmpty() && mySegment == Items.None) return;
-       // if (mySegment != Items.None && mySegment != box.GetBoxType() && !box.IsEmpty()) return;
-        if(box.GetBoxType() != mySegment && box.GetBoxType() != Items.None && mySegment != Items.None) return;
-       
-        if(IsFull() && box.GetBoxType() != Items.None) return;
-      
+        ItemBox box = ServiceLocator.Get<ItemRaycastController>().LastBox();
+
+        if (box.IsEmpty() && mySegment == Items.None) return;
+        if (box.GetBoxType() != mySegment && box.GetBoxType() != Items.None && mySegment != Items.None) return;
+        if (IsFull() && box.GetBoxType() != Items.None) return;
+
         if (box.IsEmpty())
-        {
-          //  meshRenderer.material = redMaterial;
-               
-        ChangeMaterialColor(ServiceLocator.Get<FurnitureManager>().RedSegment);
-        }
+            ChangeMaterialColor(ServiceLocator.Get<FurnitureManager>().RedSegment);
         else
-        {
-            // meshRenderer.material = greenMaterial;
             ChangeMaterialColor(ServiceLocator.Get<FurnitureManager>().GreenSegment);
-        }
     }
+
     public override void OnLookAway()
     {
-
-      isLooking = false;
-       //meshRenderer.material = transparentMaterial;
-     
-        ChangeMaterialColor(ServiceLocator.Get<FurnitureManager>().TransparentSegment, true);
-
-
+        isLooking = false;
+        ChangeMaterialColor(Color.black, true);
     }
-    public void OnLookAtWithRestriction(){if(isLooking) OnLookAt();}
-    void ChangeMaterialColor(Color to,bool isTransparent = false)
+
+    public void OnLookAtWithRestriction() { if (isLooking) OnLookAt(); }
+
+    void ChangeMaterialColor(Color to, bool isTransparent = false)
     {
         HandleOutlineWidht(isTransparent);
-         materialColorTween?.Kill();
 
-       //  materialColorTween = meshRenderer.material.DOColor(to, .25f).SetEase(Ease.OutBack);
-           Material mat = meshRenderer.materials[1];
+        if (materialDeEmissao == null || !materialDeEmissao.HasProperty("_EmissionColor")) return;
 
-mat.EnableKeyword("_EMISSION");
+        materialDeEmissao.EnableKeyword("_EMISSION");
+        materialColorTween?.Kill();
 
-if(to == ServiceLocator.Get<FurnitureManager>().GreenSegment)
-        {
-      
+        materialColorTween = materialDeEmissao.DOColor(to, "_EmissionColor", 0.25f).SetEase(Ease.OutBack);
 
-
-
-    DOTween.To(
-    () => mat.GetColor("_EmissionColor"),
-    x => mat.SetColor("_EmissionColor", x),
-    ServiceLocator.Get<FurnitureManager>().GreenSegment,
-    0.25f
-).SetEase(Ease.OutBack);
-HandleOutlineColor(  ServiceLocator.Get<FurnitureManager>().GreenOutline);
-}else if(to == ServiceLocator.Get<FurnitureManager>().RedSegment)
-        {
-            
-DOTween.To(
-    () => mat.GetColor("_EmissionColor"),
-    x => mat.SetColor("_EmissionColor", x),
-   ServiceLocator.Get<FurnitureManager>().RedSegment,
-    0.25f).SetEase(Ease.OutBack);
-HandleOutlineColor(  ServiceLocator.Get<FurnitureManager>().RedOutline);
-
-        }
-
+        if (to == ServiceLocator.Get<FurnitureManager>().GreenSegment)
+            HandleOutlineColor(ServiceLocator.Get<FurnitureManager>().GreenOutline);
+        else if (to == ServiceLocator.Get<FurnitureManager>().RedSegment)
+            HandleOutlineColor(ServiceLocator.Get<FurnitureManager>().RedOutline);
     }
+
     void HandleOutlineWidht(bool isTransparent)
     {
-        Material mat = meshRenderer.materials[1];
-        outlineWidhtTween?.Kill();
-        if(isTransparent)
-        {
-            isOutlineTransiting = true;
-         outlineWidhtTween = DOTween.To(
-    () => mat.GetFloat("_OutlineWidth"),
-    x =>mat.SetFloat("_OutlineWidth", x),
-    0f,
-    0.25f
-).OnComplete(() => { isOutlineTransiting = false; });
-           
-            DOTween.To(
-    () => meshRenderer.material.GetColor("_EmissionColor"),
-    x => meshRenderer.material.SetColor("_EmissionColor", x),
-    new Color(0f, 0f, 0f),
-    0.25f);
+        if (materialDeEmissao == null) return;
 
+        string propName = "_OutlineWidth";
+        if (!materialDeEmissao.HasProperty(propName)) return;
 
-        }else
-        {
-               isOutlineTransiting = true;
-            outlineWidhtTween = DOTween.To(
-    () => mat.GetFloat("_OutlineWidth"),
-    x => mat.SetFloat("_OutlineWidth", x),
-    10f,
-    0.25f
-).OnComplete(() => { isOutlineTransiting = false; });
-        }
+        outlineWidthTween?.Kill();
+        float targetWidth = isTransparent ? 0f : 10f;
+        isOutlineTransiting = true;
 
-
+        outlineWidthTween = DOTween.To(
+            () => materialDeEmissao.GetFloat(propName),
+            x => materialDeEmissao.SetFloat(propName, x),
+            targetWidth,
+            0.25f
+        ).OnComplete(() => { isOutlineTransiting = false; });
     }
-    bool isOutlineTransiting;
-     void HandleOutlineColor(Color to)
+
+    void HandleOutlineColor(Color to)
     {
-        Color targetColor = to;
-        Material mat = meshRenderer.materials[2];
+        if (materialDeOutline == null) return;
 
-if(isOutlineTransiting)
-        {
+        string propName = "_OutlineColor";
+        if (!materialDeOutline.HasProperty(propName)) return;
+
         outlineColorTween?.Kill();
-       
-             outlineColorTween= DOTween.To(
-    () => mat.GetColor("_OutlineColor"),
-    x => mat.SetColor("_OutlineColor", x),
-    targetColor,
-    0.25f
-    );
-
-
-        }else{
-            
-    outlineColorTween= DOTween.To(
-    () => mat.GetColor("_OutlineColor"),
-    x => mat.SetColor("_OutlineColor", x),
-    targetColor,
-    0.25f
-    );
-        }
-
+        outlineColorTween = materialDeOutline.DOColor(to, propName, 0.25f);
     }
-   
-
-    }
+}

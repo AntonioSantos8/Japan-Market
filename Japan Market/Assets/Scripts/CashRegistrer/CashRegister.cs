@@ -54,6 +54,17 @@ public class CashRegister : MonoBehaviour
             queue[i].GetComponent<NpcTraject>().SetTarget(queuePoints[i], i);
         }
     }
+    public GameObject GetItemPrefab(Items type)
+    {
+        foreach (var data in allItem)
+        {
+            if (data.itemType == type)
+            {
+                return data.itemPrefab;
+            }
+        }
+        return null;
+    }
     public NpcTraject GetCurrentCustomer()
     {
         if (queue.Count > 0)
@@ -250,6 +261,36 @@ public class CashRegister : MonoBehaviour
             }
         }
     }
+    public void SpawnItemWithAnimation(Items itemType)
+    {
+        GameObject prefab = GetItemPrefab(itemType);
+        if (prefab == null) return;
+
+        // GUARDAMOS A ESCALA REAL QUE ESTÁ NO PREFAB
+        Vector3 originalPrefabScale = prefab.transform.localScale;
+
+        Vector3 randomOffset = new Vector3(Random.Range(-0.15f, 0.15f), 0.05f, Random.Range(-0.15f, 0.15f));
+        Vector3 spawnPos = itemPosition.position + randomOffset;
+
+        GameObject newItem = Instantiate(prefab, spawnPos, Quaternion.identity);
+
+        // COMEÇA EM ZERO
+        newItem.transform.localScale = Vector3.zero;
+
+        // ANIMA ATÉ A ESCALA ORIGINAL DO PREFAB (Em vez de 1, 1, 1)
+        newItem.transform.DOScale(originalPrefabScale, 0.4f)
+            .SetEase(Ease.OutBack)
+            .OnComplete(() =>
+            {
+                // O PunchScale também deve ser baseado na escala original
+                newItem.transform.DOPunchScale(originalPrefabScale * 0.15f, 0.2f, 5, 1);
+            });
+
+        if (newItem.TryGetComponent<Rigidbody>(out var rb))
+        {
+            rb.AddForce(Vector3.up * 2f, ForceMode.Impulse);
+        }
+    }
     void BuyTotal()
     {
         nameItemText.text = "";
@@ -277,5 +318,24 @@ public class CashRegister : MonoBehaviour
         LeaveQueue(npc);
 
         npc.GoAway();
+    }
+    public void FinalizeTransaction()
+    {
+        FinishCustomer(); 
+        FinishPayment();
+    }
+
+    public void ApplyPenalty()
+    {
+        NpcTraject currentCustomer = GetCurrentCustomer();
+
+        if (currentCustomer != null)
+        {
+            NpcInstance instance = currentCustomer.GetComponent<NpcInstance>();
+            if (instance != null)
+            {
+                instance.ReceiveWrongChange(30);
+            }
+        }
     }
 }

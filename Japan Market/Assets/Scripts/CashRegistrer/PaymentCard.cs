@@ -23,7 +23,7 @@ public class PaymentCard : MonoBehaviour
         totalPrice = cashRegister.GetTotalPrice();
 
         currentValue = "";
-        valueText.text = "¥ 0";
+        valueText.text = "ï¿½ 0";
     }
     public void AddNumber(string number)
     {
@@ -57,9 +57,9 @@ public class PaymentCard : MonoBehaviour
     void UpdateText()
     {
         if (currentValue == "")
-            valueText.text = "¥ 0";
+            valueText.text = "ï¿½ 0";
         else
-            valueText.text = "¥ " + currentValue;
+            valueText.text = "ï¿½ " + currentValue;
     }
     public void Confirm()
     {
@@ -83,14 +83,16 @@ public class PaymentCard : MonoBehaviour
 
         seq.Append(valueText.DOColor(Color.darkGreen, 0.2f));
         seq.AppendInterval(0.2f);
-        seq.Append(imagepayment.transform.DOScale(0f,0.6f).SetEase(Ease.InOutBack));
+        seq.Append(imagepayment.transform.DOScale(0f, 0.6f).SetEase(Ease.InOutBack));
 
         seq.OnComplete(() =>
         {
             imagepayment.SetActive(false);
-            cashRegister.FinishPayment();
+
+            cashRegister.FinalizeTransaction();
         });
     }
+
     void PaymentError()
     {
         currentValue = "";
@@ -100,8 +102,9 @@ public class PaymentCard : MonoBehaviour
 
         seq.Append(valueText.DOColor(Color.red, 0.2f));
         seq.Join(valueText.transform.DOShakePosition(0.3f, 5.3f, 20));
-
         seq.Append(valueText.DOColor(Color.white, 0.2f));
+
+        cashRegister.ApplyPenalty();
     }
     public void ClosePaymentCredi()
     {

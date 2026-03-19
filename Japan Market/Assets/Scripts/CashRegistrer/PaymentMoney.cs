@@ -138,24 +138,27 @@ public class PaymentMoney : MonoBehaviour
             receivedText.gameObject.SetActive(false);
             changeText.gameObject.SetActive(false);
             givingText.gameObject.SetActive(false);
-            cashRegister.FinishPayment();
 
+            cashRegister.FinalizeTransaction();
         });
     }
+
     void PaymentError()
     {
         Sequence seq = DOTween.Sequence();
 
         seq.Append(givingText.DOColor(Color.red, 0.2f));
-        seq.Join(givingText.transform.DOShakePosition(0.3f,0.02f, 15));
-
+        seq.Join(givingText.transform.DOShakePosition(0.3f, 0.02f, 15));
         seq.Append(givingText.DOColor(Color.white, 0.2f));
+
         seq.OnComplete(() =>
         {
             ClearAll();
         });
+
+        cashRegister.ApplyPenalty();
     }
-   public void ClosePaymentMoney()
+    public void ClosePaymentMoney()
     {
         imagePayment.SetActive(false);
     }
