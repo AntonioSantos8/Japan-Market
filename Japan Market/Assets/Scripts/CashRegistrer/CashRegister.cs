@@ -27,19 +27,19 @@ public class CashRegister : MonoBehaviour
     bool playerInRange = false;
     bool cashMode = false;
     public Transform[] queuePoints;
-    private List<NpcInstance> queue = new List<NpcInstance>();
+    private List<NpcTraject> queue = new List<NpcTraject>();
 
     void Awake()
     {
         ServiceLocator.Register(this);
     }
-    public void EnterQueue(NpcInstance npc)
+    public void EnterQueue(NpcTraject npc)
     {
         queue.Add(npc);
         UpdateQueue();
     }
 
-    public void LeaveQueue(NpcInstance npc)
+    public void LeaveQueue(NpcTraject npc)
     {
         queue.Remove(npc);
         UpdateQueue();
@@ -52,7 +52,7 @@ public class CashRegister : MonoBehaviour
             queue[i].GetComponent<NpcTraject>().SetTarget(queuePoints[i], i);
         }
     }
-    public NpcInstance GetCurrentCustomer()
+    public NpcTraject GetCurrentCustomer()
     {
         if (queue.Count > 0)
             return queue[0];
@@ -265,6 +265,7 @@ public class CashRegister : MonoBehaviour
         totalPriceText.text = "";
         totalPrice = 0;
     }
+    [ContextMenu("Finish Customer")]
     public void FinishCustomer()
     {
         if (queue.Count == 0) return;
@@ -273,6 +274,6 @@ public class CashRegister : MonoBehaviour
 
         LeaveQueue(npc);
 
-        npc.GoAway();
+      //  npc.GoAway();
     }
 }

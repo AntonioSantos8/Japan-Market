@@ -24,6 +24,19 @@ public class FurnitureManager : MonoBehaviour
     public bool hasFurnitureInInventory;
 
     [SerializeField] private TMP_Text furnitureSlotName;
+    
+
+    [SerializeField] Color greenSegment, redSegment, transparentSegment, greenOutline, redOutline;
+    public Color GreenSegment => greenSegment;
+    public Color RedSegment => redSegment;
+    public Color TransparentSegment => transparentSegment;
+    public Color GreenOutline => greenOutline;
+    public Color RedOutline => redOutline;
+
+
+
+
+
     private void Awake()
     {
         ServiceLocator.Register(this);

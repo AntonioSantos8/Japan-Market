@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -77,7 +78,7 @@ public class NpcTraject : MonoBehaviour
         {
             yield return StartCoroutine(GoToDest(_finalPoint.position));
 
-            _cashRegister.EnterQueue(GetComponent<NpcInstance>());
+            _cashRegister.EnterQueue(this);
 
             Debug.Log("NPC entrou na fila");
         }
