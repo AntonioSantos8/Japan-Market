@@ -53,7 +53,7 @@ public class Segment : InteractableBase
   
     Items mySegment = Items.None;
 
-
+Outline outline;
 Tween materialColorTween;
     [SerializeField] Color green, red, transparent;
 
@@ -314,8 +314,8 @@ visualDelay = 0;
         isLooking = true;
 if(isAnimating)
     {
-        meshRenderer.material = transparentMaterial;
-               materialColorTween?.Kill();
+       // meshRenderer.material = transparentMaterial;
+             
    ChangeMaterialColor(transparent);
         return;
     }
@@ -330,7 +330,7 @@ if(isAnimating)
         if (box.IsEmpty())
         {
           //  meshRenderer.material = redMaterial;
-                 materialColorTween?.Kill();
+               
         ChangeMaterialColor(red);
         }
         else
@@ -354,6 +354,6 @@ ChangeMaterialColor(transparent);
         
   materialColorTween?.Kill();
 
-    materialColorTween = meshRenderer.material.DOColor(to, .15f).SetEase(Ease.OutBack);
+    materialColorTween = meshRenderer.material.DOColor(to, .25f).SetEase(Ease.OutBack);
     }
 }

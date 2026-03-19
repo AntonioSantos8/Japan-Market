@@ -273,6 +273,6 @@ public class CashRegister : MonoBehaviour
 
         LeaveQueue(npc);
 
-        npc.GoAway();
+      //  npc.GoAway();
     }
 }
