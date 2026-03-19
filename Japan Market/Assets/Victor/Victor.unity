@@ -1106,6 +1106,8 @@ GameObject:
   - component: {fileID: 147607281}
   - component: {fileID: 147607280}
   - component: {fileID: 147607283}
+  - component: {fileID: 147607284}
+  - component: {fileID: 147607285}
   m_Layer: 9
   m_Name: Freezer
   m_TagString: Untagged
@@ -1232,6 +1234,36 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!114 &147607284
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 147607276}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5fea29bb7c508c244a1f805a5fd3fc4d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Outline
+  outlineMode: 0
+  outlineColor: {r: 0.42352942, g: 0.93333334, b: 0.14509805, a: 1}
+  outlineWidth: 5.8
+  precomputeOutline: 0
+  bakeKeys: []
+  bakeValues: []
+--- !u!114 &147607285
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 147607276}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 51d5841ee4594a245b1008d9d4b04d07, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ObjectEmission
 --- !u!1 &161736243
 GameObject:
   m_ObjectHideFlags: 0
@@ -4274,6 +4306,8 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 3d3a032e966809d46ab7c66bb10746a7, type: 2}
   playerMotor: {fileID: 357698647}
   playerLook: {fileID: 357698644}
+  paymentMoney: {fileID: 1274346278}
+  paymentCard: {fileID: 2121726863}
   nameItemText: {fileID: 1554386570}
   priceItemText: {fileID: 3515956}
   totalPriceText: {fileID: 121673687}
@@ -7287,8 +7321,8 @@ MonoBehaviour:
   leftOpenPos: {x: -5.506, y: 1.22, z: -5}
   rightClosedPos: {x: -8.18, y: 1.22, z: -5}
   rightOpenPos: {x: -9.36, y: 1.22, z: -5}
-  speed: 1.32
-  doorCloseTime: 1.8
+  speed: 1.1
+  doorCloseTime: 1.6
   easeType: 4
 --- !u!65 &1263722410
 BoxCollider:
@@ -7324,6 +7358,8 @@ GameObject:
   - component: {fileID: 1274346275}
   - component: {fileID: 1274346274}
   - component: {fileID: 1274346278}
+  - component: {fileID: 1274346280}
+  - component: {fileID: 1274346279}
   m_Layer: 0
   m_Name: Dinheiro
   m_TagString: Untagged
@@ -7446,6 +7482,36 @@ MonoBehaviour:
   - 30
   - 40
   - 50
+--- !u!114 &1274346279
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1274346272}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5fea29bb7c508c244a1f805a5fd3fc4d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Outline
+  outlineMode: 0
+  outlineColor: {r: 0.42352942, g: 0.93333334, b: 0.14509805, a: 1}
+  outlineWidth: 5.8
+  precomputeOutline: 0
+  bakeKeys: []
+  bakeValues: []
+--- !u!114 &1274346280
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1274346272}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 51d5841ee4594a245b1008d9d4b04d07, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ObjectEmission
 --- !u!1 &1304849102
 GameObject:
   m_ObjectHideFlags: 0
@@ -11738,6 +11804,8 @@ GameObject:
   - component: {fileID: 2121726860}
   - component: {fileID: 2121726859}
   - component: {fileID: 2121726863}
+  - component: {fileID: 2121726864}
+  - component: {fileID: 2121726865}
   m_Layer: 0
   m_Name: CartaoCredito
   m_TagString: Untagged
@@ -11852,6 +11920,36 @@ MonoBehaviour:
   imagepayment: {fileID: 682542179}
   valueText: {fileID: 1600452530}
   cashRegister: {fileID: 717436207}
+--- !u!114 &2121726864
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2121726858}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5fea29bb7c508c244a1f805a5fd3fc4d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Outline
+  outlineMode: 0
+  outlineColor: {r: 0.42352942, g: 0.93333334, b: 0.14509805, a: 1}
+  outlineWidth: 5.8
+  precomputeOutline: 0
+  bakeKeys: []
+  bakeValues: []
+--- !u!114 &2121726865
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2121726858}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 51d5841ee4594a245b1008d9d4b04d07, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ObjectEmission
 --- !u!1 &2137255472
 GameObject:
   m_ObjectHideFlags: 0

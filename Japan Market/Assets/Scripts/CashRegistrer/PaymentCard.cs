@@ -103,4 +103,8 @@ public class PaymentCard : MonoBehaviour
 
         seq.Append(valueText.DOColor(Color.white, 0.2f));
     }
+    public void ClosePaymentCredi()
+    {
+        imagepayment.SetActive(false);
+    }
 }

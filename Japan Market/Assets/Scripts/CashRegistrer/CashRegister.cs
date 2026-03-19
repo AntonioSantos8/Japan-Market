@@ -8,6 +8,8 @@ public class CashRegister : MonoBehaviour
     [SerializeField] List<AllIThingsData> allItem;
     [SerializeField] PlayerMotor playerMotor;
     [SerializeField] PlayerLook playerLook;
+    [SerializeField] PaymentMoney paymentMoney;
+    [SerializeField] PaymentCard paymentCard;
     [SerializeField] TextMeshPro nameItemText;
     [SerializeField] TextMeshPro priceItemText;
     [SerializeField] TextMeshPro totalPriceText;
@@ -95,7 +97,13 @@ public class CashRegister : MonoBehaviour
 
         totalPrice = 0;
 
-     
+        if (paymentMoney != null && paymentCard != null) 
+        {
+            paymentMoney.ClosePaymentMoney();
+            paymentCard.ClosePaymentCredi();
+        }
+
+
     }
     void ItemClicked()
     {

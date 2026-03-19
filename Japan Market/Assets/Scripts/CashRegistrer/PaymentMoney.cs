@@ -79,7 +79,7 @@ public class PaymentMoney : MonoBehaviour
         givingText.transform.DOKill();
 
         givingText.transform
-            .DOScale(1.03f, 0.1f)
+           .DOScale(1.01f, 0.1f)
             .OnComplete(() =>
             {
                 givingText.transform.DOScale(1f, 0.1f);
@@ -154,5 +154,9 @@ public class PaymentMoney : MonoBehaviour
         {
             ClearAll();
         });
+    }
+   public void ClosePaymentMoney()
+    {
+        imagePayment.SetActive(false);
     }
 }
