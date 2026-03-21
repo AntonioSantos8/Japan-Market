@@ -1630,8 +1630,10 @@ MonoBehaviour:
   quitButton: {fileID: 1656018421}
   cashPosition: {fileID: 730044934}
   cam: {fileID: 1837036283}
+  itemPosition: {fileID: 0}
   zoom: 96.3
   queuePoints: []
+  hasClient: 0
 --- !u!65 &113236928
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -7442,6 +7444,7 @@ MonoBehaviour:
     - {fileID: 206694730}
     - {fileID: 34022676}
     spaces: []
+  itemIconImage: {fileID: 0}
 --- !u!95 &510375342
 Animator:
   serializedVersion: 7
@@ -12555,11 +12558,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1278586913637040968, guid: e0a871c8d696995458ec6f63284dadca, type: 3}
       propertyPath: redSegment.g
-      value: 0.007843138
+      value: 0.011764706
       objectReference: {fileID: 0}
     - target: {fileID: 1278586913637040968, guid: e0a871c8d696995458ec6f63284dadca, type: 3}
       propertyPath: redSegment.r
-      value: 0.25490198
+      value: 0.32941177
       objectReference: {fileID: 0}
     - target: {fileID: 1278586913637040968, guid: e0a871c8d696995458ec6f63284dadca, type: 3}
       propertyPath: greenSegment.b
@@ -12567,7 +12570,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1278586913637040968, guid: e0a871c8d696995458ec6f63284dadca, type: 3}
       propertyPath: greenSegment.g
-      value: 0.27450982
+      value: 0.42352942
       objectReference: {fileID: 0}
     - target: {fileID: 3120888785912031086, guid: e0a871c8d696995458ec6f63284dadca, type: 3}
       propertyPath: m_Name
@@ -13913,6 +13916,7 @@ MonoBehaviour:
     - {fileID: 297461220}
     - {fileID: 228194477}
     - {fileID: 1388557925}
+  itemIconImage: {fileID: 0}
 --- !u!95 &1010214955
 Animator:
   serializedVersion: 7
@@ -14959,6 +14963,7 @@ MonoBehaviour:
     - {fileID: 1216939360}
     - {fileID: 1821114754}
     - {fileID: 431711706}
+  itemIconImage: {fileID: 0}
 --- !u!95 &1055552430
 Animator:
   serializedVersion: 7
