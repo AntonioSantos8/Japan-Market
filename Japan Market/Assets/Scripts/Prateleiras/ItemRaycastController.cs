@@ -147,11 +147,11 @@ void FollowHand()
 
         heldItemRb = itemRb;
         heldItem = itemRb.transform;
-        heldInteractable = itemRb.GetComponent<InteractableBase>();
+        heldInteractable = itemRb.GetComponentInChildren<InteractableBase>();
 
         //heldItemRb.isKinematic = true;
         //heldItemRb.useGravity = false;
-        var phys = heldItemRb.GetComponent<Box>();
+        var phys = heldItemRb.GetComponentInChildren<Box>();
         if (phys != null)
         {
             phys.StartHolding(boxHandPivot);
@@ -169,7 +169,7 @@ currentFollowRotSpeed = 5f;
   
         if (heldInteractable.GetItemType() == Items.Box) 
         {
-            lastBoxHeld = heldItem.GetComponent<ItemBox>();
+            lastBoxHeld = heldItem.GetComponentInChildren<ItemBox>();
             isWithBox = true;
         }
 
