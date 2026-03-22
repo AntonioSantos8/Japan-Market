@@ -19,11 +19,11 @@ public class PaymentCard : MonoBehaviour
     void OpenPayment()
     {
         imagepayment.SetActive(true);
-
+        cashRegister.PaymentTextCash("Card Checkout");
         totalPrice = cashRegister.GetTotalPrice();
 
         currentValue = "";
-        valueText.text = "� 0";
+        valueText.text = "¥ 0";
     }
     public void AddNumber(string number)
     {
@@ -57,9 +57,9 @@ public class PaymentCard : MonoBehaviour
     void UpdateText()
     {
         if (currentValue == "")
-            valueText.text = "� 0";
+            valueText.text = "¥ 0";
         else
-            valueText.text = "� " + currentValue;
+            valueText.text = "¥ " + currentValue;
     }
     public void Confirm()
     {

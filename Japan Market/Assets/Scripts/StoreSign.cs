@@ -1,4 +1,4 @@
-using DG.Tweening;
+﻿using DG.Tweening;
 using UnityEngine;
 public class StoreSign : MonoBehaviour
 {
@@ -8,11 +8,14 @@ public class StoreSign : MonoBehaviour
     [SerializeField] float interactDistance = 5f;
     [SerializeField] Ease ease = Ease.OutBack;
     bool isRotating = false;
+    bool isOpen = false; 
     Vector3 originalPos;
+    float originalYRotation;
 
     void Start()
     {
         originalPos = transform.localPosition;
+        originalYRotation = transform.eulerAngles.y;
     }
     void Update()
     {
@@ -37,20 +40,32 @@ public class StoreSign : MonoBehaviour
     void Rotate()
     {
         isRotating = true;
-       Sequence seq = DOTween.Sequence();
+
+        float targetRotation = isOpen
+            ? originalYRotation              
+            : originalYRotation + rotationY; 
+
+        Sequence seq = DOTween.Sequence();
+
         seq.Append(
             transform.DOLocalMoveZ(originalPos.z - moveBack, duration * 0.3f)
             .SetEase(Ease.OutQuad)
         );
         seq.Append(
             transform
-                .DORotate(new Vector3(0, transform.eulerAngles.y + rotationY, 0), duration)
+                .DORotate(new Vector3(0, targetRotation, 0), duration)
                 .SetEase(ease)
         );
+
         seq.Join(
             transform.DOLocalMoveZ(originalPos.z, duration)
             .SetEase(Ease.OutBack)
         );
-       seq.OnComplete(() => isRotating = false);
+
+        seq.OnComplete(() =>
+        {
+            isRotating = false;
+            isOpen = !isOpen;
+        });
     }
 }

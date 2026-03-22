@@ -25,7 +25,7 @@ public class PaymentMoney : MonoBehaviour
     public void OpenPayment()
     {
         imagePayment.SetActive(true);
-
+        cashRegister.PaymentTextCash("Cash Checkout");
         receivedText.gameObject.SetActive(true);
         changeText.gameObject.SetActive(true);
         givingText.gameObject.SetActive(true);
@@ -46,8 +46,6 @@ public class PaymentMoney : MonoBehaviour
            customerPaid = totalPrice;
             return;
         }
-
-       
         List<float> validPayments = new List<float>();
 
         foreach (var value in possiblePayments)
@@ -56,7 +54,6 @@ public class PaymentMoney : MonoBehaviour
                 validPayments.Add(value);
         }
 
-        
         if (validPayments.Count == 0)
         {
             customerPaid = possiblePayments[possiblePayments.Count - 1];
@@ -66,8 +63,7 @@ public class PaymentMoney : MonoBehaviour
             customerPaid = validPayments[Random.Range(0, validPayments.Count)];
         }
 
-      
-        customerPaid = Mathf.Round(customerPaid * 100f) / 100f;
+      customerPaid = Mathf.Round(customerPaid * 100f) / 100f;
     }
     public void AddMoney(float value)
     {

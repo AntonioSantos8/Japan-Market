@@ -13,13 +13,14 @@ public class CashRegister : MonoBehaviour
     [SerializeField] TextMeshPro nameItemText;
     [SerializeField] TextMeshPro priceItemText;
     [SerializeField] TextMeshPro totalPriceText;
+    [SerializeField] TextMeshPro cashregisterText;
     [SerializeField] Transform bagPoint;
     [SerializeField] Transform bagTopPoint;
     [SerializeField] GameObject creditCard;
     [SerializeField] GameObject money;
     [SerializeField] GameObject quitButton;
     [SerializeField] Transform cashPosition;
-    [SerializeField] CinemachineCamera cam;
+   [SerializeField] CinemachineCamera cam;
     public Transform itemPosition;
     [SerializeField] float zoom = 25f;
     float zoomOri;
@@ -77,7 +78,9 @@ public class CashRegister : MonoBehaviour
         creditCard.SetActive(false);
         money.SetActive(false);
         quitButton.SetActive(false);
+        cashregisterText.gameObject.SetActive(false);
 
+        cashregisterText.text = "";
         totalPriceText.text = "";
         nameItemText.text = "";
         priceItemText.text = "";
@@ -89,9 +92,7 @@ public class CashRegister : MonoBehaviour
         if (playerInRange && !cashMode && Input.GetButtonDown("Fire1"))
         {
             EnterCashMode();
-            print("Enter Cash Mode");
         }
-
         if (cashMode && Input.GetButtonDown("Fire1"))
         {
             ItemClicked();
@@ -99,7 +100,6 @@ public class CashRegister : MonoBehaviour
     }
     void EnterCashMode()
     {
-        print("Enter Cash Mode");
         cashMode = true;
         cam.Priority = 6;
 
@@ -301,10 +301,17 @@ public class CashRegister : MonoBehaviour
     {
         creditCard.SetActive(false);
         money.SetActive(false);
+        cashregisterText.gameObject.SetActive(false);
         totalPriceText.text = "";
         totalPrice = 0;
     }
-    [ContextMenu("Finish Customer")]
+    public void PaymentTextCash(string message)
+    {
+        cashregisterText.gameObject.SetActive(true);
+        cashregisterText.text = message;
+    }
+
+   [ContextMenu("Finish Customer")]
     public void FinishCustomer()
     {
         if (queue.Count == 0) return;
