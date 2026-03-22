@@ -2,11 +2,18 @@ using DG.Tweening;
 using UnityEngine;
 public class StoreSign : MonoBehaviour
 {
-    [SerializeField] private float rotationAmount = 90f; 
-    [SerializeField] private float duration = 0.5f; 
-    [SerializeField] private Ease ease = Ease.OutBack;
-    private bool isRotating = false;
+    [SerializeField] float rotationY = 90f;
+    [SerializeField] float duration = 0.5f;
+    [SerializeField] float moveBack = 0.33f;
+    [SerializeField] float interactDistance = 5f;
+    [SerializeField] Ease ease = Ease.OutBack;
+    bool isRotating = false;
+    Vector3 originalPos;
 
+    void Start()
+    {
+        originalPos = transform.localPosition;
+    }
     void Update()
     {
         if (Input.GetButtonDown("Fire1"))
@@ -16,13 +23,11 @@ public class StoreSign : MonoBehaviour
     }
     void TryRotate()
     {
-       
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         RaycastHit hit;
 
-        if (Physics.Raycast(ray, out hit))
+        if (Physics.Raycast(ray, out hit, interactDistance))
         {
-           
             if (hit.transform == transform && !isRotating)
             {
                 Rotate();
@@ -32,10 +37,20 @@ public class StoreSign : MonoBehaviour
     void Rotate()
     {
         isRotating = true;
-
-        transform
-            .DORotate(new Vector3(0, transform.eulerAngles.y + rotationAmount, 0), duration)
-            .SetEase(ease)
-            .OnComplete(() => isRotating = false);
+       Sequence seq = DOTween.Sequence();
+        seq.Append(
+            transform.DOLocalMoveZ(originalPos.z - moveBack, duration * 0.3f)
+            .SetEase(Ease.OutQuad)
+        );
+        seq.Append(
+            transform
+                .DORotate(new Vector3(0, transform.eulerAngles.y + rotationY, 0), duration)
+                .SetEase(ease)
+        );
+        seq.Join(
+            transform.DOLocalMoveZ(originalPos.z, duration)
+            .SetEase(Ease.OutBack)
+        );
+       seq.OnComplete(() => isRotating = false);
     }
 }
