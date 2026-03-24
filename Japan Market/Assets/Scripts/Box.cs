@@ -17,14 +17,14 @@ public class Box : InteractableBase
 
     bool isBroken;
 
-   
+    [SerializeField] float rbAngularDamping = 13;
 
     public override void Interact()
     {
         var controller = ServiceLocator.Get<ItemRaycastController>();
         controller.PickItem(rb);
     }
-
+ 
     void FixedUpdate()
     {
         if (!isHeld || holdPoint == null) return;
@@ -95,6 +95,7 @@ public class Box : InteractableBase
     }
     void Start()
     {
+        rb.angularDamping = rbAngularDamping;
         OnPickEvent?.AddListener(()=>{  ServiceLocator.Get<ItemRaycastController>().isWithBox = true ; } );
          OnDropEvent?.AddListener(()=>{  ServiceLocator.Get<ItemRaycastController>().isWithBox = false ;    } );
     }
@@ -104,4 +105,5 @@ public class Box : InteractableBase
         base.OnLookAt();
       
     }
+ 
 }

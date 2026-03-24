@@ -90,28 +90,23 @@ float currentFollowRotSpeed;
             ClearLastLooked();
         }
     }
-   
-void FollowHand()
-{
-    if (heldItem == null) return;
-     
-    //currentFollowPosSpeed = Mathf.Lerp(currentFollowPosSpeed, followPositionSpeed, speedGrowRate * Time.deltaTime);
-   // currentFollowRotSpeed = Mathf.Lerp(currentFollowRotSpeed, followRotationSpeed, speedGrowRate * Time.deltaTime);
 
-        //heldItem.position = Vector3.Lerp(
-        //   heldItem.position,
-        //   boxHandPivot.position,
-        //   currentFollowPosSpeed * Time.deltaTime
-        //);
+    void FollowHand()
+    {
+        if (heldItemRb == null) return;
 
-        // heldItem.rotation = Quaternion.Slerp(
-        //    heldItem.rotation,
-        //    boxHandPivot.rotation,
-        //    currentFollowRotSpeed * Time.deltaTime
-        // );
+        //Vector3 posOffset = boxHandPivot.position - heldItemRb.position;
+        //heldItemRb.linearVelocity = posOffset * followPositionSpeed * Time.deltaTime;
 
+        Quaternion rotOffset = boxHandPivot.rotation * Quaternion.Inverse(heldItemRb.rotation);
+        rotOffset.ToAngleAxis(out float angle, out Vector3 axis);
 
+        if (angle > 180f) angle -= 360f;
+
+        Vector3 torque = axis * angle * Mathf.Deg2Rad * followRotationSpeed;
+        heldItemRb.AddTorque(torque, ForceMode.Acceleration);
     }
+
     private void ClearLastLooked()
     {
         if (lastLookedInteractable != null)
@@ -165,8 +160,9 @@ void FollowHand()
         currentFollowPosSpeed = 5f;
 currentFollowRotSpeed = 5f;
         
-       heldItem.GetComponent<Collider>().enabled = false;
-  
+      // heldItem.GetComponent<Collider>().enabled = false;
+       
+  heldItem.gameObject.layer = LayerMask.NameToLayer("InShelf");
         if (heldInteractable.GetItemType() == Items.Box) 
         {
             lastBoxHeld = heldItem.GetComponentInChildren<ItemBox>();
@@ -201,8 +197,8 @@ currentFollowRotSpeed = 5f;
             heldItemRb.useGravity = true;
         }
 
-        heldItem.GetComponent<Collider>().enabled = true;
-
+        //heldItem.GetComponent<Collider>().enabled = true;
+        heldItem.gameObject.layer = LayerMask.NameToLayer("Interactive");
         if (Physics.Raycast(transform.position, transform.forward, out RaycastHit hit, .8f, interactLayer)) 
         {
             heldItem.position = hit.point - transform.forward * 0.2f;
