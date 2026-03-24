@@ -291,7 +291,7 @@ public void RemoveItem(int groupIndex, int spaceIndex)
     }
 
     Items type = box.GetBoxType();
-        box.transform.DOPunchScale(-Vector3.right * .05f, .3f, 2);
+        box.transform.root.DOPunchScale(-Vector3.right * .05f, .3f, 2);
         while (true)
         {
             Transform item = box.TakeItemByType(type);
