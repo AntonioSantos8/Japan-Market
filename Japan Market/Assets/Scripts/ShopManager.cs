@@ -5,7 +5,6 @@ using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 using System.Collections;
-using UnityEditor.Search;
 public class ShopManager : MonoBehaviour
 {
 
