@@ -221,6 +221,8 @@ public class CashRegister : MonoBehaviour
 
         Sequence seq = DOTween.Sequence();
 
+        seq.Append(item.transform.DOPunchScale(Vector3.one * 0.18f, 0.15f, 6, 1));
+
         seq.Append(item.transform.DOMoveY(item.transform.position.y + 0.32f, 0.12f)
             .SetEase(Ease.OutQuad));
 

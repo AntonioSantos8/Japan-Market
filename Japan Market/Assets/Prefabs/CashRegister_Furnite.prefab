@@ -317,6 +317,9 @@ MonoBehaviour:
   - 30
   - 40
   - 50
+  - 63
+  - 79
+  - 100
 --- !u!114 &8084214536689423935
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5371,7 +5374,8 @@ GameObject:
   - component: {fileID: 7798493017202364487}
   - component: {fileID: 7647506848375751926}
   - component: {fileID: 8707171992612832702}
-  m_Layer: 0
+  - component: {fileID: 4212435653414132841}
+  m_Layer: 7
   m_Name: CashRegisterCounter
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5470,6 +5474,24 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &4212435653414132841
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3710027396999581507}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5fea29bb7c508c244a1f805a5fd3fc4d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Outline
+  outlineMode: 0
+  outlineColor: {r: 0.42352942, g: 0.93333334, b: 0.14509805, a: 1}
+  outlineWidth: 5.8
+  precomputeOutline: 0
+  bakeKeys: []
+  bakeValues: []
 --- !u!1 &3917039322952585090
 GameObject:
   m_ObjectHideFlags: 0
