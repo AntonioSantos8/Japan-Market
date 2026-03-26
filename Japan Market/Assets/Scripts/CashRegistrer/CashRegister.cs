@@ -255,8 +255,25 @@ public class CashRegister : MonoBehaviour
                 if (itemsQueue.Count == 0)
                 {
                     Invoke(nameof(BuyTotal), 0.34f);
-                    creditCard.SetActive(true);
-                    money.SetActive(true);
+
+                    creditCard.SetActive(false);
+                    money.SetActive(false);
+
+                    var customer = GetCurrentCustomer();
+
+                    if (customer != null)
+                    {
+                        var instance = customer.GetComponent<NpcInstance>();
+
+                        if (instance.paymentType == PaymentType.Card)
+                        {
+                            creditCard.SetActive(true);
+                        }
+                        else
+                        {
+                            money.SetActive(true);
+                        }
+                    }
                 }
 
                 break;
