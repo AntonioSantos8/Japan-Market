@@ -163,7 +163,7 @@ currentFollowRotSpeed = 5f;
       // heldItem.GetComponent<Collider>().enabled = false;
        
   heldItem.gameObject.layer = LayerMask.NameToLayer("InShelf");
-        if (heldInteractable.GetItemType() == Items.Box) 
+        if (heldInteractable.gameObject.GetComponent<Box>()) 
         {
             lastBoxHeld = heldItem.GetComponentInChildren<ItemBox>();
             isWithBox = true;

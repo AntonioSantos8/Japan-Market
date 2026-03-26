@@ -52,8 +52,9 @@ public class Segment : InteractableBase
     bool isAnimating;    
 
     Items mySegment = Items.None;
+    public Items SegmenyType => mySegment;
 
-Outline outline;
+
 Tween materialColorTween;
 Tween outlineWidhtTween;
 Tween outlineColorTween;
@@ -65,9 +66,9 @@ Tween outlineColorTween;
         meshRenderer = GetComponent<MeshRenderer>();
 
 
-        outline = gameObject.AddComponent<Outline>();
-
-        outline.OutlineWidth =0;
+        outline = gameObject.GetComponent<Outline>();
+        outline.enabled = true;
+        outline.OutlineWidth = 0;
 
     }   
     public bool IsEmpty()

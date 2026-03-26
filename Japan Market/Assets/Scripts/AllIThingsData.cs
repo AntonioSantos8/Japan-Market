@@ -8,4 +8,7 @@ public class AllIThingsData : ScriptableObject
     public GameObject itemPrefab;
     public GameObject itemBoxPrefab;
     public Sprite itemSprite;
+    public float marketPrice;
+
+
 }

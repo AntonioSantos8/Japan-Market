@@ -6,14 +6,13 @@ public abstract class InteractableBase : MonoBehaviour, IInteractable
     public UnityEvent OnPickEvent;
    
     protected Rigidbody rb;
-    //protected Outline outline;
+    protected Outline outline;
     protected Vector3 originalScale;
     protected bool isOutlineable = true;
     protected bool isMarkable = true;   
     protected bool canInteract = true;
     protected bool addOutline = true;
-    public string interactionText;
-    public Items itemType;
+    public string interactionText ;
     
     
     public virtual void Awake()
@@ -22,13 +21,13 @@ public abstract class InteractableBase : MonoBehaviour, IInteractable
           originalScale = transform.localScale;  
         if(gameObject.GetComponent<InteractableBase>() == this) 
         {
-            // var outl = gameObject.AddComponent<Outline>();
-            // outline = outl;
-            // outline.OutlineMode = Outline.Mode.OutlineAll;
-            // outline.OutlineColor = Color.white;
-            // outline.OutlineWidth = 4f;
-            // outline.enabled = false;
-            // cb = GetComponent<ICustomBehaviourOnPick>();
+             var outl = gameObject.AddComponent<Outline>();
+             outline = outl;
+            outline.OutlineMode = Outline.Mode.OutlineAll;
+             outline.OutlineColor = Color.white;
+             outline.OutlineWidth = 4f;
+            outline.enabled = false;
+            //cb = GetComponent<ICustomBehaviourOnPick>();
 
         }
       
@@ -44,12 +43,12 @@ public abstract class InteractableBase : MonoBehaviour, IInteractable
                 
         if(!canInteract) {          
           //  ServiceLocator.Get<PlayerInteractions>().GetInteractionText().SetActive(false);
-          //outline.enabled = false; return; 
+          outline.enabled = false; return; 
         }
         if (!isOutlineable)
         {
             //ServiceLocator.Get<F2FGrabSystem>().CanThrow = true;
-            //outline.enabled = false;
+            outline.enabled = false;
             return;
 
 
@@ -59,7 +58,7 @@ public abstract class InteractableBase : MonoBehaviour, IInteractable
            // ServiceLocator.Get<PlayerInteractions>().SetInteractionText("");
         }
         //ServiceLocator.Get<PlayerInteractions>().SetInteractionText(SetInteractionText());
-       // outline.enabled = true;
+        outline.enabled = true;
         //ServiceLocator.Get<F2FGrabSystem>().CanThrow = false;
     }
     public virtual string SetInteractionText()
@@ -74,7 +73,7 @@ public abstract class InteractableBase : MonoBehaviour, IInteractable
          //  ServiceLocator.Get<PlayerInteractions>().GetInteractionText().SetActive(false);
        // if(outline != null)
          //   ServiceLocator.Get<F2FGrabSystem>().CanThrow = true;
-        //outline.enabled = false;
+        outline.enabled = false;
     }
     public void SetCanInteract(bool value) 
     {
@@ -84,25 +83,7 @@ public abstract class InteractableBase : MonoBehaviour, IInteractable
     
 
 
-public void Grab( Items itemType = Items.None)
-    {
-        // if(!ServiceLocator.Get<F2FGrabSystem>().GrabObj(this, itemType)) 
-        // {
-        //      return;
-        // }
 
-       
-            OnPickEvent?.Invoke();
- 
-            canInteract = false;
-     
-      
-      
-        
-        transform.localPosition = Vector3.zero;
-        transform.localRotation = Quaternion.identity;
-    
-    }
     [ContextMenu("Can Interact True")]
      void SetCanInteractTrue() 
     {
@@ -110,35 +91,8 @@ public void Grab( Items itemType = Items.None)
     
     
     }
-    public void Drop(bool passOverride = false)
-    {
-      //  if(!passOverride)
-        //if(ServiceLocator.Get<F2FGrabSystem>().HeldObject != null) return;
-     
-
-      
-
-       // ServiceLocator.Get<F2FGrabSystem>().CurrentItem = Items.None;
-       
-        canInteract = true;
-       
-        transform.SetParent(null);
-      
-       
-        //ServiceLocator.Get<F2FGrabSystem>().HeldObject = null;
-        
-        transform.localScale = originalScale;
-        
-        rb.useGravity = true;
-        
-        rb.isKinematic = false;
-    }
-
-    public void Throw(Vector3 force)
-    {
-        Drop();
-        rb.AddForce(force, ForceMode.Impulse);
-    }
+   
+    
 
     public Transform GetTransform()
     {
@@ -150,7 +104,7 @@ public void Grab( Items itemType = Items.None)
   
         return rb;
     }
-    public Items GetItemType() { return itemType; }
+   
     public GameObject GetGameObject()
     {
         return gameObject;
