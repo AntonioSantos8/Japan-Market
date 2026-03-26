@@ -14,13 +14,14 @@ public class PriceDisplayUI : MonoBehaviour
         gameObject.SetActive(true);
  Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
+        ServiceLocator.Get<PlayerLook>().CanLook = false;
 
     }
     public void LockMouse()
     {
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
-
+        ServiceLocator.Get<PlayerLook>().CanLook = true; 
     }
    
 }
