@@ -110,6 +110,7 @@ public class CashRegister : MonoBehaviour
 
         quitButton.SetActive(true);
         playerMotor.SetCanMove(false);
+        playerMotor.ResetCameraEffects();
         playerLook.CanLook = false;
 
         Transform player = playerMotor.transform;
