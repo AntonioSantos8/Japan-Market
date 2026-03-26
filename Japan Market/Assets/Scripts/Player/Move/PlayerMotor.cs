@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using Unity.Cinemachine;
 using System.Collections;
 
@@ -40,9 +40,24 @@ public class PlayerMotor : MonoBehaviour
 
     void Update()
     {
+        if (!canMove) return;
+
         HandleHeadBob();
         TiltCamera();
         HandleFootsteps();
+    }
+    public void ResetCameraEffects()
+    {
+        if (noise != null)
+        {
+            noise.AmplitudeGain = 0f;
+            noise.FrequencyGain = 0f;
+        }
+
+        StopAllCoroutines(); 
+
+        fovValue = 60f;
+        cam.Lens.FieldOfView = fovValue;
     }
 
     public void Move(Vector2 input, bool jump, bool run)
