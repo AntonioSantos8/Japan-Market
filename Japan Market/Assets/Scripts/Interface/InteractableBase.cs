@@ -73,6 +73,7 @@ public abstract class InteractableBase : MonoBehaviour, IInteractable
          //  ServiceLocator.Get<PlayerInteractions>().GetInteractionText().SetActive(false);
        // if(outline != null)
          //   ServiceLocator.Get<F2FGrabSystem>().CanThrow = true;
+     if(outline!= null )
         outline.enabled = false;
     }
     public void SetCanInteract(bool value) 
