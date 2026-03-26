@@ -15,7 +15,7 @@ public class FurnitureManager : MonoBehaviour
     private FurnitureData _currentSelected;
     private GameObject _activeGhost;
 
-    private List<FurnitureInstance> _placedFurnitures = new List<FurnitureInstance>();
+    [SerializeField] private List<FurnitureInstance> _placedFurnitures = new List<FurnitureInstance>();
 
     private FurnitureSaveData _tempSaveData;
     public bool IsBuildingMode { get; private set; }

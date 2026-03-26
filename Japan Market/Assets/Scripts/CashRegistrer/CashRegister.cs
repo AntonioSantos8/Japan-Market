@@ -239,6 +239,10 @@ public class CashRegister : MonoBehaviour
             item.transform.SetParent(bagPoint);
             PastItem(item);
         });
+        seq.AppendCallback(() =>
+        {
+            Destroy(item.gameObject);
+        });
     }
     void PastItem(Item item)
     {

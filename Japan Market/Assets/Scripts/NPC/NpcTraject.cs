@@ -12,7 +12,7 @@ public class NpcTraject : MonoBehaviour
 
     [Header("Dest config")]
     private Transform _finalPoint;
-    [SerializeField] private Transform someExitPoint;
+    private Transform someExitPoint;
     [SerializeField] private float _waitTime = 5;
     [Header("Queue config")]
     private int _queueIndex = -1;
@@ -29,6 +29,7 @@ public class NpcTraject : MonoBehaviour
     }
     private void Start()
     {
+        someExitPoint = GameObject.FindGameObjectWithTag("Exit").transform;
         _cashRegister = ServiceLocator.Get<CashRegister>();
         _furnitureManager = ServiceLocator.Get<FurnitureManager>();
         _finalPoint = _cashRegister.queuePoints[_cashRegister.queuePoints.Length - 1];
@@ -151,7 +152,21 @@ public class NpcTraject : MonoBehaviour
     }
     public void GoAway()
     {
+        StartCoroutine(GoAwayCor());
+    }
+    private IEnumerator GoAwayCor()
+    {
+
         _agent.SetDestination(someExitPoint.position);
+
+        yield return new WaitUntil(() => !_agent.pathPending);
+
+        while (_agent.remainingDistance > _agent.stoppingDistance)
+        {
+            yield return null;
+        }
+        yield return new WaitForSeconds(1.5f);
+        Destroy(gameObject);
     }
     public void SetTarget(Transform target, int index)
     {
@@ -160,6 +175,7 @@ public class NpcTraject : MonoBehaviour
     }
     private IEnumerator GoToDest(Vector3 dest)
     {
+
         _agent.SetDestination(dest);
 
         yield return new WaitUntil(() => !_agent.pathPending);

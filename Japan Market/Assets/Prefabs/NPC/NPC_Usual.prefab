@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 8472884177749701048}
   - component: {fileID: 6120337374120264471}
   - component: {fileID: 4266508029118493449}
-  m_Layer: 0
+  m_Layer: 13
   m_Name: NPC_Usual
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -87,7 +87,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NpcPhrases
   phraseText: {fileID: 6950234991855799908}
-  _data: {fileID: 11400000, guid: 5888b0bd416ca764d86feef5b162ce76, type: 2}
 --- !u!114 &6120337374120264471
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -100,7 +99,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e1b9905e4f2293142a474361f63a246d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NpcInstance
+  paymentType: 0
   _data: {fileID: 11400000, guid: 5888b0bd416ca764d86feef5b162ce76, type: 2}
+  humorCoins: 100
+  currentHumor: 0
 --- !u!54 &4266508029118493449
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -139,7 +141,7 @@ GameObject:
   - component: {fileID: 79758672715655702}
   - component: {fileID: 5534130432793393535}
   - component: {fileID: 6950234991855799908}
-  m_Layer: 0
+  m_Layer: 13
   m_Name: Phrases
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -276,7 +278,7 @@ GameObject:
   - component: {fileID: 1679175337488993395}
   - component: {fileID: 1612187344207317041}
   - component: {fileID: 8098876521302946914}
-  m_Layer: 0
+  m_Layer: 13
   m_Name: ProvisoryVisual
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -386,7 +388,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5189749397528275029}
-  m_Layer: 0
+  m_Layer: 13
   m_Name: Visual
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -422,7 +424,7 @@ GameObject:
   - component: {fileID: 4567716474596888651}
   - component: {fileID: 4364544564623894445}
   - component: {fileID: 4304669001950839676}
-  m_Layer: 0
+  m_Layer: 13
   m_Name: Canvas(NPC)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
