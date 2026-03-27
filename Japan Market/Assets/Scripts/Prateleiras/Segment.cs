@@ -67,7 +67,7 @@ Tween outlineColorTween;
 
 
         outline = gameObject.GetComponent<Outline>();
-        outline.enabled = true;
+        
         outline.OutlineWidth = 0;
 
     }   
@@ -141,6 +141,7 @@ public void RemoveItem(int groupIndex, int spaceIndex)
         if(mySegment != Items.None && type != mySegment) return false;
 
         mySegment = type;
+        ServiceLocator.Get<GlobalPrices>().HasPutItem(mySegment);
 
         for (int g = 0; g < groups.Length; g++)
         {
@@ -284,15 +285,15 @@ public void RemoveItem(int groupIndex, int spaceIndex)
 
     if (box.IsEmpty())
     {
-        isAnimating = true;
+         isAnimating = true;
          TakeItem(box);
 
          OnLookAtWithRestriction();
          return;
     }
 
-    Items type = box.GetBoxType();
-        box.transform.root.DOPunchScale(-Vector3.right * .05f, .3f, 2);
+         Items type = box.GetBoxType();
+        box.transform.root.DOPunchScale(-Vector3.right * .03f, .3f, 2);
         while (true)
         {
             Transform item = box.TakeItemByType(type);
@@ -405,7 +406,7 @@ HandleOutlineColor(  ServiceLocator.Get<FurnitureManager>().RedOutline);
     x => outline.OutlineWidth = x,
     0f,
     0.25f
-).OnComplete(() => { isOutlineTransiting = false; });
+).OnComplete(() => { outline.enabled = false; isOutlineTransiting = false; });
            
             DOTween.To(
     () => meshRenderer.material.GetColor("_EmissionColor"),
@@ -416,6 +417,7 @@ HandleOutlineColor(  ServiceLocator.Get<FurnitureManager>().RedOutline);
 
         }else
         {   
+            outline.enabled = true; 
                    isOutlineTransiting = true;
             outlineWidhtTween = DOTween.To(
     () => outline.OutlineWidth,

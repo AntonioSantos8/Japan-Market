@@ -2,6 +2,7 @@ using UnityEngine;
 using TMPro;
 using System.Text;
 using System.Globalization;
+using Unity.Android.Gradle.Manifest;
 public class NumbersDisplay : MonoBehaviour
 {
      [SerializeField] TMP_Text _displayText;
@@ -16,8 +17,16 @@ public class NumbersDisplay : MonoBehaviour
         currentValue.Append(number);
         UpdateDisplay();
     }
+public void ResetInputs()
+    {
+       currentValue.Clear(); 
 
-    public void AddDot()
+
+
+    }  
+
+
+  public void AddDot()
     {
         if (hasDot) return;
 
@@ -41,9 +50,9 @@ public class NumbersDisplay : MonoBehaviour
         UpdateDisplay();
     }
 
-   public float Apply()
+   public float Apply(Items itemType)
 {
-    if (currentValue.Length == 0) return 0f;
+    if (currentValue.Length == 0) return ServiceLocator.Get<GlobalPrices>().GetItemCurrentPrice(itemType);
 
     float value = float.Parse(currentValue.ToString(), CultureInfo.InvariantCulture);
     currentValue.Clear();

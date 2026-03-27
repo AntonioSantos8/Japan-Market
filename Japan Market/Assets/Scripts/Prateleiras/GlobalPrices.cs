@@ -7,6 +7,7 @@ public class GlobalPrices : MonoBehaviour
     [SerializeField] PriceDisplayUI _priceDisplay;
   
   Dictionary<Items, float> _globalItemsPrice = new Dictionary<Items, float>();
+  Dictionary<Items, bool> _hasPutItem = new Dictionary<Items, bool>();
 
     [SerializeField] AllIThingsData[] _allItemsData;
     [SerializeField] NumbersDisplay _keyboarNumbers;
@@ -18,8 +19,15 @@ public class GlobalPrices : MonoBehaviour
     }
     void Start(){foreach (Items item in System.Enum.GetValues(typeof(Items)))
 {
-    _globalItemsPrice.Add(item, GetMarketPrice(item));
-}}
+    _globalItemsPrice.Add(item, 0);
+}
+    foreach (Items item in System.Enum.GetValues(typeof(Items)))
+{
+    _hasPutItem.Add(item, false);
+}
+
+
+}
     public float GetItemCurrentPrice(Items item)
     {
         foreach(var pair in _globalItemsPrice)
@@ -37,19 +45,41 @@ public class GlobalPrices : MonoBehaviour
     }
     void SetCurrentPrice(float to, Items item)
     {
-        if(to == 0) return;
+       
        if (_globalItemsPrice.ContainsKey(item))
         _globalItemsPrice[item] = to;
 
     }
     public void Apply()
     {
-        SetCurrentPrice(_keyboarNumbers.Apply() , currentDisplayType);
+        SetCurrentPrice(_keyboarNumbers.Apply(currentDisplayType) , currentDisplayType);
 
        SetCurrentDisplayNone();
     }
     Items currentDisplayType = Items.None;
+public void HasPutItem(Items item)
+    {
+        foreach(var pair in _hasPutItem)
+        {
+            if(pair.Key == item)
+            {
+                if(!_hasPutItem[item])
+                {
+                    _hasPutItem[item] = true;
+                     SetCurrentPrice(GetMarketPrice(item) , item);
+                _priceDisplay.ShowDisplay(GetItemCurrentPrice(item),GetMarketPrice(item));
+                SetCurrentDisplay(item);
+               
 
+               
+
+                }
+                return;
+            }
+        }
+    
+         
+    }
     public  void SetCurrentDisplay(Items to){currentDisplayType=to;}
     public void SetCurrentDisplayNone(){currentDisplayType = Items.None;}
     float GetMarketPrice(Items item)
@@ -67,8 +97,14 @@ public class GlobalPrices : MonoBehaviour
   
     public void EnablePriceDisplayUI(PriceDisplay display)
     {
+        
         _priceDisplay.ShowDisplay(GetItemCurrentPrice(display.GetDisplayItemType),GetMarketPrice(display.GetDisplayItemType));
         SetCurrentDisplay(display.GetDisplayItemType);
+        
+        
+
+
+        
     }
 }
  

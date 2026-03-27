@@ -21,6 +21,7 @@ public class ItemRaycastController : MonoBehaviour
    
 
     public bool isWithBox; 
+    bool canInteract = true;
     public Items currentItemType = Items.None;
   [SerializeField] float followPositionSpeed = 50f;
 [SerializeField] float followRotationSpeed = 50f;
@@ -30,7 +31,7 @@ float currentFollowPosSpeed;
 float currentFollowRotSpeed;
 
     public ItemBox LastBox() => lastBoxHeld;
-
+    public void SetCanInteract(bool value){ canInteract = value;}
     void Awake() 
     {
         ServiceLocator.Register(this);
@@ -76,6 +77,7 @@ float currentFollowRotSpeed;
                     }
                     else 
                     {
+                        if(canInteract)
                         interactable.Interact();
                     }
                 }
