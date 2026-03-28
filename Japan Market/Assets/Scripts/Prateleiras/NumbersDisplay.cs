@@ -2,7 +2,6 @@ using UnityEngine;
 using TMPro;
 using System.Text;
 using System.Globalization;
-using Unity.Android.Gradle.Manifest;
 public class NumbersDisplay : MonoBehaviour
 {
      [SerializeField] TMP_Text _displayText;
