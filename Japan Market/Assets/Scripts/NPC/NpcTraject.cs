@@ -1,6 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -18,7 +18,7 @@ public class NpcTraject : MonoBehaviour
     private int _queueIndex = -1;
 
     [Header("Inventory")]
-    private List<Items> _inventory = new List<Items>();
+    private Dictionary<Items, float> _inventory = new Dictionary<Items, float>();
     private CashRegister _cashRegister;
     private bool _itemsPlaced = false;
     private NpcInstance _npcInstance;
@@ -72,9 +72,9 @@ public class NpcTraject : MonoBehaviour
 
         for (int i = 0; i < _inventory.Count; i++)
         {
-            Items itemType = _inventory[i];
+            Items itemType = _inventory.ElementAt(i).Key;
 
-            _cashRegister.SpawnItemWithAnimation(itemType);
+            _cashRegister.SpawnItemWithAnimation(itemType, _inventory[itemType]);
 
             yield return new WaitForSeconds(0.2f);
         }
@@ -126,7 +126,7 @@ public class NpcTraject : MonoBehaviour
                         Items item = furniture.shelf.TakeRandomItem();
                         if (item != Items.None)
                         {
-                            _inventory.Add(item);
+                            _inventory.Add(item, ServiceLocator.Get<GlobalPrices>().GetItemCurrentPrice(item));
                             Debug.Log("NPC pegou: " + item);
                         }
                     }

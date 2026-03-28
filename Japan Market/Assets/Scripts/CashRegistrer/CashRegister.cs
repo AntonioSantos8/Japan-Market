@@ -254,8 +254,11 @@ public class CashRegister : MonoBehaviour
             if (data.itemType == type)
             {
                 nameItemText.text = data.itemName;
-                priceItemText.text = "¥" + data.singleItemPrice.ToString("F2");
-                totalPrice += data.singleItemPrice;
+                float price = item.gameObject.GetComponent<ItemPrice>().Price;
+                // priceItemText.text = "¥" + data.singleItemPrice.ToString("F2");
+                // totalPrice += data.singleItemPrice;
+                 priceItemText.text = "¥" + price.ToString("F2");
+                totalPrice += price;
 
                 if (itemsQueue.Count == 0)
                 {
@@ -285,7 +288,7 @@ public class CashRegister : MonoBehaviour
             }
         }
     }
-    public void SpawnItemWithAnimation(Items itemType)
+    public void SpawnItemWithAnimation(Items itemType, float price)
     {
         GameObject prefab = GetItemPrefab(itemType);
         if (prefab == null) return;
@@ -296,7 +299,7 @@ public class CashRegister : MonoBehaviour
         Vector3 spawnPos = itemPosition.position + randomOffset;
 
         GameObject newItem = Instantiate(prefab, spawnPos, Quaternion.identity);
-
+        newItem.AddComponent<ItemPrice>().Price = price;
         newItem.transform.localScale = Vector3.zero;
 
         newItem.transform.DOScale(originalPrefabScale, 0.4f)
