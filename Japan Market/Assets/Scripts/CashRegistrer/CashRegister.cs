@@ -331,6 +331,8 @@ public class CashRegister : MonoBehaviour
         cashregisterText.gameObject.SetActive(false);
         totalPriceText.text = "";
         totalPrice = 0;
+
+        itemsQueue.Clear();
     }
     public void PaymentTextCash(string message)
     {

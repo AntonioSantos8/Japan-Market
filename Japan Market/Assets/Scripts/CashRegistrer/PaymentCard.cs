@@ -8,9 +8,11 @@ public class PaymentCard : MonoBehaviour
     [SerializeField] CashRegister cashRegister;
     string currentValue = "";
     float totalPrice;
+    Vector3 originalScale;
     void Start()
     {
         imagepayment.SetActive(false);
+        originalScale = imagepayment.transform.localScale;  
     }
     void OnMouseDown()
     {
@@ -19,6 +21,7 @@ public class PaymentCard : MonoBehaviour
     void OpenPayment()
     {
         imagepayment.SetActive(true);
+        imagepayment.transform.localScale = originalScale;
         cashRegister.PaymentTextCash("Card Checkout");
         totalPrice = cashRegister.GetTotalPrice();
 

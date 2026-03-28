@@ -13,10 +13,12 @@ public class PaymentMoney : MonoBehaviour
     private List<float> moneyStack = new List<float>();
     float totalPrice;
     float customerPaid; 
-    float giving = 0f;  
+    float giving = 0f;
+    Vector3 originalScale;
     void Start()
     {
         imagePayment.SetActive(false);
+        originalScale = imagePayment.transform.localScale;
     }
     void OnMouseDown()
     {
@@ -25,6 +27,7 @@ public class PaymentMoney : MonoBehaviour
     public void OpenPayment()
     {
         imagePayment.SetActive(true);
+        imagePayment.transform.localScale = originalScale;
         cashRegister.PaymentTextCash("Cash Checkout");
         receivedText.gameObject.SetActive(true);
         changeText.gameObject.SetActive(true);
