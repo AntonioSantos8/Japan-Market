@@ -14,7 +14,7 @@ public class PriceDisplay : InteractableBase
     public override void OnLookAt()
     {
         if(_segment.SegmenyType.Equals(Items.None)) return;
-        
+        base.OnLookAt();
 
 
     }   
