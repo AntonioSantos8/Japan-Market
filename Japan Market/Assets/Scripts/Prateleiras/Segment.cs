@@ -327,14 +327,14 @@ visualDelay = 0;
         ChangeMaterialColor(ServiceLocator.Get<FurnitureManager>().TransparentSegment, true);
         return false;
     }
-  if(box.AllowedFurniture != myType)
-{
-ChangeMaterialColor(ServiceLocator.Get<FurnitureManager>().RedSegment);
-return false;
-
-}
         if (!ServiceLocator.Get<ItemRaycastController>().isWithBox) return false;
          ItemBox box = ServiceLocator.Get<ItemRaycastController>().LastBox();
+          if(box.AllowedFurniture != myType)
+        {
+        ChangeMaterialColor(ServiceLocator.Get<FurnitureManager>().RedSegment);
+        return false;
+
+        }
          if(box.IsEmpty() && mySegment == Items.None) return false;
        // if (mySegment != Items.None && mySegment != box.GetBoxType() && !box.IsEmpty()) return;
         if(box.GetBoxType() != mySegment && box.GetBoxType() != Items.None && mySegment != Items.None) return false;
