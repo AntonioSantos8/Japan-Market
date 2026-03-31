@@ -17,8 +17,7 @@ public class PriceDisplayUI : MonoBehaviour
     public void ShowDisplay(float currentPrice, float marketPrice)
     {
         transitionTween?.Kill();
-        transitionTween = transform.DOMove(normalPos.position, transitionTime).SetEase(ease).OnComplete(() => { onFinishReturn?.Invoke(); });
-        transform.DOScale(inicialScale, transitionTime).SetEase(ease);
+        transitionTween = transform.DOMove(normalPos.position, transitionTime).SetEase(ease);
         transform.localScale = new Vector3(0, inicialScale.y, inicialScale.z);
         ServiceLocator.Get<ItemRaycastController>().SetCanInteract(false);
         _currentPrice.text = currentPrice.ToString();
@@ -36,7 +35,8 @@ public class PriceDisplayUI : MonoBehaviour
     public void CloseDisplay() 
     {
         transitionTween?.Kill();
-        transitionTween=  transform.DOMove(returnPos.position, transitionTime).SetEase(ease);
+        transitionTween=  transform.DOMove(returnPos.position, transitionTime).OnComplete(() => { onFinishReturn?.Invoke(); });
+         
         transform.DOScale(new Vector3(0, inicialScale.y, inicialScale.z), transitionTime + .1f).SetEase(ease);
 
 
