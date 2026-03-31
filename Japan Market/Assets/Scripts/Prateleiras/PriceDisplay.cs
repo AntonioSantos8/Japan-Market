@@ -11,12 +11,12 @@ public class PriceDisplay : InteractableBase
          ServiceLocator.Get<GlobalPrices>().EnablePriceDisplayUI(this);
         
     }
-    public override void OnLookAt()
+    public override bool OnLookAt()
     {
-        if(_segment.SegmenyType.Equals(Items.None)) return;
+        if(_segment.SegmenyType.Equals(Items.None)) return false;
         base.OnLookAt();
 
-
+        return true;
     }   
   
   

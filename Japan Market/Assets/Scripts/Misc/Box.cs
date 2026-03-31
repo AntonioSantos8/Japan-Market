@@ -100,10 +100,10 @@ public class Box : InteractableBase
          OnDropEvent?.AddListener(()=>{  ServiceLocator.Get<ItemRaycastController>().isWithBox = false ;    } );
     }
    
-    public override void OnLookAt()
+    public override bool  OnLookAt()
     {
         base.OnLookAt();
-      
+      return true;
     }
  
 }

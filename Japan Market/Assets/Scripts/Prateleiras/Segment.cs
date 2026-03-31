@@ -317,35 +317,36 @@ public void RemoveItem(int groupIndex, int spaceIndex)
 visualDelay = 0;
 
 }
-    public override void OnLookAt()
+    public override bool OnLookAt()
     {
         isLooking = true;
-if(isAnimating)
-    {
+        if(isAnimating)
+       {
        // meshRenderer.material = transparentMaterial;
 
-   ChangeMaterialColor(ServiceLocator.Get<FurnitureManager>().TransparentSegment, true);
-        return;
+        ChangeMaterialColor(ServiceLocator.Get<FurnitureManager>().TransparentSegment, true);
+        return false;
     }
-        if (!ServiceLocator.Get<ItemRaycastController>().isWithBox) return;
+        if (!ServiceLocator.Get<ItemRaycastController>().isWithBox) return false;
          ItemBox box = ServiceLocator.Get<ItemRaycastController>().LastBox();
-         if(box.IsEmpty() && mySegment == Items.None) return;
+         if(box.IsEmpty() && mySegment == Items.None) return false;
        // if (mySegment != Items.None && mySegment != box.GetBoxType() && !box.IsEmpty()) return;
-        if(box.GetBoxType() != mySegment && box.GetBoxType() != Items.None && mySegment != Items.None) return;
+        if(box.GetBoxType() != mySegment && box.GetBoxType() != Items.None && mySegment != Items.None) return false;
 
-        if(IsFull() && box.GetBoxType() != Items.None) return;
+        if(IsFull() && box.GetBoxType() != Items.None) return false;
 
         if (box.IsEmpty())
         {
           //  meshRenderer.material = redMaterial;
 
-        ChangeMaterialColor(ServiceLocator.Get<FurnitureManager>().RedSegment);
+          ChangeMaterialColor(ServiceLocator.Get<FurnitureManager>().RedSegment);
         }
         else
         {
             // meshRenderer.material = greenMaterial;
             ChangeMaterialColor(ServiceLocator.Get<FurnitureManager>().GreenSegment);
         }
+        return true;
     }
     public override void OnLookAway()
     {
