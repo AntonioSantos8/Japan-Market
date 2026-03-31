@@ -1,15 +1,16 @@
-﻿using UnityEngine;
-using Unity.Cinemachine;
-using DG.Tweening;
+﻿using DG.Tweening;
 using System.Collections;
+using System.Collections.Generic;
+using Unity.Cinemachine;
+using UnityEngine;
 
 public class ExpansionStore : MonoBehaviour
 {
     [SerializeField] GameObject[] storesExpansion;
+    [SerializeField] List<AllIThingsData> allExpansions;
     [SerializeField] CinemachineCamera mainCamera;
     [SerializeField] CinemachineCamera upgradeCamera;
     [SerializeField] float animationTime = 1.5f;
-
     GameObject currentStore;
     int currentExpansion = 0;
 
@@ -25,6 +26,7 @@ public class ExpansionStore : MonoBehaviour
 
         currentExpansion++;
         StartCoroutine(UpgradeSequence());
+
     }
 
     IEnumerator UpgradeSequence()
@@ -43,7 +45,7 @@ public class ExpansionStore : MonoBehaviour
             .SetEase(Ease.InBack));
 
         destroySeq.Join(currentStore.transform
-            .DOMoveY(originalPos.y - 2f, animationTime)
+            .DOMoveY(originalPos.y - 3f, animationTime)
             .SetEase(Ease.InQuad));
 
         yield return destroySeq.WaitForCompletion();
@@ -74,7 +76,6 @@ public class ExpansionStore : MonoBehaviour
         upgradeCamera.Priority = 0;
         mainCamera.Priority = 10;
     }
-
     public int GetCurrentExpansion()
     {
         return currentExpansion;
