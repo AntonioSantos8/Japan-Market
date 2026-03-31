@@ -22,7 +22,7 @@ public class Box : InteractableBase
     public override void Interact()
     {
         var controller = ServiceLocator.Get<ItemRaycastController>();
-        controller.PickItem(rb);
+        controller.PickItem(rb, true);
     }
  
     void FixedUpdate()

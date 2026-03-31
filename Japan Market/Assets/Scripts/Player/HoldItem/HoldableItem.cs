@@ -1,28 +1,104 @@
 using UnityEngine;
 
-public class HoldableItem : MonoBehaviour
+public class HoldableItem : InteractableBase
 {
-    public static HoldableItem Current;
+   
 
-    Rigidbody rb;
-
-    void Awake()
+    public override void Interact()
     {
-        rb = GetComponent<Rigidbody>();
+        var controller = ServiceLocator.Get<ItemRaycastController>();
+        controller.PickItem(rb);
+   
     }
-    public void BeginHold()
+
+    public override void Awake()
     {
-        if (TryGetComponent(out ShelfItem shelfItem))
+        base.Awake();
+          currentResistance = maxResistance;    
+    }
+
+    public float followForce = 150f;
+    public float followDrag = 2f;
+
+
+    public bool canBreak = true;
+    public float maxResistance = 100f;
+    public float breakThreshold = 15f;
+
+    float currentResistance;
+    bool isHeld;
+    Transform holdPoint;
+
+    bool isBroken;
+
+    [SerializeField] float rbAngularDamping = 13;
+
+  
+    void FixedUpdate()
+    {
+        if (!isHeld || holdPoint == null) return;
+
+        Vector3 dir = (holdPoint.position - rb.position);
+        Vector3 vel = rb.linearVelocity;
+
+        Vector3 force = dir * followForce - vel * 5f;
+        rb.AddForce(force, ForceMode.Acceleration);
+
+        rb.linearDamping = followDrag;
+    }
+void Start(){rb.angularDamping = rbAngularDamping;}
+    void OnCollisionEnter(Collision collision)
+    {
+        if (!canBreak || isBroken) return;
+
+        float impact = collision.relativeVelocity.magnitude;
+
+        if (impact >= breakThreshold)
         {
-            shelfItem.RemoveFromShelf();
+            currentResistance -= impact;
+
+            if (currentResistance <= 0f)
+            {
+                BreakObject();
+            }
         }
-        if(rb == null) { rb = gameObject.AddComponent<Rigidbody>(); }
-        rb.isKinematic = false;
-        Current = this;
     }
 
-    public void EndHold()
+    void BreakObject()
     {
-        Current = null;
+        if (isBroken) return;
+        isBroken = true;
+
+        Destroy(gameObject);
     }
+
+    public void StartHolding(Transform point)
+    {
+        holdPoint = point;
+        isHeld = true;
+
+        rb.useGravity = true;
+        rb.isKinematic = false;
+        rb.linearDamping = followDrag;
+
+        //if (ServiceLocator.Get<ItemRaycastController>().PickItem(rb))
+          
+    }
+
+    public void StopHolding()
+    {
+        isHeld = false;
+        holdPoint = null;
+
+
+        rb.linearDamping = 0f;
+    }
+
+  
+ 
+   
+   
+   
+ 
 }
+

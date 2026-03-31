@@ -352,7 +352,7 @@ if(isAnimating)
 
       isLooking = false;
        //meshRenderer.material = transparentMaterial;
-
+if(meshRenderer != null)
         ChangeMaterialColor(ServiceLocator.Get<FurnitureManager>().TransparentSegment, true);
 
 

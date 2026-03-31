@@ -7,9 +7,9 @@ public class ItemRaycastController : MonoBehaviour
     [SerializeField] float distance = 3f;
     [SerializeField] LayerMask interactLayer;
     [SerializeField] Transform boxHandPivot;
+    [SerializeField] Transform normalPivot;
 
     private Camera cam;
-    private DragRigidbody dragSystem;
     private HoldableItem currentItem;
 
     private Rigidbody heldItemRb;
@@ -40,7 +40,7 @@ float currentFollowRotSpeed;
     void Start()
     {
         cam = GetComponent<Camera>();
-        dragSystem = ServiceLocator.Get<DragRigidbody>();
+      
     }
 
     void Update()
@@ -69,17 +69,11 @@ float currentFollowRotSpeed;
 
                 if (Input.GetMouseButtonDown(0))
                 {
-                    if (hit.transform.TryGetComponent(out HoldableItem holdable))
-                    {
-                        currentItem = holdable;
-                        currentItem.BeginHold();
-                        dragSystem.HandleInputBegin(Input.mousePosition);
-                    }
-                    else 
-                    {
+                   
+                    
                         if(canInteract)
                         interactable.Interact();
-                    }
+                    
                 }
             }
             else
@@ -95,7 +89,8 @@ float currentFollowRotSpeed;
 
     void FollowHand()
     {
-        if (heldItemRb == null) return;
+        if (heldItemRb == null || !useItemRotation) return;
+        
 
         //Vector3 posOffset = boxHandPivot.position - heldItemRb.position;
         //heldItemRb.linearVelocity = posOffset * followPositionSpeed * Time.deltaTime;
@@ -120,57 +115,51 @@ float currentFollowRotSpeed;
 
     void HandleHeldItemInput()
     {
-        if (Input.GetMouseButton(0) && currentItem != null)
-        {
-            dragSystem.HandleInput(Input.mousePosition);
-        }
-
-        if (Input.GetMouseButtonUp(0) && currentItem != null)
-        {
-            dragSystem.HandleInputEnd(Input.mousePosition);
-            currentItem.EndHold();
-            currentItem = null;
-        }
+        
 
         if (heldItem != null && Input.GetMouseButtonDown(1))
         {
             DropItem();
         }
     }
-
-    public bool PickItem(Rigidbody itemRb)
+bool useItemRotation;
+    public bool PickItem(Rigidbody itemRb, bool useRotationFollow = false)
     {
         if(heldItem != null) return false;
-
+useItemRotation = useRotationFollow;
         heldItemRb = itemRb;
         heldItem = itemRb.transform;
         heldInteractable = itemRb.GetComponentInChildren<InteractableBase>();
 
         //heldItemRb.isKinematic = true;
         //heldItemRb.useGravity = false;
+        
         var phys = heldItemRb.GetComponentInChildren<Box>();
+        
         if (phys != null)
         {
             phys.StartHolding(boxHandPivot);
         }
         else
         {
-            heldItemRb.isKinematic = true;
-            heldItemRb.useGravity = false;
+           
+            var phys2 = heldItemRb.GetComponentInChildren<HoldableItem>();
+            if(phys2 != null)
+              phys2.StartHolding(normalPivot);
         }
+        
 
         currentFollowPosSpeed = 5f;
 currentFollowRotSpeed = 5f;
         
       // heldItem.GetComponent<Collider>().enabled = false;
-       
-  heldItem.gameObject.layer = LayerMask.NameToLayer("InShelf");
+
         if (heldInteractable.gameObject.GetComponent<Box>()) 
         {
             lastBoxHeld = heldItem.GetComponentInChildren<ItemBox>();
             isWithBox = true;
         }
-
+  heldItem.gameObject.layer = LayerMask.NameToLayer("InShelf");
         // heldItem.SetParent(boxHandPivot);
         // heldItem.localPosition = Vector3.zero;
         // heldItem.localRotation = Quaternion.identity; 
@@ -195,8 +184,9 @@ currentFollowRotSpeed = 5f;
         }
         else
         {
-            heldItemRb.isKinematic = false;
-            heldItemRb.useGravity = true;
+             var phys2 = heldItemRb.GetComponentInChildren<HoldableItem>();
+            if(phys2 != null)
+              phys2.StopHolding();
         }
 
         //heldItem.GetComponent<Collider>().enabled = true;
