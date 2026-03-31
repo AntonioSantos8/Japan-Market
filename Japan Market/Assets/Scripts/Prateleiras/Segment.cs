@@ -358,7 +358,7 @@ if(meshRenderer != null)
 
 
     }
-    public void OnLookAtWithRestriction(){if(isLooking) OnLookAt();}
+    public void OnLookAtWithRestriction(){if(isLooking) ServiceLocator.Get<ItemRaycastController>().ReLook(this);}
     void ChangeMaterialColor(Color to,bool isTransparent = false)
     {
         HandleOutlineWidht(isTransparent);

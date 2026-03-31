@@ -2,6 +2,7 @@ using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.UI;
 using DG.Tweening;
+using Unity.VisualScripting;
 
 public class ItemRaycastController : MonoBehaviour
 {
@@ -49,6 +50,7 @@ public class ItemRaycastController : MonoBehaviour
     bool useItemRotation;
 
     public ItemBox LastBox() => lastBoxHeld;
+    public Transform HeldItem => heldItem;
     public void SetCanInteract(bool value){ canInteract = value;}
 
     void Awake() 
@@ -71,7 +73,26 @@ public class ItemRaycastController : MonoBehaviour
         if(Input.GetKeyDown(KeyCode.Keypad9)) 
             Time.timeScale = Time.timeScale /2;
     }
-
+    public void ReRaycast()
+    {
+           Ray ray = cam.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0)); 
+         if (Physics.Raycast(ray, out RaycastHit hit, distance, interactLayer))
+        {
+            if (hit.collider.TryGetComponent(out InteractableBase interactable))
+            {
+                
+                    lastLookedInteractable?.OnLookAway();
+                    lastLookedInteractable = interactable;
+                    bool canLookAt = lastLookedInteractable.OnLookAt();
+                    canInteract = canLookAt;
+                    if(canLookAt)
+                    {
+                        ChangeNormalReticleState(true);
+                    }
+                
+            }
+        }
+    }
     public void ChangeNormalReticleState(bool to)
     {   
         normalReticleScleTween?.Kill();
@@ -81,7 +102,19 @@ public class ItemRaycastController : MonoBehaviour
         else
             normalReticleScleTween = normalReticle.transform.DOScale(normalScale, reticleTweenTime).SetEase(easeReticleScale);
     }
+    public void ReLook(InteractableBase inte)
+    {
+                    bool canLookAt = inte.OnLookAt();
+                    canInteract = canLookAt;
+                    if(canLookAt)
+                    {
+                        ChangeNormalReticleState(true);
+                    }
 
+
+
+        
+    }
     private void PerformInteractionRaycast()
     {
         Ray ray = cam.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0)); 
@@ -94,12 +127,17 @@ public class ItemRaycastController : MonoBehaviour
                 {
                     lastLookedInteractable?.OnLookAway();
                     lastLookedInteractable = interactable;
-                    lastLookedInteractable.OnLookAt();
-                    ChangeNormalReticleState(true);
+                    bool canLookAt = lastLookedInteractable.OnLookAt();
+                    canInteract = canLookAt;
+                    if(canLookAt)
+                    {
+                        ChangeNormalReticleState(true);
+                    }
                 }
 
                 if (Input.GetMouseButton(0) && canInteract)
                 {
+
                     if (currentHoldingInteractable != interactable)
                     {
                         currentHoldingInteractable = interactable;
@@ -254,6 +292,7 @@ public class ItemRaycastController : MonoBehaviour
         heldItemRb = null;
         heldItem = null;
         heldInteractable = null;
+        ReRaycast();
     }
 
     public void OnDrawGizmos()

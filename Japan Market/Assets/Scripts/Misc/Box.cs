@@ -102,6 +102,7 @@ public class Box : InteractableBase
    
     public override bool  OnLookAt()
     {
+        if(ServiceLocator.Get<ItemRaycastController>().HeldItem != null) return false;
         base.OnLookAt();
       return true;
     }

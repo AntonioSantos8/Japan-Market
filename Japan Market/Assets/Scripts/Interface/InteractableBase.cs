@@ -36,7 +36,7 @@ public abstract class InteractableBase : MonoBehaviour, IInteractable
     }
     
     public abstract void Interact();
-
+    
 
     public virtual bool OnLookAt()
     {
