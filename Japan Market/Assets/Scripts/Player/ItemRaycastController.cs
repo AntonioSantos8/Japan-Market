@@ -1,6 +1,7 @@
 using Unity.Cinemachine;
 using UnityEngine;
-
+using UnityEngine.UI;
+using DG.Tweening;
 public class ItemRaycastController : MonoBehaviour
 {
     [Header("Settings")]
@@ -18,7 +19,7 @@ public class ItemRaycastController : MonoBehaviour
     private InteractableBase lastLookedInteractable;
     private ItemBox lastBoxHeld;
 
-   
+    Tween normalReticleScleTween;
 
     public bool isWithBox; 
     bool canInteract = true;
@@ -29,12 +30,17 @@ public class ItemRaycastController : MonoBehaviour
 
 float currentFollowPosSpeed;
 float currentFollowRotSpeed;
-
+    [SerializeField] RectTransform normalReticle;
+    [SerializeField] Vector3 lookAtScale;
+    Vector3 normalScale;
+    [SerializeField] float reticleTweenTime;
+    [SerializeField] Ease easeReticleScale;
     public ItemBox LastBox() => lastBoxHeld;
     public void SetCanInteract(bool value){ canInteract = value;}
     void Awake() 
     {
         ServiceLocator.Register(this);
+        normalScale = normalReticle.transform.localScale;
     }
 
     void Start()
@@ -51,7 +57,22 @@ float currentFollowRotSpeed;
         FollowHand();
         if(Input.GetKeyDown(KeyCode.Keypad9)) Time.timeScale = Time.timeScale /2;
     }
+    public void ChangeNormalReticleState(bool to)
+    {   normalReticleScleTween?.Kill();
+        if(to)
+        {
+             normalReticleScleTween=normalReticle.transform.DOScale(lookAtScale, reticleTweenTime).SetEase(easeReticleScale);
 
+        }
+        else
+        {
+               normalReticleScleTween= normalReticle.transform.DOScale(normalScale, reticleTweenTime).SetEase(easeReticleScale);
+
+
+        }
+
+
+    }
     private void PerformInteractionRaycast()
     {
         Ray ray = cam.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0)); 
@@ -65,6 +86,7 @@ float currentFollowRotSpeed;
                     lastLookedInteractable?.OnLookAway();
                     lastLookedInteractable = interactable;
                     lastLookedInteractable.OnLookAt();
+                    ChangeNormalReticleState(true);
                 }
 
                 if (Input.GetMouseButtonDown(0))
@@ -109,7 +131,9 @@ float currentFollowRotSpeed;
         if (lastLookedInteractable != null)
         {
             lastLookedInteractable.OnLookAway();
+            ChangeNormalReticleState(false);
             lastLookedInteractable = null;
+            
         }
     }
 
