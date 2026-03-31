@@ -31,12 +31,10 @@ public class ItemRaycastController : MonoBehaviour
     bool canInteract = true;
     public Items currentItemType = Items.None;
 
-    [SerializeField] float followPositionSpeed = 50f;
+
     [SerializeField] float followRotationSpeed = 50f;
     [SerializeField] float speedGrowRate = 6f;
 
-    float currentFollowPosSpeed;
-    float currentFollowRotSpeed;
 
     [SerializeField] RectTransform normalReticle;
     [SerializeField] Vector3 lookAtScale;
@@ -237,9 +235,6 @@ public class ItemRaycastController : MonoBehaviour
             if(phys2 != null)
                 phys2.StartHolding(normalPivot);
         }
-
-        currentFollowPosSpeed = 5f;
-        currentFollowRotSpeed = 5f;
 
         if (heldInteractable.gameObject.GetComponent<Box>()) 
         {

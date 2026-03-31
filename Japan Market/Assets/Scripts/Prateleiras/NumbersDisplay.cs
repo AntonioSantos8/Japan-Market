@@ -1,10 +1,32 @@
-using UnityEngine;
-using TMPro;
-using System.Text;
+using DG.Tweening;
 using System.Globalization;
+using System.Text;
+using TMPro;
+using UnityEngine;
 public class NumbersDisplay : MonoBehaviour
 {
      [SerializeField] TMP_Text _displayText;
+    [SerializeField] Transform normalPos, returnPos;
+    [SerializeField] float transitionTime;
+    [SerializeField] Ease ease;
+    Tween transitionTween;
+    Vector3 inicialScale;
+    public void GoToReturnPos() { transform.localPosition = returnPos.localPosition ; }
+    public void ShowNumbers()
+    {
+        transitionTween?.Kill();
+        transitionTween = transform.DOLocalMove(normalPos.localPosition, transitionTime).SetEase(Ease.OutBack);
+        transform.localScale = new Vector3(inicialScale.x, 0, inicialScale.z);
+        transform.DOScale(inicialScale, transitionTime).SetEase(ease);
+   
+       
+
+    }
+   
+    private void Awake()
+    {
+        inicialScale = transform.localScale;
+    }
 
     private StringBuilder currentValue = new StringBuilder();
     private bool hasDot = false;
