@@ -38,18 +38,18 @@ public abstract class InteractableBase : MonoBehaviour, IInteractable
     public abstract void Interact();
 
 
-    public virtual void OnLookAt()
+    public virtual bool OnLookAt()
     {
                 
         if(!canInteract) {          
           //  ServiceLocator.Get<PlayerInteractions>().GetInteractionText().SetActive(false);
-          outline.enabled = false; return; 
+          outline.enabled = false; return false; 
         }
         if (!isOutlineable)
         {
             //ServiceLocator.Get<F2FGrabSystem>().CanThrow = true;
             outline.enabled = false;
-            return;
+            return false;
 
 
         }
@@ -60,6 +60,7 @@ public abstract class InteractableBase : MonoBehaviour, IInteractable
         //ServiceLocator.Get<PlayerInteractions>().SetInteractionText(SetInteractionText());
         outline.enabled = true;
         //ServiceLocator.Get<F2FGrabSystem>().CanThrow = false;
+        return true;
     }
     public virtual string SetInteractionText()
     {
