@@ -14,10 +14,11 @@ public class ExpansionStore : MonoBehaviour
     [SerializeField] float animationTime = 1.5f;
     GameObject currentStore;
     int currentExpansion = 0;
-   
+    
     void Start()
     {
         currentStore = storesExpansion[0];
+          
     }
     public void BuyExpansion()
     {
