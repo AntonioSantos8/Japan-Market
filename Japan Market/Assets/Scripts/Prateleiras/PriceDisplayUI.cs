@@ -19,6 +19,7 @@ public class PriceDisplayUI : MonoBehaviour
         transitionTween?.Kill();
         transitionTween = transform.DOMove(normalPos.position, transitionTime).SetEase(ease);
         transform.localScale = new Vector3(0, inicialScale.y, inicialScale.z);
+          transform.DOScale(inicialScale, transitionTime ).SetEase(ease);
         ServiceLocator.Get<ItemRaycastController>().SetCanInteract(false);
         _currentPrice.text = currentPrice.ToString();
         _marketPrice.text = marketPrice.ToString();
