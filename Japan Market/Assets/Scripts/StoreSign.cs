@@ -13,7 +13,7 @@ public class StoreSign : MonoBehaviour
     float originalYRotation;
 
     void Start()
-    {
+    {//so pq tu pediu
         originalPos = transform.localPosition;
         originalYRotation = transform.eulerAngles.y;
     }
