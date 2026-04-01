@@ -89,7 +89,7 @@ public class ExpansionStore : MonoBehaviour
 
         yield return buildSeq.WaitForCompletion();
 
-        upgradeCamera.transform.DOShakePosition(0.1f, 0.5f);
+        upgradeCamera.transform.DOShakePosition(0.1f, 0.4f);
 
         yield return new WaitForSeconds(0.3f);
 

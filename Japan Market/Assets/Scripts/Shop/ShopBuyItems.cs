@@ -11,9 +11,10 @@ public class ShopBuyItems : MonoBehaviour
     Vector3[] originalScales;
     bool isTweening;
     GameObject currentItemPrefab, currentItemBox;
-    [SerializeField] TMP_Text nameText, descriptionText,
-     singlePriceText, boxPriceText;
-     [SerializeField] Transform boxesSpawnPoint;
+    [SerializeField]
+    TMP_Text nameText, descriptionText,
+     singlePriceText;
+    [SerializeField] Transform boxesSpawnPoint;
     void Start()
     {
         originalScales = new Vector3[objects.Length];
@@ -38,10 +39,8 @@ public class ShopBuyItems : MonoBehaviour
             currentItemPrefab = at.itemPrefab;
             currentItemBox = at.itemBoxPrefab;
             nameText.text = at.name;
-           descriptionText.text = at.description;
-           singlePriceText.text = at.singleItemPrice.ToString();
-            if(boxPriceText != null)
-            boxPriceText.text = at.boxPrice.ToString();
+            descriptionText.text = at.description;
+            singlePriceText.text = at.singleItemPrice.ToString();
         }
     }
     public void BuyBox()
@@ -55,7 +54,7 @@ public class ShopBuyItems : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.Q)) Previous();
         if (Input.GetKeyDown(KeyCode.E)) Next();
-   
+
     }
 
     public void Next()
@@ -66,7 +65,7 @@ public class ShopBuyItems : MonoBehaviour
     public void Previous()
     {
         ChangeItem(currentIndex - 1 < 0 ? objects.Length - 1 : currentIndex - 1);
-      
+
     }
 
     void ChangeItem(int newIndex)
@@ -78,12 +77,10 @@ public class ShopBuyItems : MonoBehaviour
         Transform current = objects[currentIndex].transform;
         Transform next = objects[newIndex].transform;
 
-       
+
         DOTween.Kill(nameText.transform);
         DOTween.Kill(descriptionText.transform);
         DOTween.Kill(singlePriceText.transform);
-        if (boxPriceText != null)
-            DOTween.Kill(boxPriceText.transform);
         //DOTween.Kill(buySingleButton);
         //DOTween.Kill(buyBoxButton);
 
@@ -93,14 +90,12 @@ public class ShopBuyItems : MonoBehaviour
         uiClose.Append(nameText.transform.DOScaleX(0f, duration));
         uiClose.Join(descriptionText.transform.DOScaleX(0f, duration));
         uiClose.Join(singlePriceText.transform.DOScaleX(0f, duration));
-        if (boxPriceText != null)
-            uiClose.Join(boxPriceText.transform.DOScaleX(0f, duration));
         //uiClose.Join(buySingleButton.DOScaleX(0f, duration));
         //uiClose.Join(buyBoxButton.DOScaleX(0f, duration));
 
         uiClose.OnComplete(() =>
         {
-           
+
             current.DOScaleY(0f, duration).OnComplete(() =>
             {
                 objects[currentIndex].SetActive(false);
@@ -111,7 +106,7 @@ public class ShopBuyItems : MonoBehaviour
                 startScale.y = 0;
                 next.localScale = startScale;
 
-            
+
                 if (next.TryGetComponent(out ItemsExample atd))
                 {
                     AllIThingsData at = atd.GetAllThingsData();
@@ -122,24 +117,20 @@ public class ShopBuyItems : MonoBehaviour
                     nameText.text = at.name;
                     descriptionText.text = at.description;
                     singlePriceText.text = at.singleItemPrice.ToString();
-                    if (boxPriceText != null)
-                        boxPriceText.text = at.boxPrice.ToString();
                 }
 
-            
+
                 next.DOScaleY(originalScales[currentIndex].y, duration)
                     .SetEase(Ease.OutBack)
                     .OnComplete(() =>
                     {
-                     
+
                         Sequence uiOpen = DOTween.Sequence();
 
                         uiOpen.Append(nameText.transform.DOScaleX(1f, duration).SetEase(Ease.OutBack));
                         uiOpen.Join(descriptionText.transform.DOScaleX(1f, duration).SetEase(Ease.OutBack));
                         uiOpen.Join(singlePriceText.transform.DOScaleX(1f, duration).SetEase(Ease.OutBack));
-                        if (boxPriceText != null)
-                            uiOpen.Join(boxPriceText.transform.DOScaleX(1f, duration).SetEase(Ease.OutBack));
-                       // uiOpen.Join(buySingleButton.DOScaleX(1f, duration).SetEase(Ease.OutBack));
+                        // uiOpen.Join(buySingleButton.DOScaleX(1f, duration).SetEase(Ease.OutBack));
                         //uiOpen.Join(buyBoxButton.DOScaleX(1f, duration).SetEase(Ease.OutBack));
 
                         uiOpen.OnComplete(() =>
