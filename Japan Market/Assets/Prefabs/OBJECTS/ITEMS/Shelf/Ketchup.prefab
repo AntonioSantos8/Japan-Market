@@ -110,7 +110,7 @@ BoxCollider:
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
   m_ProvidesContacts: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
@@ -153,6 +153,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3b5b663da327bea4787cf5e988bbbb43, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HoldableItem
+  OnDropEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  OnPickEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  interactionText: 
+  followForce: 150
+  followDrag: 2
+  canBreak: 1
+  maxResistance: 100
+  breakThreshold: 15
+  rbAngularDamping: 13
 --- !u!114 &3001840243376221558
 MonoBehaviour:
   m_ObjectHideFlags: 0
