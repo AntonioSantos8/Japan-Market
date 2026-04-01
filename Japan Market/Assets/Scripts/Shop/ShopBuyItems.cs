@@ -71,7 +71,7 @@ public class ShopBuyItems : MonoBehaviour
 
     void ChangeItem(int newIndex)
     {
-        if (isTweening || newIndex == currentIndex) return;
+        if (isTweening) return;
 
         isTweening = true;
 
@@ -149,5 +149,9 @@ public class ShopBuyItems : MonoBehaviour
                     });
             });
         });
+    }
+    public void RefreshCurrentItem()
+    {
+        ChangeItem(currentIndex);
     }
 }
