@@ -89,7 +89,9 @@ public class ExpansionStore : MonoBehaviour
 
         yield return buildSeq.WaitForCompletion();
 
-       yield return new WaitForSeconds(0.3f);
+        upgradeCamera.transform.DOShakePosition(0.1f, 0.5f);
+
+        yield return new WaitForSeconds(0.3f);
 
         upgradeCamera.Priority = 0;
         mainCamera.Priority = 10;
