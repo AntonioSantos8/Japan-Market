@@ -20,7 +20,7 @@ public class PriceDisplayUI : MonoBehaviour
         transitionTween = transform.DOMove(normalPos.position, transitionTime).SetEase(ease);
         transform.localScale = new Vector3(0, inicialScale.y, inicialScale.z);
           transform.DOScale(inicialScale, transitionTime ).SetEase(ease);
-        ServiceLocator.Get<ItemRaycastController>().SetCanInteract(false);
+        ServiceLocator.Get<ItemRaycastController>().SetGeneralCanInteract(false);
         _currentPrice.text = currentPrice.ToString();
         _marketPrice.text = marketPrice.ToString();
         Cursor.lockState = CursorLockMode.None;
@@ -51,6 +51,6 @@ public class PriceDisplayUI : MonoBehaviour
         ServiceLocator.Get<PlayerMotor>().SetCanMove(true);
     }
    
-    public void SetCanInteractTrue(){ ServiceLocator.Get<ItemRaycastController>().SetCanInteract(true); }
+    public void SetCanInteractTrue(){ ServiceLocator.Get<ItemRaycastController>().SetGeneralCanInteract(true); }
    
 }

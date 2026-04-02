@@ -41,6 +41,8 @@ public class ItemRaycastController : MonoBehaviour
     Vector3 normalScale;
     [SerializeField] float reticleTweenTime;
     [SerializeField] Ease easeReticleScale;
+    bool generalCanInteract = true;
+    public void SetGeneralCanInteract(bool to){ generalCanInteract = to;}
 
     float currentHoldTime;
     InteractableBase currentHoldingInteractable;
@@ -133,7 +135,7 @@ public class ItemRaycastController : MonoBehaviour
                     }
                 }
 
-                if (Input.GetMouseButton(0) && canInteract)
+                if (Input.GetMouseButton(0) && canInteract && generalCanInteract)
                 {
 
                     if (currentHoldingInteractable != interactable)
