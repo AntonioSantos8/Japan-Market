@@ -137,7 +137,7 @@ public class ExpansionStore : MonoBehaviour
     }
     IEnumerator TriangleEffect(Transform target)
     {
-        int count = 15;
+        int count = 23;
 
         for (int i = 0; i < count; i++)
         {

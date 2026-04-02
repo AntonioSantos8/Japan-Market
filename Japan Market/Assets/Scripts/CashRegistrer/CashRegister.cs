@@ -21,6 +21,7 @@ public class CashRegister : MonoBehaviour
     [SerializeField] GameObject quitButton;
     [SerializeField] Transform cashPosition;
    [SerializeField] CinemachineCamera cam;
+    [SerializeField] GameObject reticle;
     public Transform itemPosition;
     [SerializeField] float zoom = 25f;
     float zoomOri;
@@ -101,7 +102,7 @@ public class CashRegister : MonoBehaviour
     void EnterCashMode()
     {
         cashMode = true;
-        cam.Priority = 6;
+       
 
         playerLook.ResetLook();
 
@@ -112,6 +113,7 @@ public class CashRegister : MonoBehaviour
         playerMotor.SetCanMove(false);
         playerMotor.ResetCameraEffects();
         playerLook.CanLook = false;
+        reticle.SetActive(false);
 
         Transform player = playerMotor.transform;
 
@@ -129,7 +131,7 @@ public class CashRegister : MonoBehaviour
     public void ExitCashMode()
     {
         cashMode = false;
-        cam.Priority = 0;
+    
 
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
@@ -137,6 +139,7 @@ public class CashRegister : MonoBehaviour
         quitButton.SetActive(false);
         playerMotor.SetCanMove(true);
         playerLook.CanLook = true;
+        reticle.SetActive(true);
 
         DOTween.To(
             () => cam.Lens.FieldOfView,
