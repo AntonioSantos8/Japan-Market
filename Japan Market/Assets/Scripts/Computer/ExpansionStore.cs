@@ -14,7 +14,7 @@ public class ExpansionStore : MonoBehaviour
     [SerializeField] float animationTime = 1.5f;
     [SerializeField] Color emissionColor = Color.white;
     [SerializeField] float emissionIntensity = 5f;
-    [SerializeField] GameObject trianglePrefab;
+    [SerializeField] GameObject cubeEffect;
     GameObject currentStore;
     int currentExpansion = 0;
     Material currentMaterial;
@@ -79,7 +79,7 @@ public class ExpansionStore : MonoBehaviour
             Quaternion.identity
         );
 
-       SpawnTriangle(currentStore.transform);
+       SpawnCube(currentStore.transform);
 
       ActiveEmission(currentStore);
 
@@ -131,17 +131,17 @@ public class ExpansionStore : MonoBehaviour
         upgradeCamera.Priority = 0;
         mainCamera.Priority = 10;
     }
-    void SpawnTriangle(Transform target)
+    void SpawnCube(Transform target)
     {
-        StartCoroutine(TriangleEffect(target));
+        StartCoroutine(CubeEffect(target));
     }
-    IEnumerator TriangleEffect(Transform target)
+    IEnumerator CubeEffect(Transform target)
     {
-        int count = 23;
+        int count = 21;
 
         for (int i = 0; i < count; i++)
         {
-            GameObject tri = Instantiate(trianglePrefab);
+            GameObject tri = Instantiate(cubeEffect);
 
             Vector3 randomOffset = new Vector3(
                 Random.Range(-1.5f, 1.5f),
