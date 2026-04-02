@@ -44,7 +44,7 @@ public class Segment : InteractableBase
     public bool IsAnimating { set => isAnimating = value; }
 
 
-    MeshRenderer meshRenderer;
+    [SerializeField]MeshRenderer outlineMeshRenderer;
 
     int activeTweens;
     float visualDelay;
@@ -63,7 +63,8 @@ Tween outlineColorTween;
         for (int i = 0; i < groups.Length; i++)
             groups[i].Init();
 
-        meshRenderer = GetComponent<MeshRenderer>();
+if(outlineMeshRenderer == null)
+        outlineMeshRenderer = GetComponent<MeshRenderer>();
 
 
         outline = gameObject.GetComponent<Outline>();
@@ -322,7 +323,7 @@ visualDelay = 0;
         isLooking = true;
         if(isAnimating)
        {
-       // meshRenderer.material = transparentMaterial;
+       // outlineMeshRenderer.material = transparentMaterial;
 
         ChangeMaterialColor(ServiceLocator.Get<FurnitureManager>().TransparentSegment, true);
         return false;
@@ -343,13 +344,13 @@ visualDelay = 0;
 
         if (box.IsEmpty())
         {
-          //  meshRenderer.material = redMaterial;
+          //  outlineMeshRenderer.material = redMaterial;
 
           ChangeMaterialColor(ServiceLocator.Get<FurnitureManager>().RedSegment);
         }
         else
         {
-            // meshRenderer.material = greenMaterial;
+            // outlineMeshRenderer.material = greenMaterial;
             ChangeMaterialColor(ServiceLocator.Get<FurnitureManager>().GreenSegment);
         }
         return true;
@@ -358,8 +359,8 @@ visualDelay = 0;
     {
 
       isLooking = false;
-       //meshRenderer.material = transparentMaterial;
-if(meshRenderer != null)
+       //outlineMeshRenderer.material = transparentMaterial;
+if(outlineMeshRenderer != null)
         ChangeMaterialColor(ServiceLocator.Get<FurnitureManager>().TransparentSegment, true);
 
 
@@ -369,8 +370,8 @@ if(meshRenderer != null)
     {
         HandleOutlineWidht(isTransparent);
          materialColorTween?.Kill();
-          //  materialColorTween = meshRenderer.material.DOColor(to, .25f).SetEase(Ease.OutBack);
-           Material mat = meshRenderer.material 
+          //  materialColorTween = outlineMeshRenderer.material.DOColor(to, .25f).SetEase(Ease.OutBack);
+           Material mat = outlineMeshRenderer.material 
         ;
 
 mat.EnableKeyword("_EMISSION");
@@ -416,8 +417,8 @@ HandleOutlineColor(  ServiceLocator.Get<FurnitureManager>().RedOutline);
 ).OnComplete(() => { outline.enabled = false; isOutlineTransiting = false; });
            
             DOTween.To(
-    () => meshRenderer.material.GetColor("_EmissionColor"),
-    x => meshRenderer.material.SetColor("_EmissionColor", x),
+    () => outlineMeshRenderer.material.GetColor("_EmissionColor"),
+    x => outlineMeshRenderer.material.SetColor("_EmissionColor", x),
     new Color(0f, 0f, 0f),
     0.25f);
 
