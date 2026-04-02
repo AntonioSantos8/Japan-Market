@@ -12,13 +12,16 @@ public class ExpansionStore : MonoBehaviour
     [SerializeField] CinemachineCamera upgradeCamera;
     [SerializeField] ShopBuyItems shopBuyItems;
     [SerializeField] float animationTime = 1.5f;
+    [SerializeField] Color emissionColor = Color.white;
+    [SerializeField] float emissionIntensity = 5f;
+    ParticleSystem particle;
     GameObject currentStore;
     int currentExpansion = 0;
-    
+    Material currentMaterial;
+
     void Start()
     {
         currentStore = storesExpansion[0];
-          
     }
     public void BuyExpansion()
     {
@@ -34,7 +37,6 @@ public class ExpansionStore : MonoBehaviour
     {
         if (currentExpansion < allExpansions.Count)
             itemsExample.SetAllThingsData(allExpansions[currentExpansion]);
-        
     }
     IEnumerator UpgradeSequence()
     {
@@ -71,8 +73,13 @@ public class ExpansionStore : MonoBehaviour
             Quaternion.identity
         );
 
+     ActiveEmission(currentStore);
+
         Vector3 targetScale = currentStore.transform.localScale;
         currentStore.transform.localScale = Vector3.zero;
+
+        float emissionValue = 0f;
+        EmissionColor(0f);
 
         Sequence buildSeq = DOTween.Sequence();
 
@@ -88,7 +95,26 @@ public class ExpansionStore : MonoBehaviour
                 .SetEase(Ease.OutBack)
         );
 
+
+        buildSeq.Join(
+            DOTween.To(
+                () => emissionValue,
+                x =>
+                {
+                    emissionValue = x;
+                    EmissionColor(emissionValue);
+                },
+                emissionIntensity,
+                animationTime
+            )
+        );
+
         yield return buildSeq.WaitForCompletion();
+
+
+        EmissionColor(0f);
+        if (currentMaterial != null)
+            currentMaterial.DisableKeyword("_EMISSION");
 
         upgradeCamera.transform.DOShakePosition(0.1f, 0.4f);
 
@@ -97,6 +123,25 @@ public class ExpansionStore : MonoBehaviour
         upgradeCamera.Priority = 0;
         mainCamera.Priority = 10;
     }
- public int GetCurrentExpansion() => currentExpansion;
- public bool HasMoreExpansions() => currentExpansion + 1 < storesExpansion.Length;
+    void ActiveEmission(GameObject obj)
+    {
+        Renderer rend = obj.GetComponentInChildren<Renderer>();
+
+        if (rend != null)
+        {
+            currentMaterial = rend.material;
+            currentMaterial.EnableKeyword("_EMISSION");
+            currentMaterial.SetColor("_EmissionColor", Color.black);
+        }
+    }
+    void EmissionColor(float intensity)
+    {
+        if (currentMaterial != null)
+        {
+            Color finalColor = emissionColor * intensity;
+            currentMaterial.SetColor("_EmissionColor", finalColor);
+        }
+    }
+    public int GetCurrentExpansion() => currentExpansion;
+    public bool HasMoreExpansions() => currentExpansion + 1 < storesExpansion.Length;
 }
