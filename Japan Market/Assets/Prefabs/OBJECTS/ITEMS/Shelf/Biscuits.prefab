@@ -43,7 +43,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1110646384426808362}
   - component: {fileID: 6438276516856496684}
-  - component: {fileID: 9135709416840808864}
   - component: {fileID: 1712080303964124204}
   - component: {fileID: 6529221819138665286}
   m_Layer: 7
@@ -96,31 +95,6 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!114 &9135709416840808864
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5747615700543288070}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3b5b663da327bea4787cf5e988bbbb43, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::HoldableItem
-  OnDropEvent:
-    m_PersistentCalls:
-      m_Calls: []
-  OnPickEvent:
-    m_PersistentCalls:
-      m_Calls: []
-  interactionText: 
-  followForce: 150
-  followDrag: 2
-  canBreak: 1
-  maxResistance: 100
-  breakThreshold: 15
-  rbAngularDamping: 13
 --- !u!114 &1712080303964124204
 MonoBehaviour:
   m_ObjectHideFlags: 0
