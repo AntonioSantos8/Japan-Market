@@ -14,6 +14,7 @@ public class FurnitureData : ScriptableObject
 
 public enum FurnitureType
 {
+    None,
     Shelf,
     Freezer,
     Counter

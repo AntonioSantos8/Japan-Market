@@ -38,6 +38,7 @@ public class Segment : InteractableBase
     [SerializeField] Material greenMaterial, redMaterial, transparentMaterial;
     [SerializeField] Shelf shelf;
     [SerializeField]FurnitureType myType;
+    public   FurnitureType FurnitureType => myType;
 
 
     public SegmentTypeGroup[] Groups { get { return groups; } set => groups = value; }
@@ -281,7 +282,7 @@ public void RemoveItem(int groupIndex, int spaceIndex)
     ItemBox box = ServiceLocator.Get<ItemRaycastController>().LastBox();
 
     if(mySegment==Items.None && box.IsEmpty()) return;
-    if(box.AllowedFurniture != myType){ print("Furniture Errada"); return;}
+    if(box.AllowedFurniture != myType && !box.AllowedFurniture.Equals(FurnitureType.None)){ print("Furniture Errada"); return;}
     if(box.isAnimating) return;
 
     if (box.IsEmpty())
@@ -330,7 +331,7 @@ visualDelay = 0;
     }
         if (!ServiceLocator.Get<ItemRaycastController>().isWithBox) return false;
          ItemBox box = ServiceLocator.Get<ItemRaycastController>().LastBox();
-          if(box.AllowedFurniture != myType)
+          if(box.AllowedFurniture != myType && !box.AllowedFurniture.Equals(FurnitureType.None))
         {
         ChangeMaterialColor(ServiceLocator.Get<FurnitureManager>().RedSegment);
         return false;

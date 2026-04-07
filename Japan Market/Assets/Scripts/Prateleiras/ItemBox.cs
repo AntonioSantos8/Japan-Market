@@ -187,6 +187,7 @@ segment.OnLookAtWithRestriction();
             rb.isKinematic = true;
 
         UpdateBoxType(type);
+        allowedFurniture = segment.FurnitureType;
         return true;
     }
 
@@ -198,7 +199,9 @@ public void SetBoxType(Items type)
         boxType = type;
 
     }
+    
     public Transform TakeItemByType(Items type)
+
     {
 visualDelay = 0;
         for (int g = 0; g < groups.Length; g++)
@@ -214,6 +217,7 @@ visualDelay = 0;
 
                 if (IsEmpty())
                 {
+                    allowedFurniture = FurnitureType.None;
                     boxType = Items.None;
                     UpdateVisual();
                 }
@@ -222,6 +226,7 @@ visualDelay = 0;
                 return item;
             }
         }
+        allowedFurniture = FurnitureType.None;
         boxType = Items.None;
         return null;
     }
