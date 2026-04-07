@@ -18,7 +18,6 @@ public class ExpansionStore : MonoBehaviour
     GameObject currentStore;
     int currentExpansion = 0;
     Material currentMaterial;
-
     void Start()
     {
         currentStore = storesExpansion[0];
@@ -35,13 +34,11 @@ public class ExpansionStore : MonoBehaviour
 
         StartCoroutine(UpgradeSequence());
     }
-
     void UpdateItem()
     {
         if (currentExpansion < allExpansions.Count)
             itemsExample.SetAllThingsData(allExpansions[currentExpansion]);
     }
-
     IEnumerator UpgradeSequence()
     {
         upgradeCamera.Priority = 10;
@@ -51,7 +48,7 @@ public class ExpansionStore : MonoBehaviour
 
         Vector3 originalPos = currentStore.transform.position;
 
-       
+
         Sequence destroySeq = DOTween.Sequence();
 
         destroySeq.Append(
@@ -70,7 +67,7 @@ public class ExpansionStore : MonoBehaviour
 
         Destroy(currentStore);
 
-        
+
         Vector3 spawnPos = originalPos + Vector3.down * 2f;
 
         currentStore = Instantiate(
@@ -79,9 +76,12 @@ public class ExpansionStore : MonoBehaviour
             Quaternion.identity
         );
 
-       SpawnCube(currentStore.transform);
+        currentStore.SetActive(false);
+        SpawnCube(currentStore.transform);
+        yield return new WaitForSeconds(0.7f);
+        currentStore.SetActive(true);
 
-      ActiveEmission(currentStore);
+        ActiveEmission(currentStore);
 
         Vector3 targetScale = currentStore.transform.localScale;
         currentStore.transform.localScale = Vector3.zero;
@@ -118,12 +118,12 @@ public class ExpansionStore : MonoBehaviour
 
         yield return buildSeq.WaitForCompletion();
 
-       
+
         EmissionColor(0f);
         if (currentMaterial != null)
             currentMaterial.DisableKeyword("_EMISSION");
 
-       
+
         upgradeCamera.transform.DOShakePosition(0.1f, 0.4f);
 
         yield return new WaitForSeconds(0.3f);
@@ -137,48 +137,80 @@ public class ExpansionStore : MonoBehaviour
     }
     IEnumerator CubeEffect(Transform target)
     {
-        int count = 21;
+        int count = 55;
+
+        Vector3 basePos = target.position;
 
         for (int i = 0; i < count; i++)
         {
-            GameObject tri = Instantiate(cubeEffect);
+            GameObject cube = Instantiate(cubeEffect);
+
+            float radius = 2f;
+
 
             Vector3 randomOffset = new Vector3(
-                Random.Range(-1.5f, 1.5f),
-                0,
-                Random.Range(-1.5f, 1.5f)
+                Random.Range(-radius, radius),
+                Random.Range(0f, 1.5f),
+                Random.Range(-radius, radius)
             );
 
-            Vector3 startPos = target.position + randomOffset;
-            Vector3 endPos = startPos + Vector3.up * Random.Range(2f, 4f);
+            Vector3 startPos = basePos + randomOffset;
 
-            tri.transform.position = startPos;
-            tri.transform.localScale = Vector3.zero;
+            Vector3 endPos = startPos + Vector3.up * Random.Range(1f, 2.5f);
+
+            cube.transform.position = startPos;
+            cube.transform.localScale = Vector3.zero;
 
             float duration = Random.Range(0.8f, 1.2f);
 
             Sequence seq = DOTween.Sequence();
 
             seq.Append(
-                tri.transform.DOScale(0.2f, 0.2f).SetEase(Ease.OutBack)
+                cube.transform
+                    .DOScale(Random.Range(0.15f, 0.3f), 0.2f)
+                    .SetEase(Ease.OutBack)
             );
 
-           seq.Join(
-                tri.transform.DOMove(endPos, duration).SetEase(Ease.OutQuad)
-            );
 
             seq.Join(
-                tri.transform.DORotate(new Vector3(0, 0, 180f), duration)
+                cube.transform
+                    .DOMove(endPos, duration)
+                    .SetEase(Ease.OutCubic)
             );
 
-            
+
+            seq.Join(
+                cube.transform
+                    .DOBlendableMoveBy(
+                        new Vector3(
+                            Random.Range(-0.2f, 0.2f),
+                            0,
+                            Random.Range(-0.2f, 0.2f)
+                        ),
+                        duration
+                    )
+            );
+            seq.Join(
+                cube.transform
+                    .DORotate(
+                        new Vector3(
+                            Random.Range(0, 360),
+                            Random.Range(0, 360),
+                            Random.Range(0, 360)
+                        ),
+                        duration,
+                        RotateMode.FastBeyond360
+                    )
+            );
             seq.Append(
-                tri.transform.DOScale(0f, 0.3f)
+                cube.transform
+                    .DOScale(0f, 0.25f)
+                    .SetEase(Ease.InBack)
             );
 
-            Destroy(tri, duration + 0.5f);
+            Destroy(cube, duration + 0.5f);
 
-            yield return new WaitForSeconds(0.05f);
+            yield return new WaitForSeconds(0.02f);
         }
     }
     void ActiveEmission(GameObject obj)
@@ -200,6 +232,6 @@ public class ExpansionStore : MonoBehaviour
             currentMaterial.SetColor("_EmissionColor", finalColor);
         }
     }
-   public int GetCurrentExpansion() => currentExpansion;
-   public bool HasMoreExpansions() => currentExpansion + 1 < storesExpansion.Length;
+    public int GetCurrentExpansion() => currentExpansion;
+    public bool HasMoreExpansions() => currentExpansion + 1 < storesExpansion.Length;
 }
