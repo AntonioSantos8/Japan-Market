@@ -78,7 +78,7 @@ public class ExpansionStore : MonoBehaviour
 
         currentStore.SetActive(false);
         SpawnCube(currentStore.transform);
-        yield return new WaitForSeconds(0.7f);
+        yield return new WaitForSeconds(0.5f);
         currentStore.SetActive(true);
 
         ActiveEmission(currentStore);
@@ -137,7 +137,7 @@ public class ExpansionStore : MonoBehaviour
     }
     IEnumerator CubeEffect(Transform target)
     {
-        int count = 55;
+        int count = 57;
 
         Vector3 basePos = target.position;
 
@@ -146,7 +146,6 @@ public class ExpansionStore : MonoBehaviour
             GameObject cube = Instantiate(cubeEffect);
 
             float radius = 2f;
-
 
             Vector3 randomOffset = new Vector3(
                 Random.Range(-radius, radius),
@@ -168,16 +167,15 @@ public class ExpansionStore : MonoBehaviour
             seq.Append(
                 cube.transform
                     .DOScale(Random.Range(0.15f, 0.3f), 0.2f)
-                    .SetEase(Ease.OutBack)
+                    .SetEase(Ease.OutSine)
             );
 
 
             seq.Join(
                 cube.transform
                     .DOMove(endPos, duration)
-                    .SetEase(Ease.OutCubic)
+                    .SetEase(Ease.OutQuad)
             );
-
 
             seq.Join(
                 cube.transform
@@ -205,7 +203,7 @@ public class ExpansionStore : MonoBehaviour
             seq.Append(
                 cube.transform
                     .DOScale(0f, 0.25f)
-                    .SetEase(Ease.InBack)
+                    .SetEase(Ease.InSine)
             );
 
             Destroy(cube, duration + 0.5f);
