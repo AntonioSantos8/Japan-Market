@@ -4,7 +4,7 @@ public class ObjectEmission : MonoBehaviour
     Renderer rend;
     Material mat;
     void Start()
-    {
+    {//oi antonio
         rend = GetComponent<Renderer>();
         mat = rend.material;
     }
