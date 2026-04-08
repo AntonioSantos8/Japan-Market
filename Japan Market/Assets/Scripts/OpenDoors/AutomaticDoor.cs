@@ -54,8 +54,8 @@ public class AutomaticDoor : MonoBehaviour
         leftTween?.Kill();
         rightTween?.Kill();
 
-        leftTween = doorleft.DOMove(leftOpenPos, speed).SetEase(easeType);
-        rightTween = doorRigth.DOMove(rightOpenPos, speed).SetEase(easeType);
+        leftTween = doorleft.DOLocalMove(leftOpenPos, speed).SetEase(easeType);
+        rightTween = doorRigth.DOLocalMove(rightOpenPos, speed).SetEase(easeType);
     }
 
     private void CloseDoors()
@@ -63,7 +63,7 @@ public class AutomaticDoor : MonoBehaviour
         leftTween?.Kill();
         rightTween?.Kill();
 
-        leftTween = doorleft.DOMove(leftClosedPos, speed).SetEase(Ease.InCubic);
-        rightTween = doorRigth.DOMove(rightClosedPos, speed).SetEase(Ease.InCubic);
+        leftTween = doorleft.DOLocalMove(leftClosedPos, speed).SetEase(Ease.InCubic);
+        rightTween = doorRigth.DOLocalMove(rightClosedPos, speed).SetEase(Ease.InCubic);
     }
 }
