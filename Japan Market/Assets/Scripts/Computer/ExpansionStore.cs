@@ -192,9 +192,9 @@ public class ExpansionStore : MonoBehaviour
                 cube.transform
                     .DORotate(
                         new Vector3(
-                            Random.Range(0, 360),
-                            Random.Range(0, 360),
-                            Random.Range(0, 360)
+                            Random.Range(0,420),
+                            Random.Range(0, 420),
+                            Random.Range(0, 420)
                         ),
                         duration,
                         RotateMode.FastBeyond360
@@ -202,7 +202,7 @@ public class ExpansionStore : MonoBehaviour
             );
             seq.Append(
                 cube.transform
-                    .DOScale(0f, 0.5f)
+                    .DOScale(0f, 0.2f)
                     .SetEase(Ease.InSine)
             );
 
