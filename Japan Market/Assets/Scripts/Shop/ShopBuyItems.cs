@@ -50,6 +50,7 @@ public class ShopBuyItems : MonoBehaviour
 
     void Update()
     {
+       
         if (isTweening) return;
 
         if (Input.GetKeyDown(KeyCode.Q)) Previous();
@@ -59,11 +60,13 @@ public class ShopBuyItems : MonoBehaviour
 
     public void Next()
     {
+         if(objects.Length == 1) return;
         ChangeItem(currentIndex + 1 >= objects.Length ? 0 : currentIndex + 1);
     }
 
     public void Previous()
     {
+         if(objects.Length == 1) return;
         ChangeItem(currentIndex - 1 < 0 ? objects.Length - 1 : currentIndex - 1);
 
     }
