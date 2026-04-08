@@ -137,7 +137,7 @@ public class ExpansionStore : MonoBehaviour
     }
     IEnumerator CubeEffect(Transform target)
     {
-        int count = 57;
+        int count = 95;
 
         Vector3 basePos = target.position;
 
@@ -166,7 +166,7 @@ public class ExpansionStore : MonoBehaviour
 
             seq.Append(
                 cube.transform
-                    .DOScale(Random.Range(0.15f, 0.3f), 0.2f)
+                    .DOScale(Random.Range(20f, 30f), 0.2f)
                     .SetEase(Ease.OutSine)
             );
 
@@ -202,7 +202,7 @@ public class ExpansionStore : MonoBehaviour
             );
             seq.Append(
                 cube.transform
-                    .DOScale(0f, 0.25f)
+                    .DOScale(0f, 0.5f)
                     .SetEase(Ease.InSine)
             );
 

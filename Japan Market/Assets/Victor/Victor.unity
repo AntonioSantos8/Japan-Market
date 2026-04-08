@@ -345,7 +345,7 @@ GameObject:
   - component: {fileID: 147607283}
   - component: {fileID: 147607284}
   - component: {fileID: 147607285}
-  m_Layer: 9
+  m_Layer: 2
   m_Name: Freezer
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -968,7 +968,7 @@ MonoBehaviour:
   cam: {fileID: 357698612}
   freezerLayer:
     serializedVersion: 2
-    m_Bits: 512
+    m_Bits: 4
   interactDistance: 3
   speed: 1.4
   minDistanceX: -12
@@ -1188,7 +1188,7 @@ MonoBehaviour:
   m_ScrollWheelAction: {fileID: 6240969308177333660, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
   m_TrackedDevicePositionAction: {fileID: 6564999863303420839, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
   m_TrackedDeviceOrientationAction: {fileID: 7970375526676320489, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
-  m_DeselectOnBackgroundClick: 1
+  m_DeselectOnBackgroundClick: 0
   m_PointerBehavior: 0
   m_CursorLockBehavior: 0
   m_ScrollDeltaPerTick: 6
@@ -1824,20 +1824,16 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8324489947069954709, guid: d058777940669b946a1a160f41b8e3aa, type: 3}
-      propertyPath: emissionColor.b
-      value: 0.5660378
-      objectReference: {fileID: 0}
+      propertyPath: cubeEffect
+      value: 
+      objectReference: {fileID: 3931413845451018811, guid: 216e4066013f27d43a8a0cc9baa0269f, type: 3}
     - target: {fileID: 8324489947069954709, guid: d058777940669b946a1a160f41b8e3aa, type: 3}
-      propertyPath: emissionColor.g
-      value: 0.5660378
-      objectReference: {fileID: 0}
-    - target: {fileID: 8324489947069954709, guid: d058777940669b946a1a160f41b8e3aa, type: 3}
-      propertyPath: emissionColor.r
-      value: 0.5660378
+      propertyPath: emissionColor.a
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8324489947069954709, guid: d058777940669b946a1a160f41b8e3aa, type: 3}
       propertyPath: emissionIntensity
-      value: 1.35
+      value: 30
       objectReference: {fileID: 0}
     - target: {fileID: 8511717393935400371, guid: d058777940669b946a1a160f41b8e3aa, type: 3}
       propertyPath: m_Name
