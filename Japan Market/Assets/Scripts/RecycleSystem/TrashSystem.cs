@@ -29,6 +29,8 @@ public class TrashSystem : MonoBehaviour
 
     private void Spawn()
     {
+        if(spawns == null) return; 
+
         int spawnIndex = Random.Range(0, spawns.Length);
         int dataIndex = Random.Range(0, trashDatas.Length);
 
@@ -38,7 +40,7 @@ public class TrashSystem : MonoBehaviour
     Quaternion.identity,
     this.transform
 
-);
+    );
 
         if (go.TryGetComponent(out TrashInstance instance))
         {
