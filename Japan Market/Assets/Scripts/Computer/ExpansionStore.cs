@@ -238,11 +238,9 @@ public class ExpansionStore : MonoBehaviour
     {
         if (!HasMoreExpansions())
         {
-            buttonExpansion.text = "";
+            buttonExpansion.text = "Purchased All";
         }
     }
-        
-    
     public int GetCurrentExpansion() => currentExpansion;
     public bool HasMoreExpansions() => currentExpansion + 1 < storesExpansion.Length;
 }
