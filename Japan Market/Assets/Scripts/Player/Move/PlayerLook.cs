@@ -31,7 +31,7 @@ public class PlayerLook : MonoBehaviour
         xRotation = 0f;
       cameraHolder.localRotation = Quaternion.Euler(0f, 0f, 0f);
 
-      playerBody.rotation = Quaternion.Euler(0f, 180f, 0f);
+      playerBody.rotation = Quaternion.Euler(0f, 272f, 0f);
     }
 
 }

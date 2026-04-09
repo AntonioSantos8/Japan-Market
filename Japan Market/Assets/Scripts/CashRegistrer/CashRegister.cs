@@ -120,7 +120,8 @@ public class CashRegister : MonoBehaviour
         Sequence seq = DOTween.Sequence();
 
         seq.Append(player.DOMove(cashPosition.position, 0.3f)
-            .SetEase(Ease.OutSine));
+            .SetEase(Ease.OutQuad));
+
 
         seq.Join(DOTween.To(
             () => cam.Lens.FieldOfView,

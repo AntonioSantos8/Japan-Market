@@ -137,7 +137,7 @@ public class ExpansionStore : MonoBehaviour
     }
     IEnumerator CubeEffect(Transform target)
     {
-        int count = 95;
+        int count = 96;
 
         Vector3 basePos = target.position;
 
@@ -192,11 +192,11 @@ public class ExpansionStore : MonoBehaviour
                 cube.transform
                     .DORotate(
                         new Vector3(
-                            Random.Range(0,420),
-                            Random.Range(0, 420),
-                            Random.Range(0, 420)
+                            Random.Range(0,480),
+                            Random.Range(0, 480),
+                            Random.Range(0, 480)
                         ),
-                        duration,
+                        duration,   
                         RotateMode.FastBeyond360
                     )
             );
