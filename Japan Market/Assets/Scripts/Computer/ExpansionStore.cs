@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.Cinemachine;
 using UnityEngine;
+using TMPro;
 public class ExpansionStore : MonoBehaviour
 {
     [SerializeField] GameObject[] storesExpansion;
@@ -15,12 +16,14 @@ public class ExpansionStore : MonoBehaviour
     [SerializeField] Color emissionColor = Color.white;
     [SerializeField] float emissionIntensity = 5f;
     [SerializeField] GameObject cubeEffect;
+    [SerializeField] TextMeshProUGUI buttonExpansion;
     GameObject currentStore;
     int currentExpansion = 0;
     Material currentMaterial;
     void Start()
     {
         currentStore = storesExpansion[0];
+        ButtonExpansion();
     }
     public void BuyExpansion()
     {
@@ -33,6 +36,7 @@ public class ExpansionStore : MonoBehaviour
         shopBuyItems.RefreshCurrentItem();
 
         StartCoroutine(UpgradeSequence());
+        ButtonExpansion();
     }
     void UpdateItem()
     {
@@ -230,6 +234,15 @@ public class ExpansionStore : MonoBehaviour
             currentMaterial.SetColor("_EmissionColor", finalColor);
         }
     }
+    void ButtonExpansion()
+    {
+        if (!HasMoreExpansions())
+        {
+            buttonExpansion.text = "";
+        }
+    }
+        
+    
     public int GetCurrentExpansion() => currentExpansion;
     public bool HasMoreExpansions() => currentExpansion + 1 < storesExpansion.Length;
 }
