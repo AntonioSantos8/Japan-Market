@@ -14,9 +14,10 @@ GameObject:
   - component: {fileID: 8472884177749701048}
   - component: {fileID: 6120337374120264471}
   - component: {fileID: 4266508029118493449}
+  - component: {fileID: 822473556677634922}
   m_Layer: 13
   m_Name: NPC_Usual
-  m_TagString: Untagged
+  m_TagString: NPC
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -72,7 +73,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1c58305bc76317d42a7de9a9171d9864, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NpcTraject
-  someExitPoint: {fileID: 0}
   _waitTime: 5
 --- !u!114 &8472884177749701048
 MonoBehaviour:
@@ -130,6 +130,29 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!136 &822473556677634922
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1707092874194882208}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 1.4734621
+  m_Height: 2.9469242
+  m_Direction: 1
+  m_Center: {x: 0.23383856, y: 0, z: 0}
 --- !u!1 &2146375764187590872
 GameObject:
   m_ObjectHideFlags: 0

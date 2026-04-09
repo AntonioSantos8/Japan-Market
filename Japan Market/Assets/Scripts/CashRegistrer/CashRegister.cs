@@ -20,7 +20,7 @@ public class CashRegister : MonoBehaviour
     [SerializeField] GameObject money;
     [SerializeField] GameObject quitButton;
     [SerializeField] Transform cashPosition;
-   [SerializeField] CinemachineCamera cam;
+    [SerializeField] CinemachineCamera cam;
     [SerializeField] GameObject reticle;
     public Transform itemPosition;
     [SerializeField] float zoom = 25f;
@@ -102,7 +102,7 @@ public class CashRegister : MonoBehaviour
     void EnterCashMode()
     {
         cashMode = true;
-       
+
 
         playerLook.ResetLook();
 
@@ -120,7 +120,7 @@ public class CashRegister : MonoBehaviour
         Sequence seq = DOTween.Sequence();
 
         seq.Append(player.DOMove(cashPosition.position, 0.3f)
-            .SetEase(Ease.OutQuad));
+            .SetEase(Ease.OutSine));
 
         seq.Join(DOTween.To(
             () => cam.Lens.FieldOfView,
@@ -131,7 +131,7 @@ public class CashRegister : MonoBehaviour
     public void ExitCashMode()
     {
         cashMode = false;
-    
+
 
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
@@ -260,7 +260,7 @@ public class CashRegister : MonoBehaviour
                 float price = item.gameObject.GetComponent<ItemPrice>().Price;
                 // priceItemText.text = "¥" + data.singleItemPrice.ToString("F2");
                 // totalPrice += data.singleItemPrice;
-                 priceItemText.text = "¥" + price.ToString("F2");
+                priceItemText.text = "¥" + price.ToString("F2");
                 totalPrice += price;
 
                 if (itemsQueue.Count == 0)
@@ -343,7 +343,7 @@ public class CashRegister : MonoBehaviour
         cashregisterText.text = message;
     }
 
-   [ContextMenu("Finish Customer")]
+    [ContextMenu("Finish Customer")]
     public void FinishCustomer()
     {
         if (queue.Count == 0) return;
@@ -356,7 +356,7 @@ public class CashRegister : MonoBehaviour
     }
     public void FinalizeTransaction()
     {
-        FinishCustomer(); 
+        FinishCustomer();
         FinishPayment();
     }
 

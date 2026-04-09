@@ -32,7 +32,7 @@ public class AutomaticDoor : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Player"))
+        if (other.CompareTag("Player") || other.CompareTag("NPC"))
         {
             playerInside = true;
             closeTimer = 0f;
@@ -42,7 +42,7 @@ public class AutomaticDoor : MonoBehaviour
 
     private void OnTriggerExit(Collider other)
     {
-        if (other.CompareTag("Player"))
+        if (other.CompareTag("Player") || other.CompareTag("NPC"))
         {
             playerInside = false;
             closeTimer = 0f;
