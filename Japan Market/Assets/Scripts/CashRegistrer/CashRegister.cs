@@ -160,17 +160,21 @@ public class CashRegister : MonoBehaviour
     }
     void ItemClicked()
     {
+        print("Clicked");
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         RaycastHit hit;
 
         if (Physics.Raycast(ray, out hit))
         {
+            print("Passou 1");
             Item item = hit.collider.GetComponent<Item>();
 
             if (item != null && !item.PassedItem())
             {
+                print("Passou 2");
                 if (itemsQueue.Contains(item))
                 {
+                    print("Passou 3");
                     RemoveQueue(item);
                     SendItemToBag(item);
                 }
