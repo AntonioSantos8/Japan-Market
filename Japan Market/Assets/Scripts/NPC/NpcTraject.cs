@@ -22,10 +22,13 @@ public class NpcTraject : MonoBehaviour
     private CashRegister _cashRegister;
     private bool _itemsPlaced = false;
     private NpcInstance _npcInstance;
+    private NpcAnimationManager npcAnimationManager;
     private void Awake()
     {
+
         _agent = GetComponent<NavMeshAgent>();
         _npcInstance = GetComponent<NpcInstance>();
+        npcAnimationManager = GetComponent<NpcAnimationManager>();
     }
     private void Start()
     {
@@ -175,13 +178,14 @@ public class NpcTraject : MonoBehaviour
     }
     private IEnumerator GoToDest(Vector3 dest)
     {
-
+        npcAnimationManager.SetAnimationState(NpcAnimationState.Walk);
         _agent.SetDestination(dest);
 
         yield return new WaitUntil(() => !_agent.pathPending);
 
         while (_agent.remainingDistance > _agent.stoppingDistance)
         {
+            npcAnimationManager.SetAnimationState(NpcAnimationState.Idle);
             yield return null;
         }
     }
