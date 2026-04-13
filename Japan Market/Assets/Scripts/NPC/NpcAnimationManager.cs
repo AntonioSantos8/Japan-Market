@@ -20,13 +20,18 @@ public class NpcAnimationManager : MonoBehaviour
         if (currentState == newState) return;
 
         currentState = newState;
+
+
+        animator.SetBool("Walk", false);
+        animator.SetBool("Idle", false);
+
         switch (currentState)
         {
             case NpcAnimationState.Idle:
-                animator.SetTrigger("Idle");
+                animator.SetBool("Idle", true);
                 break;
             case NpcAnimationState.Walk:
-                animator.SetTrigger("Walk");
+                animator.SetBool("Walk", true);
                 break;
         }
     }
