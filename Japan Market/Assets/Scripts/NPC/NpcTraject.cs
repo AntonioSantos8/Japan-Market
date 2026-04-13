@@ -161,13 +161,14 @@ public class NpcTraject : MonoBehaviour
     {
 
         _agent.SetDestination(someExitPoint.position);
-
+        npcAnimationManager.SetAnimationState(NpcAnimationState.Walk);
         yield return new WaitUntil(() => !_agent.pathPending);
 
         while (_agent.remainingDistance > _agent.stoppingDistance)
         {
             yield return null;
         }
+        npcAnimationManager.SetAnimationState(NpcAnimationState.Idle);
         yield return new WaitForSeconds(1.5f);
         Destroy(gameObject);
     }
@@ -178,18 +179,19 @@ public class NpcTraject : MonoBehaviour
     }
     private IEnumerator GoToDest(Vector3 dest)
     {
-        npcAnimationManager.SetAnimationState(NpcAnimationState.Walk);
         _agent.SetDestination(dest);
 
         yield return new WaitUntil(() => !_agent.pathPending);
 
+        npcAnimationManager.SetAnimationState(NpcAnimationState.Walk);
+
         while (_agent.remainingDistance > _agent.stoppingDistance)
         {
-            npcAnimationManager.SetAnimationState(NpcAnimationState.Idle);
             yield return null;
         }
-    }
 
+        npcAnimationManager.SetAnimationState(NpcAnimationState.Idle);
+    }
     private List<FurnitureInstance> SortFurniture(List<FurnitureInstance> originalList, int quant)
     {
         List<FurnitureInstance> copy = new List<FurnitureInstance>(originalList);
