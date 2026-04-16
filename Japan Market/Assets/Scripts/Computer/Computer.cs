@@ -5,14 +5,16 @@ using UnityEngine.Events;
 
 public class Computer : InteractableBase
 {
+    [SerializeField] private GameObject computerScreen;
     bool isInComputer;
     [SerializeField] CinemachineCamera computerCamera;
     [SerializeField] GameObject reticle;
     public UnityEvent onEnterComputer, onLeaveComputer;
     public override void Interact()
     {
-        if (!isInComputer) 
+        if (!isInComputer)
         {
+            computerScreen.SetActive(true);
             computerCamera.Priority = 5;
             isInComputer = true;
             ServiceLocator.Get<PlayerMotor>().SetCanMove(false);
@@ -24,28 +26,28 @@ public class Computer : InteractableBase
 
     private void Update()
     {
-        if (isInComputer) 
+        if (isInComputer)
         {
 
-            if (Input.GetKeyDown(KeyCode.Escape)) 
+            if (Input.GetKeyDown(KeyCode.Escape))
             {
                 computerCamera.Priority = 0;
-
+                computerScreen.SetActive(false);
                 onLeaveComputer?.Invoke();
                 ServiceLocator.Get<PlayerMotor>().SetCanMove(true);
                 ServiceLocator.Get<PlayerLook>().CanLook = true;
                 reticle.SetActive(true);
-                isInComputer=false;
-                
+                isInComputer = false;
+
                 ServiceLocator.Get<ShopManager>().ExitFurnitureSesion();
 
             }
-           
 
 
 
 
 
-        }   
+
+        }
     }
 }
