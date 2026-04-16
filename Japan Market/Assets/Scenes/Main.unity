@@ -128,7 +128,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2099410}
-  m_Layer: 0
+  - component: {fileID: 2099411}
+  - component: {fileID: 2099412}
+  m_Layer: 7
   m_Name: OpenClose
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -154,6 +156,44 @@ Transform:
   - {fileID: 4418473097764499241}
   m_Father: {fileID: 543450652838763906}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2099411
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2099409}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d26bc06ee9498924294cff8fb7266893, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::StoreSign
+  rotationY: -182
+  duration: 1.2
+  moveBack: -111
+  interactDistance: 20
+  ease: 27
+--- !u!65 &2099412
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2099409}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.9999999, y: 1.9490211, z: 6.304496}
+  m_Center: {x: -0.9, y: 7.409155, z: 28.240004}
 --- !u!1 &8644841
 GameObject:
   m_ObjectHideFlags: 0
@@ -15442,7 +15482,7 @@ GameObject:
   - component: {fileID: 1398618389030189041}
   - component: {fileID: 2050809773933239766}
   - component: {fileID: 1079662024297883211}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Cube.008
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -19197,7 +19237,7 @@ GameObject:
   - component: {fileID: 7250304918024519012}
   - component: {fileID: 3982867430404148986}
   - component: {fileID: 6170364737323668421}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Text.001
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -24261,7 +24301,7 @@ GameObject:
   - component: {fileID: 3957248732654976505}
   - component: {fileID: 8057150960528515800}
   - component: {fileID: 2508838339204448105}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Text.002
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -24636,7 +24676,7 @@ GameObject:
   - component: {fileID: 4418473097764499241}
   - component: {fileID: 215592838256361110}
   - component: {fileID: 1558643249300517188}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Cube.009
   m_TagString: Untagged
   m_Icon: {fileID: 0}

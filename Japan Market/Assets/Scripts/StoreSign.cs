@@ -53,7 +53,7 @@ public class StoreSign : MonoBehaviour
         );
         seq.Append(
             transform
-                .DORotate(new Vector3(0, targetRotation, 0), duration)
+                .DOLocalRotate(new Vector3(0, targetRotation, 0), duration)
                 .SetEase(ease)
         );
 
