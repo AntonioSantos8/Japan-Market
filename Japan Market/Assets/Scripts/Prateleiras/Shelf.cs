@@ -5,11 +5,11 @@ using AYellowpaper.SerializedCollections;
 
 public enum Items
 {
-    None, Ketchup, Mostard, Shelf,
-     Box, Fish, Mochi, Yakisoba, 
-     Buldak, Pringles, Biscuits, 
-     Chocopie, Cola, IceCream, FrozenMeat, 
-     FrozenPizza
+    None, Ketchup, Mostard, Shelf, Freezer,
+    Box, Fish, Mochi, Yakisoba,
+    Buldak, Pringles, Biscuits,
+    Chocopie, Cola, IceCream, FrozenMeat,
+    FrozenPizza
 }
 
 public class Shelf : MonoBehaviour
