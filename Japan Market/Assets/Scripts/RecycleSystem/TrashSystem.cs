@@ -29,8 +29,7 @@ public class TrashSystem : MonoBehaviour
 
     private void Spawn()
     {
-        if(spawns == null) return; 
-
+        if (spawns == null || trashDatas.Length == 0) return;
         int spawnIndex = Random.Range(0, spawns.Length);
         int dataIndex = Random.Range(0, trashDatas.Length);
 
