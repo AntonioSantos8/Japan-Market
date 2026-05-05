@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Android.Gradle.Manifest;
 using UnityEngine;
 
 public class TrashSystem : MonoBehaviour
@@ -19,12 +20,14 @@ public class TrashSystem : MonoBehaviour
         while (true)
         {
             yield return new WaitForSeconds(Random.Range(20, 30));
-
+/*
             if (marketManager.open && activeTrashes.Count < maxTrashCount)
             {
                 Spawn();
             }
+*/
         }
+
     }
 
     private void Spawn()
