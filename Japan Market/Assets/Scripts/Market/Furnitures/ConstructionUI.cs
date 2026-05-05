@@ -22,9 +22,9 @@ public class ConstructionUI : MonoBehaviour
     {
         bool isBuilding = _manager.IsBuildingMode;
         panelMode.SetActive(isBuilding);
-        if (isBuilding && _manager.hasFurnitureInInventory)
+        if (isBuilding && _manager.HasFurnitureInInventory)
         {
-           SetText();
+            SetText();
         }
         else
         {

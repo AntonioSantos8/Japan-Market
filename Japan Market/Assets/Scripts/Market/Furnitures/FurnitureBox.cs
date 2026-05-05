@@ -16,10 +16,15 @@ public class FurnitureBox : InteractableBase
     }
     IEnumerator BuildModeCoroutine()
     {
-        ServiceLocator.Get<FurnitureManager>().hasFurnitureInInventory = true;
+        if (ServiceLocator.Get<FurnitureManager>().HasFurnitureInInventory)
+        {
+            ServiceLocator.Get<Warnings>().ShowWarning("Your inventory is full.", false);
+            yield break;
+        }
+        ServiceLocator.Get<FurnitureManager>().HasFurnitureInInventory = true;
         ServiceLocator.Get<FurnitureManager>().ToggleBuildingMode();
         yield return new WaitForSeconds(0.1f);
         ServiceLocator.Get<FurnitureManager>().SelectFurniture(type);
         Destroy(this.gameObject);
-    }   
+    }
 }

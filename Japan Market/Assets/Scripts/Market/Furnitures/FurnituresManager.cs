@@ -21,7 +21,7 @@ public class FurnitureManager : MonoBehaviour
     public bool IsBuildingMode { get; private set; }
 
     [SerializeField] private Image circle;
-    public bool hasFurnitureInInventory;
+    public bool HasFurnitureInInventory;
 
     [SerializeField] private TMP_Text furnitureSlotName;
 
@@ -59,7 +59,7 @@ public class FurnitureManager : MonoBehaviour
             ToggleBuildingMode();
             return;
         }
-        if (hasFurnitureInInventory)
+        if (HasFurnitureInInventory)
             furnitureSlotName.text = $"Inventory: {_currentSelected.name} (press B)";
         else
             furnitureSlotName.text = "Inventory: none";
@@ -97,6 +97,12 @@ public class FurnitureManager : MonoBehaviour
 
     private void VerifyMouseHold()
     {
+        if (HasFurnitureInInventory == true)
+        {
+            print("has furniture in inventory");
+            ServiceLocator.Get<Warnings>().ShowWarning("Your inventory is full.", false);
+            return;
+        }
 
         if (Input.GetMouseButtonDown(1))
         {
@@ -130,14 +136,23 @@ public class FurnitureManager : MonoBehaviour
 
     private void TryPickUpFurniture()
     {
-        Ray ray = Camera.main.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2));
+        if (HasFurnitureInInventory == true)
+        {
+            print("has furniture in inventory");
+            ServiceLocator.Get<Warnings>().ShowWarning("Your inventory is full.", false);
+            return;
+        }
+
+        Ray ray = Camera.main.ScreenPointToRay
+        (new Vector3(Screen.width / 2, Screen.height / 2));
+
         if (Physics.Raycast(ray, out RaycastHit hit, 5f, furnitureLayer))
         {
             if (hit.collider.GetComponentInParent<FurnitureInstance>() != null)
             {
                 FurnitureInstance instance = hit.collider.GetComponentInParent<FurnitureInstance>();
                 _placedFurnitures.Remove(instance);
-                hasFurnitureInInventory = true;
+                HasFurnitureInInventory = true;
                 _tempSaveData = instance.SaveData;
                 SelectFurniture(instance.Data.type);
                 _activeGhost.transform.rotation = instance.transform.rotation;
@@ -149,6 +164,7 @@ public class FurnitureManager : MonoBehaviour
 
     private void PlaceFurniture()
     {
+
         GameObject obj = Instantiate(_currentSelected.prefab, _activeGhost.transform.position, _activeGhost.transform.rotation);
         obj.transform.SetParent(furnitureContainer);
 
@@ -167,7 +183,7 @@ public class FurnitureManager : MonoBehaviour
             _placedFurnitures.Add(instance);
         }
         ToggleBuildingMode();
-        hasFurnitureInInventory = false;
+        HasFurnitureInInventory = false;
         Destroy(_activeGhost);
         _activeGhost = null;
     }
