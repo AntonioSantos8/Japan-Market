@@ -120,7 +120,7 @@ public class CashRegister : InteractableBase
         quitButton.SetActive(true);
         reticle.SetActive(false);
 
-        ServiceLocator.Get<ItemRaycastController>().SetGeneralCanInteract(false);
+        //ServiceLocator.Get<ItemRaycastController>().SetGeneralCanInteract(false);
 
         DOTween.Sequence()
             .Append(playerMotor.transform.DOMove(cashPosition.position, 0.3f).SetEase(Ease.OutQuad))
@@ -161,13 +161,20 @@ public class CashRegister : InteractableBase
     private void ItemClicked()
     {
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-
+        Debug.Log("1");
         if (!Physics.Raycast(ray, out RaycastHit hit)) return;
+        Debug.Log(ray);
+
+        Debug.Log("2");
 
         Item item = hit.collider.GetComponent<Item>();
-
-        if (item != null && !item.PassedItem() && itemsQueue.Contains(item))
+        Debug.Log(item);
+        Debug.Log(itemsQueue);
+        Debug.Log(item.PassedItem());
+        if (item != null && item.PassedItem() == false && itemsQueue.Contains(item))
         {
+            Debug.Log("3");
+
             RemoveFromQueue(item);
             SendItemToBag(item);
         }

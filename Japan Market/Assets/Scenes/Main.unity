@@ -15284,6 +15284,11 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2085238982}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &2090515287 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5801428892296757355, guid: 1c0e10b6914ed6e43886c7e757e4eceb, type: 3}
+  m_PrefabInstance: {fileID: 7834607054474078549}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &2093299010
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -25876,7 +25881,10 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 4932561559786069258, guid: 1c0e10b6914ed6e43886c7e757e4eceb, type: 3}
       insertIndex: -1
       addedObject: {fileID: 573912332}
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 5801428892296757355, guid: 1c0e10b6914ed6e43886c7e757e4eceb, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8240752662427832840}
   m_SourcePrefab: {fileID: 100100000, guid: 1c0e10b6914ed6e43886c7e757e4eceb, type: 3}
 --- !u!1 &7843583302709765875
 GameObject:
@@ -26365,6 +26373,24 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 2874370048280821052, guid: 1c0e10b6914ed6e43886c7e757e4eceb, type: 3}
   m_PrefabInstance: {fileID: 7834607054474078549}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &8240752662427832840
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2090515287}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5fea29bb7c508c244a1f805a5fd3fc4d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Outline
+  outlineMode: 0
+  outlineColor: {r: 1, g: 1, b: 1, a: 1}
+  outlineWidth: 3.3
+  precomputeOutline: 0
+  bakeKeys: []
+  bakeValues: []
 --- !u!114 &8266649265843828648
 MonoBehaviour:
   m_ObjectHideFlags: 0
