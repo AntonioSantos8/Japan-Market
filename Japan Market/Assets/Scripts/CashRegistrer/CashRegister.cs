@@ -161,20 +161,22 @@ public class CashRegister : InteractableBase
     private void ItemClicked()
     {
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        Debug.Log("1");
-        if (!Physics.Raycast(ray, out RaycastHit hit)) return;
-        Debug.Log(ray);
 
-        Debug.Log("2");
+        if (!Physics.Raycast(ray, out RaycastHit hit)) return;
 
         Item item = hit.collider.GetComponent<Item>();
-        Debug.Log(item);
-        Debug.Log(itemsQueue);
-        Debug.Log(item.PassedItem());
-        if (item != null && item.PassedItem() == false && itemsQueue.Contains(item))
-        {
-            Debug.Log("3");
 
+        if (item == null) return; // Sai cedo se não tem Item
+
+        Debug.Log(item.PassedItem());
+        Debug.Log(itemsQueue.Contains(item));
+        // Verifica o que tem na fila vs o que você clicou
+        foreach (var i in itemsQueue)
+        {
+            Debug.Log($"Na fila: {i.GetInstanceID()} | Clicado: {item.GetInstanceID()}");
+        }
+        if (!item.PassedItem() && itemsQueue.Contains(item))
+        {
             RemoveFromQueue(item);
             SendItemToBag(item);
         }
@@ -277,6 +279,9 @@ public class CashRegister : InteractableBase
 
         if (newItem.TryGetComponent<Rigidbody>(out var rb))
             rb.AddForce(Vector3.up * 2f, ForceMode.Impulse);
+        Item itemComponent = newItem.GetComponent<Item>();
+        if (itemComponent != null)
+            itemsQueue.Enqueue(itemComponent);
     }
 
     // -------------------------
@@ -328,7 +333,9 @@ public class CashRegister : InteractableBase
     {
         Item item = other.GetComponent<Item>();
         if (item != null && !item.PassedItem())
+        {
             itemsQueue.Enqueue(item);
+        }
     }
 
     // -------------------------
