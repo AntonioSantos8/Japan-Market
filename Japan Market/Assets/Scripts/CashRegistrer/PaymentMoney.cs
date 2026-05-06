@@ -76,13 +76,8 @@ public class PaymentMoney : MonoBehaviour
         UptadeValue();
 
         givingText.transform.DOKill();
-
-        givingText.transform
-           .DOScale(1.01f, 0.1f)
-            .OnComplete(() =>
-            {
-                givingText.transform.DOScale(1f, 0.1f);
-            });
+        givingText.transform.DOPunchScale(Vector3.one * 0.02f, 0.25f, 4, 0.2f);
+           
     }
     public void Undo()
     {
