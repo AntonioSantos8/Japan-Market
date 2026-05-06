@@ -1,12 +1,10 @@
 using System.Collections;
 using System.Collections.Generic;
-using Unity.Android.Gradle.Manifest;
 using UnityEngine;
 
 public class TrashSystem : MonoBehaviour
 {
     [SerializeField] private Transform[] spawns;
-    [SerializeField] private MarketManager marketManager;
     [SerializeField] private TrashData[] trashDatas;
     [SerializeField] private int maxTrashCount = 10;
 
@@ -20,12 +18,12 @@ public class TrashSystem : MonoBehaviour
         while (true)
         {
             yield return new WaitForSeconds(Random.Range(20, 30));
-/*
-            if (marketManager.open && activeTrashes.Count < maxTrashCount)
+
+            if (ServiceLocator.Get<MarketManager>().Open && activeTrashes.Count < maxTrashCount)
             {
                 Spawn();
             }
-*/
+
         }
 
     }

@@ -83,7 +83,7 @@ public class PaymentCard : MonoBehaviour
     void PaymentSuccess()
     {
         Sequence seq = DOTween.Sequence();
-
+        ServiceLocator.Get<MarketManager>().Earn_Money(totalPrice);
         seq.Append(valueText.DOColor(Color.darkGreen, 0.2f));
         seq.AppendInterval(0.2f);
         seq.Append(imagepayment.transform.DOScale(0f, 0.6f).SetEase(Ease.InOutBack));
@@ -100,7 +100,7 @@ public class PaymentCard : MonoBehaviour
     {
         currentValue = "";
         UpdateText();
-
+        
         Sequence seq = DOTween.Sequence();
 
         seq.Append(valueText.DOColor(Color.red, 0.2f));

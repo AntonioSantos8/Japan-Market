@@ -3,33 +3,42 @@ using System.Collections.Generic;
 using TMPro;
 using DG.Tweening;
 using Unity.Cinemachine;
-public class CashRegister : MonoBehaviour
+
+public class CashRegister : InteractableBase
 {
+    [Header("References")]
     [SerializeField] List<AllIThingsData> allItem;
     [SerializeField] PlayerMotor playerMotor;
     [SerializeField] PlayerLook playerLook;
     [SerializeField] PaymentMoney paymentMoney;
     [SerializeField] PaymentCard paymentCard;
+    [SerializeField] GameObject creditCard;
+    [SerializeField] GameObject money;
+    [SerializeField] GameObject quitButton;
+    [SerializeField] GameObject reticle;
+
+    [Header("UI")]
     [SerializeField] TextMeshPro nameItemText;
     [SerializeField] TextMeshPro priceItemText;
     [SerializeField] TextMeshPro totalPriceText;
     [SerializeField] TextMeshPro cashregisterText;
+
+    [Header("Positions")]
     [SerializeField] Transform bagPoint;
     [SerializeField] Transform bagTopPoint;
-    [SerializeField] GameObject creditCard;
-    [SerializeField] GameObject money;
-    [SerializeField] GameObject quitButton;
     [SerializeField] Transform cashPosition;
-    [SerializeField] CinemachineCamera cam;
-    [SerializeField] GameObject reticle;
     public Transform itemPosition;
-    [SerializeField] float zoom = 25f;
-    float zoomOri;
-    Queue<Item> itemsQueue = new Queue<Item>();
-    float totalPrice = 0f;
-    bool playerInRange = false;
-    bool cashMode = false;
     public Transform[] queuePoints;
+
+    [Header("Camera")]
+    [SerializeField] CinemachineCamera cam;
+    [SerializeField] float zoom = 25f;
+
+    // State
+    private float zoomOri;
+    private float totalPrice;
+    private bool cashMode;
+    private Queue<Item> itemsQueue = new Queue<Item>();
     private List<NpcTraject> queue = new List<NpcTraject>();
     public bool hasClient;
 
@@ -37,43 +46,7 @@ public class CashRegister : MonoBehaviour
     {
         ServiceLocator.Register(this);
     }
-    public void EnterQueue(NpcTraject npc)
-    {
-        queue.Add(npc);
-        UpdateQueue();
-    }
 
-    public void LeaveQueue(NpcTraject npc)
-    {
-        queue.Remove(npc);
-        UpdateQueue();
-    }
-
-    void UpdateQueue()
-    {
-        for (int i = 0; i < queue.Count; i++)
-        {
-            queue[i].GetComponent<NpcTraject>().SetTarget(queuePoints[i], i);
-        }
-    }
-    public GameObject GetItemPrefab(Items type)
-    {
-        foreach (var data in allItem)
-        {
-            if (data.itemType == type)
-            {
-                return data.itemPrefab;
-            }
-        }
-        return null;
-    }
-    public NpcTraject GetCurrentCustomer()
-    {
-        if (queue.Count > 0)
-            return queue[0];
-
-        return null;
-    }
     void Start()
     {
         creditCard.SetActive(false);
@@ -88,250 +61,222 @@ public class CashRegister : MonoBehaviour
 
         zoomOri = cam.Lens.FieldOfView;
     }
+
     void Update()
     {
-        if (playerInRange && !cashMode && Input.GetButtonDown("Fire1"))
-        {
-            EnterCashMode();
-        }
-        if (cashMode && Input.GetButtonDown("Fire1"))
-        {
+        if (!cashMode) return;
+
+        if (Input.GetMouseButtonDown(0))
             ItemClicked();
-        }
     }
-    void EnterCashMode()
+
+    // -------------------------
+    // InteractableBase override
+    // -------------------------
+    public override void Interact()
+    {
+        if (!cashMode)
+            EnterCashMode();
+    }
+
+    // -------------------------
+    // Queue
+    // -------------------------
+    public void EnterQueue(NpcTraject npc)
+    {
+        queue.Add(npc);
+        UpdateQueue();
+    }
+
+    public void LeaveQueue(NpcTraject npc)
+    {
+        queue.Remove(npc);
+        UpdateQueue();
+    }
+
+    private void UpdateQueue()
+    {
+        for (int i = 0; i < queue.Count; i++)
+            queue[i].SetTarget(queuePoints[i], i);
+    }
+
+    public NpcTraject GetCurrentCustomer() => queue.Count > 0 ? queue[0] : null;
+
+    // -------------------------
+    // Cash Mode
+    // -------------------------
+    private void EnterCashMode()
     {
         cashMode = true;
 
-
         playerLook.ResetLook();
+        playerMotor.SetCanMove(false);
+        playerMotor.ResetCameraEffects();
+        playerLook.CanLook = false;
 
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
 
         quitButton.SetActive(true);
-        playerMotor.SetCanMove(false);
-        playerMotor.ResetCameraEffects();
-        playerLook.CanLook = false;
         reticle.SetActive(false);
 
-        Transform player = playerMotor.transform;
+        ServiceLocator.Get<ItemRaycastController>().SetGeneralCanInteract(false);
 
-        Sequence seq = DOTween.Sequence();
-
-        seq.Append(player.DOMove(cashPosition.position, 0.3f)
-            .SetEase(Ease.OutQuad));
-
-
-        seq.Join(DOTween.To(
-            () => cam.Lens.FieldOfView,
-            x => cam.Lens.FieldOfView = x,
-            zoom,
-            0.4f).SetEase(Ease.OutQuad));
+        DOTween.Sequence()
+            .Append(playerMotor.transform.DOMove(cashPosition.position, 0.3f).SetEase(Ease.OutQuad))
+            .Join(DOTween.To(
+                () => cam.Lens.FieldOfView,
+                x => cam.Lens.FieldOfView = x,
+                zoom, 0.4f).SetEase(Ease.OutQuad));
     }
+
     public void ExitCashMode()
     {
         cashMode = false;
 
+        playerMotor.SetCanMove(true);
+        playerLook.CanLook = true;
 
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
 
         quitButton.SetActive(false);
-        playerMotor.SetCanMove(true);
-        playerLook.CanLook = true;
         reticle.SetActive(true);
+
+        ServiceLocator.Get<ItemRaycastController>().SetGeneralCanInteract(true);
 
         DOTween.To(
             () => cam.Lens.FieldOfView,
             x => cam.Lens.FieldOfView = x,
-            zoomOri,
-            0.35f).SetEase(Ease.OutQuad);
+            zoomOri, 0.35f).SetEase(Ease.OutQuad);
 
         totalPrice = 0;
-
-        if (paymentMoney != null && paymentCard != null)
-        {
-            paymentMoney.ClosePaymentMoney();
-            paymentCard.ClosePaymentCredi();
-        }
-
-
+        paymentMoney?.ClosePaymentMoney();
+        paymentCard?.ClosePaymentCredi();
     }
-    void ItemClicked()
+
+    // -------------------------
+    // Items
+    // -------------------------
+    private void ItemClicked()
     {
-        
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        RaycastHit hit;
 
-        if (Physics.Raycast(ray, out hit))
+        if (!Physics.Raycast(ray, out RaycastHit hit)) return;
+
+        Item item = hit.collider.GetComponent<Item>();
+
+        if (item != null && !item.PassedItem() && itemsQueue.Contains(item))
         {
-            
-            Item item = hit.collider.GetComponent<Item>();
-            
-            if (item != null && !item.PassedItem())
-            {
-               
-                if (itemsQueue.Contains(item))
-                {
-                   
-                    RemoveQueue(item);
-                    SendItemToBag(item);
-                }
-            }
+            RemoveFromQueue(item);
+            SendItemToBag(item);
         }
     }
-    void RemoveQueue(Item item)
+
+    private void RemoveFromQueue(Item item)
     {
         Queue<Item> newQueue = new Queue<Item>();
-
         foreach (var i in itemsQueue)
-        {
-            if (i != item)
-                newQueue.Enqueue(i);
-        }
-
+            if (i != item) newQueue.Enqueue(i);
         itemsQueue = newQueue;
     }
-    void OnTriggerEnter(Collider other)
-    {
-        if (other.CompareTag("Player"))
-        {
-            playerInRange = true;
-            return;
-        }
 
-        Item item = other.GetComponent<Item>();
-
-        if (item != null && !item.PassedItem())
-        {
-            itemsQueue.Enqueue(item);
-        }
-    }
-    void OnTriggerExit(Collider other)
-    {
-        if (other.CompareTag("Player"))
-        {
-            playerInRange = false;
-        }
-    }
-    void SendItemToBag(Item item)
+    private void SendItemToBag(Item item)
     {
         item.MarkAsPast();
 
-        if (item.TryGetComponent(out Collider col))
-            col.enabled = false;
-
+        if (item.TryGetComponent(out Collider col)) col.enabled = false;
         if (item.TryGetComponent<Rigidbody>(out var rb))
         {
             rb.isKinematic = true;
             rb.useGravity = false;
         }
 
-        Sequence seq = DOTween.Sequence();
-
-        seq.Append(item.transform.DOPunchScale(Vector3.one * 0.18f, 0.15f, 6, 1));
-
-        seq.Append(item.transform.DOMoveY(item.transform.position.y + 0.32f, 0.12f)
-            .SetEase(Ease.OutQuad));
-
-        seq.Append(item.transform.DOMove(bagTopPoint.position, 0.18f)
-            .SetEase(Ease.InOutQuad));
-
-        seq.Append(item.transform.DOMove(bagPoint.position, 0.19f)
-            .SetEase(Ease.InQuad));
-
-        seq.Append(item.transform.DOPunchScale(Vector3.one * 0.12f, 0.26f, 5));
-
-        seq.AppendCallback(() =>
-        {
-            item.transform.SetParent(bagPoint);
-            PastItem(item);
-        });
-        seq.AppendCallback(() =>
-        {
-            Destroy(item.gameObject);
-        });
+        DOTween.Sequence()
+            .Append(item.transform.DOPunchScale(Vector3.one * 0.18f, 0.15f, 6, 1))
+            .Append(item.transform.DOMoveY(item.transform.position.y + 0.32f, 0.12f).SetEase(Ease.OutQuad))
+            .Append(item.transform.DOMove(bagTopPoint.position, 0.18f).SetEase(Ease.InOutQuad))
+            .Append(item.transform.DOMove(bagPoint.position, 0.19f).SetEase(Ease.InQuad))
+            .Append(item.transform.DOPunchScale(Vector3.one * 0.12f, 0.26f, 5))
+            .AppendCallback(() =>
+            {
+                item.transform.SetParent(bagPoint);
+                RegisterItem(item);
+            })
+            .AppendCallback(() => Destroy(item.gameObject));
     }
-    void PastItem(Item item)
-    {
-        Items type = item.GetItemType();
 
+    private void RegisterItem(Item item)
+    {
         foreach (var data in allItem)
         {
-            if (data.itemType == type)
-            {
-                nameItemText.text = data.itemName;
-                float price = item.gameObject.GetComponent<ItemPrice>().Price;
-                // priceItemText.text = "¥" + data.singleItemPrice.ToString("F2");
-                // totalPrice += data.singleItemPrice;
-                priceItemText.text = "¥" + price.ToString("F2");
-                totalPrice += price;
+            if (data.itemType != item.GetItemType()) continue;
 
-                if (itemsQueue.Count == 0)
-                {
-                    Invoke(nameof(BuyTotal), 0.34f);
+            float price = item.GetComponent<ItemPrice>().Price;
 
-                    creditCard.SetActive(false);
-                    money.SetActive(false);
+            nameItemText.text = data.itemName;
+            priceItemText.text = "¥" + price.ToString("F2");
+            totalPrice += price;
 
-                    var customer = GetCurrentCustomer();
+            if (itemsQueue.Count == 0)
+                OnLastItemScanned();
 
-                    if (customer != null)
-                    {
-                        var instance = customer.GetComponent<NpcInstance>();
-
-                        if (instance.paymentType == PaymentType.Card)
-                        {
-                            creditCard.SetActive(true);
-                        }
-                        else
-                        {
-                            money.SetActive(true);
-                        }
-                    }
-                }
-
-                break;
-            }
+            break;
         }
     }
-    public void SpawnItemWithAnimation(Items itemType, float price)
+
+    private void OnLastItemScanned()
     {
-        GameObject prefab = GetItemPrefab(itemType);
-        if (prefab == null) return;
+        Invoke(nameof(ShowTotal), 0.34f);
 
-        Vector3 originalPrefabScale = prefab.transform.localScale;
+        creditCard.SetActive(false);
+        money.SetActive(false);
 
-        Vector3 randomOffset = new Vector3(Random.Range(-0.15f, 0.15f), 0.05f, Random.Range(-0.15f, 0.15f));
-        Vector3 spawnPos = itemPosition.position + randomOffset;
+        var customer = GetCurrentCustomer();
+        if (customer == null) return;
 
-        GameObject newItem = Instantiate(prefab, spawnPos, Quaternion.identity);
-        newItem.AddComponent<ItemPrice>().Price = price;
-        newItem.transform.localScale = Vector3.zero;
-
-        newItem.transform.DOScale(originalPrefabScale, 0.4f)
-            .SetEase(Ease.OutBack)
-            .OnComplete(() =>
-            {
-                newItem.transform.DOPunchScale(originalPrefabScale * 0.15f, 0.2f, 5, 1);
-            });
-
-        if (newItem.TryGetComponent<Rigidbody>(out var rb))
-        {
-            rb.AddForce(Vector3.up * 2f, ForceMode.Impulse);
-        }
+        var instance = customer.GetComponent<NpcInstance>();
+        if (instance.paymentType == PaymentType.Card)
+            creditCard.SetActive(true);
+        else
+            money.SetActive(true);
     }
-    void BuyTotal()
+
+    private void ShowTotal()
     {
         nameItemText.text = "";
         priceItemText.text = "";
         totalPriceText.text = "Total ¥" + totalPrice.ToString("F2");
     }
-    public float GetTotalPrice()
+
+    // -------------------------
+    // Spawn
+    // -------------------------
+    public void SpawnItemWithAnimation(Items itemType, float price)
     {
-        return totalPrice;
+        GameObject prefab = GetItemPrefab(itemType);
+        if (prefab == null) return;
+
+        Vector3 originalScale = prefab.transform.localScale;
+        Vector3 offset = new Vector3(Random.Range(-0.15f, 0.15f), 0.05f, Random.Range(-0.15f, 0.15f));
+
+        GameObject newItem = Instantiate(prefab, itemPosition.position + offset, Quaternion.identity);
+        newItem.AddComponent<ItemPrice>().Price = price;
+        newItem.transform.localScale = Vector3.zero;
+
+        newItem.transform.DOScale(originalScale, 0.4f)
+            .SetEase(Ease.OutBack)
+            .OnComplete(() => newItem.transform.DOPunchScale(originalScale * 0.15f, 0.2f, 5, 1));
+
+        if (newItem.TryGetComponent<Rigidbody>(out var rb))
+            rb.AddForce(Vector3.up * 2f, ForceMode.Impulse);
     }
+
+    // -------------------------
+    // Payment
+    // -------------------------
+    public float GetTotalPrice() => totalPrice;
+
     public void FinishPayment()
     {
         creditCard.SetActive(false);
@@ -339,43 +284,53 @@ public class CashRegister : MonoBehaviour
         cashregisterText.gameObject.SetActive(false);
         totalPriceText.text = "";
         totalPrice = 0;
-
         itemsQueue.Clear();
     }
+
     public void PaymentTextCash(string message)
     {
         cashregisterText.gameObject.SetActive(true);
         cashregisterText.text = message;
     }
 
+    public void ApplyPenalty()
+    {
+        var customer = GetCurrentCustomer();
+        customer?.GetComponent<NpcInstance>()?.ReceiveWrongChange(30);
+    }
+
     [ContextMenu("Finish Customer")]
     public void FinishCustomer()
     {
         if (queue.Count == 0) return;
-
         var npc = queue[0];
-
         LeaveQueue(npc);
-
         npc.GoAway();
     }
+
     public void FinalizeTransaction()
     {
         FinishCustomer();
         FinishPayment();
     }
 
-    public void ApplyPenalty()
+    // -------------------------
+    // Trigger (só items, não player)
+    // -------------------------
+    void OnTriggerEnter(Collider other)
     {
-        NpcTraject currentCustomer = GetCurrentCustomer();
+        Item item = other.GetComponent<Item>();
+        if (item != null && !item.PassedItem())
+            itemsQueue.Enqueue(item);
+    }
 
-        if (currentCustomer != null)
-        {
-            NpcInstance instance = currentCustomer.GetComponent<NpcInstance>();
-            if (instance != null)
-            {
-                instance.ReceiveWrongChange(30);
-            }
-        }
+    // -------------------------
+    // Helpers
+    // -------------------------
+    public GameObject GetItemPrefab(Items type)
+    {
+        foreach (var data in allItem)
+            if (data.itemType == type) return data.itemPrefab;
+        return null;
     }
 }

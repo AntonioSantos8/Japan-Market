@@ -13,53 +13,55 @@ public abstract class InteractableBase : MonoBehaviour, IInteractable
     protected bool canInteract = true;
     protected bool addOutline = true;
     public string interactionText ;
-    
-    
+
+
+    // InteractableBase
     public virtual void Awake()
     {
         rb = GetComponent<Rigidbody>();
-          originalScale = transform.localScale;  
-        if(gameObject.GetComponent<InteractableBase>() == this) 
-        {
-             var outl = gameObject.AddComponent<Outline>();
-             outline = outl;
-            outline.OutlineMode = Outline.Mode.OutlineAll;
-             outline.OutlineColor = Color.white;
-             outline.OutlineWidth = 4f;
-            outline.enabled = false;
-            //cb = GetComponent<ICustomBehaviourOnPick>();
-
-        }
-      
-
-
+        originalScale = transform.localScale;
+        InitOutline();
     }
-    
+
+    private void InitOutline()
+    {
+        outline = GetComponent<Outline>();
+
+        if (outline == null)
+            outline = GetComponentInChildren<Outline>(true);
+
+        if (outline == null)
+        {
+            isOutlineable = false;
+            return;
+        }
+
+        outline.OutlineMode = Outline.Mode.OutlineAll;
+        outline.OutlineColor = Color.white;
+        outline.OutlineWidth = 4f;
+        outline.enabled = false;
+    }
+
     public abstract void Interact();
-    
+
 
     public virtual bool OnLookAt()
     {
-                
-        if(!canInteract) {          
-          //  ServiceLocator.Get<PlayerInteractions>().GetInteractionText().SetActive(false);
-          outline.enabled = false; return false; 
+        if (outline == null)
+            outline = GetComponentInChildren<Outline>(true);
+        if (!canInteract)
+        {
+            if (outline != null) outline.enabled = false;
+            return false;
         }
+
         if (!isOutlineable)
         {
-            //ServiceLocator.Get<F2FGrabSystem>().CanThrow = true;
-            outline.enabled = false;
+            if (outline != null) outline.enabled = false;
             return false;
-
-
         }
-        if (isMarkable)
-        {
-           // ServiceLocator.Get<PlayerInteractions>().SetInteractionText("");
-        }
-        //ServiceLocator.Get<PlayerInteractions>().SetInteractionText(SetInteractionText());
-        outline.enabled = true;
-        //ServiceLocator.Get<F2FGrabSystem>().CanThrow = false;
+
+        if (outline != null) outline.enabled = true;
         return true;
     }
     public virtual string SetInteractionText()
@@ -70,12 +72,11 @@ public abstract class InteractableBase : MonoBehaviour, IInteractable
     }
     public virtual void OnLookAway()
     {
+        if (outline == null)
+            outline = GetComponentInChildren<Outline>(true);
 
-         //  ServiceLocator.Get<PlayerInteractions>().GetInteractionText().SetActive(false);
-       // if(outline != null)
-         //   ServiceLocator.Get<F2FGrabSystem>().CanThrow = true;
-     if(outline!= null )
-        outline.enabled = false;
+        if (outline != null)
+            outline.enabled = false;
     }
     public void SetCanInteract(bool value) 
     {

@@ -1408,8 +1408,8 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 1.2, y: 1.2, z: 1.2}
+  m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 5625744698266583063}
   - {fileID: 9201624308388506711}
@@ -1450,7 +1450,7 @@ CharacterController:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Height: 1.88
+  m_Height: 1.51
   m_Radius: 0.27
   m_SlopeLimit: 45
   m_StepOffset: 0.3
@@ -2206,14 +2206,14 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3433498047700989207}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 97274ed864d333b4bb1be7d6936860d5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlacementFollower
   anchor: {fileID: 291153512167312465}
   viewDistance: 3
-  gridSize: 0.5
+  gridSize: 0.1
 --- !u!1 &3661409379689623403
 GameObject:
   m_ObjectHideFlags: 0
@@ -2274,7 +2274,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -5359,7 +5359,7 @@ Transform:
   m_GameObject: {fileID: 7993319225401863276}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.54200006, z: 0}
+  m_LocalPosition: {x: 0, y: 0.5420001, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:

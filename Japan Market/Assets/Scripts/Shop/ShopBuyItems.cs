@@ -45,6 +45,27 @@ public class ShopBuyItems : MonoBehaviour
     }
     public void BuyBox()
     {
+        float price = 0f;
+
+        if (objects[currentIndex].TryGetComponent(out ItemsExample atd))
+        {
+            AllIThingsData at = atd.GetAllThingsData();
+            price = at.singleItemPrice;
+        }
+        else if (objects[currentIndex].TryGetComponent(out FurnitureBox fb))
+        {
+            price = fb.GetData().data.singleItemPrice;
+        }
+
+        MarketManager market = ServiceLocator.Get<MarketManager>();
+
+        if (market.Money < price)
+        {
+            ServiceLocator.Get<Warnings>().ShowWarning("Not enough money.", false);
+            return;
+        }
+
+        market.Lose_Money(price);
         Instantiate(currentItemBox, boxesSpawnPoint.position, Quaternion.identity);
     }
 

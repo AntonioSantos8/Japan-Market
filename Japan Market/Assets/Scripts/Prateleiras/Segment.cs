@@ -69,8 +69,8 @@ if(outlineMeshRenderer == null)
 
 
         outline = gameObject.GetComponent<Outline>();
-        
-        outline.OutlineWidth = 0;
+        if (outline != null)
+            outline.OutlineWidth = 0;
 
     }   
     public bool IsEmpty()

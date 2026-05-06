@@ -33,7 +33,14 @@ public class ConstructionUI : MonoBehaviour
     }
     public void SetText()
     {
+        
         var current = _manager.GetCurrentSelected();
+        if (current == null)
+        {
+            textCurrentItem.text = "Nenhum selecionado";
+            statusIndicator.color = inactiveColor;
+            return;
+        }
         textCurrentItem.text = "Item: " + current.furnitureName;
     }
 }

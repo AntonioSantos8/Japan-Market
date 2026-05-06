@@ -2,41 +2,74 @@ using UnityEngine;
 using DG.Tweening;
 using TMPro;
 
-public class MarketManager : MonoBehaviour 
+public class MarketManager : MonoBehaviour
 {
     private bool open = false;
-    private float cash;
-    private float late_cash;
-    private Tweener cashTween;
+    private float money;
+    private float late_money;
+    private Tweener moneyTween;
 
-    [SerializeField] private TextMeshProUGUI cashText;
+    [SerializeField] private TextMeshProUGUI moneyText;
 
-    public float Cash { get => cash; set => cash = value; }
+    public float Money { get => money; set => money = value; }
+    public bool Open { get => open; set => open = value; }
 
     void Start()
     {
+        LoadMoney();
         ServiceLocator.Register(this);
     }
 
-    public void Earn_Cash(float quantity)
+    public void LoadMoney()
     {
-        cash += quantity;
+        late_money = money;
+        moneyText.text = $"Money: {FormatMoney(money)}";
+    }
 
-        cashTween?.Kill();
-        cashTween = DOTween.To(
-            () => late_cash,
-            x => {
-                late_cash = x;
-                cashText.text = Mathf.FloorToInt(late_cash).ToString();
+    [ContextMenu("Test Earn")]
+    public void TestEarn() => Earn_Money(100);
+
+    public void Earn_Money(float quantity)
+    {
+        money += quantity;
+
+        moneyTween?.Kill();
+        moneyTween = DOTween.To(
+            () => late_money,
+            x =>
+            {
+                late_money = x;
+                moneyText.text = $"Money: {FormatMoney(late_money)}";
             },
-            cash,
+            money,
             1f
         ).SetEase(Ease.OutQuad);
     }
 
-    public void Lose_Cash(float quantity)
+    public void Lose_Money(float quantity)
     {
-        if (cash >= quantity)
-            cash -= quantity;
+        if (money >= quantity)
+        {
+            money -= quantity;
+
+            moneyTween?.Kill();
+            moneyTween = DOTween.To(
+                () => late_money,
+                x =>
+                {
+                    late_money = x;
+                    moneyText.text = $"Money: {FormatMoney(late_money)}";
+                },
+                money,
+                1f
+            ).SetEase(Ease.OutQuad);
+        }
+    }
+    private string FormatMoney(float value)
+    {
+        if (value >= 1_000_000_000f) return $"{value / 1_000_000_000f:0.##}b";
+        if (value >= 1_000_000f) return $"{value / 1_000_000f:0.##}m";
+        if (value >= 1_000f) return $"{value / 1_000f:0.##}k";
+        return Mathf.FloorToInt(value).ToString();
     }
 }

@@ -6,7 +6,8 @@ public class NpcManager : MonoBehaviour
     [SerializeField] private GameObject[] npcCommonPrefab;
     [SerializeField] private Transform spawnPoint;
 
-    [SerializeField] private float spawnInterval = 20f;
+    [SerializeField] private float minSpawnInterval = 10f;
+    [SerializeField] private float maxSpawnInterval = 60f;
     private void Start()
     {
         
@@ -25,8 +26,9 @@ public class NpcManager : MonoBehaviour
     {
         while (true)
         {
+            float randomInterval = Random.Range(minSpawnInterval, maxSpawnInterval);
+            yield return new WaitForSeconds(randomInterval);
             SpawnNpc();
-            yield return new WaitForSeconds(spawnInterval);
         }
     }
 }
