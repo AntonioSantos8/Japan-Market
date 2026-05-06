@@ -129,7 +129,7 @@ public class PaymentMoney : MonoBehaviour
         ServiceLocator.Get<MarketManager>().Earn_Money(totalPrice);
         seq.Append(givingText.DOColor(Color.green, 0.2f));
         seq.AppendInterval(0.2f);
-        seq.Append(imagePayment.transform.DOScale(0f, 0.4f).SetEase(Ease.InOutBack));
+        seq.Append(imagePayment.transform.DOScale(0f, 0.4f).SetEase(Ease.InOutSine));
 
         seq.OnComplete(() =>
         {

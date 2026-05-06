@@ -35,7 +35,7 @@ public class PaymentCard : MonoBehaviour
         currentValue += number;
         UpdateText();
 
-        valueText.transform.DOPunchScale(Vector3.one * 0.1f, 0.2f, 10, 1);
+        valueText.transform.DOPunchScale(Vector3.one * 0.1f, 0.15f, 10, 1);
     }
     public void AddPoint()
     {
@@ -86,7 +86,7 @@ public class PaymentCard : MonoBehaviour
         ServiceLocator.Get<MarketManager>().Earn_Money(totalPrice);
         seq.Append(valueText.DOColor(Color.darkGreen, 0.2f));
         seq.AppendInterval(0.2f);
-        seq.Append(imagepayment.transform.DOScale(0f, 0.6f).SetEase(Ease.InOutBack));
+        seq.Append(imagepayment.transform.DOScale(0f, 0.6f).SetEase(Ease.InOutSine));
 
         seq.OnComplete(() =>
         {
