@@ -6,7 +6,7 @@ public class TreeParticle : MonoBehaviour
     private ParticleSystem.Particle[] particles;
     private List<ParticleCollisionEvent> collisionEvents = new List<ParticleCollisionEvent>();
 
-    // randomSeed -> rotação congelada
+   
     private Dictionary<uint, Vector3> frozenRotations = new Dictionary<uint, Vector3>();
 
     void Start()
@@ -23,7 +23,6 @@ public class TreeParticle : MonoBehaviour
     {
         int numEvents = ps.GetCollisionEvents(other, collisionEvents);
         int count = ps.GetParticles(particles);
-
         for (int e = 0; e < numEvents; e++)
         {
             Vector3 hitPos = collisionEvents[e].intersection;
@@ -31,12 +30,14 @@ public class TreeParticle : MonoBehaviour
             for (int i = 0; i < count; i++)
             {
                 uint id = particles[i].randomSeed;
+        print("cold1");
 
-                // Registra apenas uma vez por partícula
+             
                 if (!frozenRotations.ContainsKey(id))
-                {
+                {   
                     if (Vector3.Distance(particles[i].position, hitPos) < 0.15f)
-                    {
+                    { 
+        print("cold2");
                         frozenRotations[id] = particles[i].rotation3D;
                     }
                 }
@@ -57,9 +58,10 @@ public class TreeParticle : MonoBehaviour
 
             if (frozenRotations.TryGetValue(id, out Vector3 rot))
             {
-                // Só congela a rotação — posição e velocidade intactas
-                particles[i].rotation3D = rot;
-                changed = true;
+                particles[i].velocity = Vector3.zero;
+                particles[i].angularVelocity = 0;
+                particles[i].angularVelocity3D = Vector3.zero;
+               
             }
         }
 
