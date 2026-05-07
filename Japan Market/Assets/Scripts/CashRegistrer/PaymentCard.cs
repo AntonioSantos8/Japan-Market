@@ -86,7 +86,8 @@ public class PaymentCard : MonoBehaviour
         ServiceLocator.Get<MarketManager>().Earn_Money(totalPrice);
         seq.Append(valueText.DOColor(Color.darkGreen, 0.2f));
         seq.AppendInterval(0.2f);
-        seq.Append(imagepayment.transform.DOScale(0f, 0.3f).SetEase(Ease.InOutSine));
+        seq.Append(valueText.DOColor(Color.white, 0.2f));
+        seq.Append(imagepayment.transform.DOScale(0f, 0.26f).SetEase(Ease.InOutSine));
 
         seq.OnComplete(() =>
         {
