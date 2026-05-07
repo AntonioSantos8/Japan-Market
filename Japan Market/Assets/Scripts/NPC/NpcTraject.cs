@@ -4,206 +4,280 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.AI;
 
+/// <summary>
+/// Controla a movimentação, compras e saída do NPC da loja.
+/// 
+/// Melhorias em relação à versão anterior:
+/// - Usa FurnitureOccupancy para evitar aglomeração em prateleiras.
+/// - A saída não depende de chegar num ponto exato: destrói o NPC por distância
+///   do exit, resolvendo o bug de múltiplos NPCs travados no exit.
+/// - Animação agora é gerenciada automaticamente por NpcAnimationManager via Update,
+///   mas SetTarget e GoAway ainda podem forçar se necessário.
+/// </summary>
 [RequireComponent(typeof(NavMeshAgent))]
 public class NpcTraject : MonoBehaviour
 {
+    // ─── Referências ──────────────────────────────────────────────────────────
     private NavMeshAgent _agent;
-    private FurnitureManager _furnitureManager;
-
-    [Header("Dest config")]
-    private Transform _finalPoint;
-    private Transform someExitPoint;
-    [SerializeField] private float _waitTime = 5;
-    [Header("Queue config")]
-    private int _queueIndex = -1;
-
-    [Header("Inventory")]
-    private Dictionary<Items, float> _inventory = new Dictionary<Items, float>();
-    private CashRegister _cashRegister;
-    private bool _itemsPlaced = false;
     private NpcInstance _npcInstance;
-    private NpcAnimationManager npcAnimationManager;
+    private FurnitureManager _furnitureManager;
+    private CashRegister _cashRegister;
+
+    [Header("Dest Config")]
+    [SerializeField] private float _waitTimeAtShelf = 3f;
+
+    [Header("Exit Config")]
+    [Tooltip("Distância do Exit em que o NPC é destruído (resolve bug de aglomeração na saída).")]
+    [SerializeField] private float _exitDestroyDistance = 1.5f;
+
+    // Referência ao exit point
+    private Transform _exitPoint;
+    private Transform _queueFinalPoint;
+
+    // Inventário: item → preço no momento da compra
+    private readonly Dictionary<Items, float> _inventory = new Dictionary<Items, float>();
+
+    // Slot reservado na furniture atual
+    private FurnitureOccupancy _currentOccupancy;
+    private Vector3 _reservedSlotPosition;
+
+    // Controle de caixa
+    private bool _itemsPlaced = false;
+    private int _queueIndex  = -1;
+
+    private bool _isLeaving = false;
+
+    // ─── Unity ────────────────────────────────────────────────────────────────
+
     private void Awake()
     {
-
-        _agent = GetComponent<NavMeshAgent>();
-        _npcInstance = GetComponent<NpcInstance>();
-        npcAnimationManager = GetComponent<NpcAnimationManager>();
+        _agent        = GetComponent<NavMeshAgent>();
+        _npcInstance  = GetComponent<NpcInstance>();
     }
+
     private void Start()
     {
-        someExitPoint = GameObject.FindGameObjectWithTag("Exit").transform;
-        _cashRegister = ServiceLocator.Get<CashRegister>();
+        _exitPoint      = GameObject.FindGameObjectWithTag("Exit").transform;
+        _cashRegister   = ServiceLocator.Get<CashRegister>();
         _furnitureManager = ServiceLocator.Get<FurnitureManager>();
-        _finalPoint = _cashRegister.queuePoints[_cashRegister.queuePoints.Length - 1];
+
+        if (_furnitureManager == null)
+            _furnitureManager = FindAnyObjectByType<FurnitureManager>();
+
         if (_furnitureManager == null)
         {
-            _furnitureManager = FindAnyObjectByType<FurnitureManager>();
-            if (_furnitureManager == null)
-            {
-                Debug.LogError("FurnitureManager not found in the scene.");
-                return;
-            }
+            Debug.LogError("[NpcTraject] FurnitureManager não encontrado!");
+            GoAway();
+            return;
         }
-        StartCoroutine(WaitInFrontOfCashRegister());
-        StartCoroutine(MoveRoutine());
+
+        _queueFinalPoint = _cashRegister.queuePoints[_cashRegister.queuePoints.Length - 1];
+
+        StartCoroutine(CashRegisterWatcher());
+        StartCoroutine(ShoppingRoutine());
     }
-    private IEnumerator WaitInFrontOfCashRegister()
+
+    // ─── Caixa ────────────────────────────────────────────────────────────────
+
+    private IEnumerator CashRegisterWatcher()
     {
         while (true)
         {
-            VerifyIsInCashRegister();
-            yield return new WaitForSeconds(1f);
+            if (!_itemsPlaced
+                && _cashRegister.GetCurrentCustomer() == this
+                && _cashRegister.hasClient)
+            {
+                PlaceItemsOnCounter();
+            }
+            yield return new WaitForSeconds(0.5f);
         }
     }
-    private void VerifyIsInCashRegister()
-    {
-        if (!_itemsPlaced && _cashRegister.GetCurrentCustomer() == this && _cashRegister.hasClient)
-        {
-            PlaceItemsOnCounter();
-        }
-    }
+
     private void PlaceItemsOnCounter()
     {
         _itemsPlaced = true;
-
         StartCoroutine(UnloadInventoryRoutine());
     }
+
     private IEnumerator UnloadInventoryRoutine()
     {
         yield return new WaitForSeconds(0.2f);
 
-        for (int i = 0; i < _inventory.Count; i++)
+        foreach (var pair in _inventory)
         {
-            Items itemType = _inventory.ElementAt(i).Key;
-
-            _cashRegister.SpawnItemWithAnimation(itemType, _inventory[itemType]);
-
+            _cashRegister.SpawnItemWithAnimation(pair.Key, pair.Value);
             yield return new WaitForSeconds(0.2f);
         }
 
         _inventory.Clear();
-        Debug.Log("NPC terminou de colocar os itens no balcão.");
+        Debug.Log("[NPC] Itens colocados no balcão.");
     }
-    #region Trigger
+
+    // ─── Trigger (área do caixa) ──────────────────────────────────────────────
+
     private void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("CashRegister"))
-        {
-            print("Entrou no caixa");
             _cashRegister.hasClient = true;
-        }
     }
+
     private void OnTriggerExit(Collider other)
     {
         if (other.CompareTag("CashRegister"))
-        {
             _cashRegister.hasClient = false;
-        }
     }
-    #endregion
-    private IEnumerator MoveRoutine()
-    {
-        if (_furnitureManager == null)
-        {
-            yield break;
-        }
 
-        yield return new WaitForSeconds(4f);
+    // ─── Rotina principal de compras ──────────────────────────────────────────
+
+    private IEnumerator ShoppingRoutine()
+    {
+        yield return new WaitForSeconds(Random.Range(2f, 5f)); // leve variação no start
 
         var allFurnitures = _furnitureManager.GetPlacedFurnitures();
 
         if (allFurnitures != null && allFurnitures.Count > 0)
         {
-            int quantToVisit = Random.Range(1, allFurnitures.Count + 1);
-            List<FurnitureInstance> sortList = SortFurniture(allFurnitures, quantToVisit);
+            int quantToVisit = Random.Range(1, Mathf.Min(allFurnitures.Count + 1, 6));
+            var selected     = PickFurnitures(allFurnitures, quantToVisit);
 
-            foreach (var furniture in sortList)
+            foreach (var furniture in selected)
             {
-                yield return StartCoroutine(GoToDest(furniture.InteractionPosition));
+                // Tenta reservar um slot nesta furniture
+                var occupancy = furniture.GetComponent<FurnitureOccupancy>();
 
-                if (furniture.shelf != null)
+                if (occupancy != null)
                 {
-                    if (_inventory.Count < 5)
+                    if (!occupancy.TryReserve(out _reservedSlotPosition))
                     {
-                        Items item = furniture.shelf.TakeRandomItem();
-                        if (item != Items.None)
-                        {
-                            _inventory.Add(item, ServiceLocator.Get<GlobalPrices>().GetItemCurrentPrice(item));
-                            Debug.Log("NPC pegou: " + item);
-                        }
+                        // Furniture lotada — pula para a próxima
+                        Debug.Log("[NPC] Furniture lotada, pulando.");
+                        continue;
+                    }
+                    _currentOccupancy = occupancy;
+                }
+                else
+                {
+                    // Furniture sem FurnitureOccupancy: usa InteractionPosition diretamente
+                    _reservedSlotPosition = furniture.InteractionPosition;
+                    _currentOccupancy = null;
+                }
+
+                yield return StartCoroutine(GoToDest(_reservedSlotPosition));
+
+                // Pega item se possível
+                if (furniture.shelf != null && _inventory.Count < 5)
+                {
+                    Items item = furniture.shelf.TakeRandomItem();
+                    if (item != Items.None)
+                    {
+                        float price = ServiceLocator.Get<GlobalPrices>().GetItemCurrentPrice(item);
+                        _inventory[item] = price;
+                        Debug.Log($"[NPC] Pegou: {item}");
                     }
                 }
 
-                yield return new WaitForSeconds(_waitTime);
+                yield return new WaitForSeconds(_waitTimeAtShelf);
+
+                // Libera slot
+                _currentOccupancy?.Release(_reservedSlotPosition);
+                _currentOccupancy = null;
             }
         }
 
         if (_inventory.Count == 0)
         {
-            Debug.Log("NPC não encontrou itens e está indo embora direto.");
+            Debug.Log("[NPC] Sem itens, indo embora.");
             GoAway();
             yield break;
         }
 
-        if (_finalPoint != null)
-        {
-            yield return StartCoroutine(GoToDest(_finalPoint.position));
-            _cashRegister.EnterQueue(this);
-            Debug.Log("NPC entrou na fila");
-        }
+        // Vai para a fila do caixa
+        yield return StartCoroutine(GoToDest(_queueFinalPoint.position));
+        _cashRegister.EnterQueue(this);
+        Debug.Log("[NPC] Entrou na fila.");
     }
+
+    // ─── Saída da loja ────────────────────────────────────────────────────────
+
     public void GoAway()
     {
-        StartCoroutine(GoAwayCor());
-    }
-    private IEnumerator GoAwayCor()
-    {
+        if (_isLeaving) return;
+        _isLeaving = true;
 
-        _agent.SetDestination(someExitPoint.position);
-        npcAnimationManager.SetAnimationState(NpcAnimationState.Walk);
+        // Libera slot caso saia antes do tempo
+        _currentOccupancy?.Release(_reservedSlotPosition);
+        _currentOccupancy = null;
+
+        StartCoroutine(LeaveRoutine());
+    }
+
+    private IEnumerator LeaveRoutine()
+    {
+        _agent.SetDestination(_exitPoint.position);
+
+        // Aguarda o agente começar a se mover
+        yield return new WaitForSeconds(0.3f);
         yield return new WaitUntil(() => !_agent.pathPending);
 
-        while (_agent.remainingDistance > _agent.stoppingDistance)
+        // Destroi por distância em vez de esperar chegar no ponto exato.
+        // Isso evita que vários NPCs fiquem travados esperando a vez no exit.
+        while (true)
         {
+            float dist = Vector3.Distance(transform.position, _exitPoint.position);
+            if (dist <= _exitDestroyDistance) break;
+
+            // Segurança: se o agente ficou parado por muito tempo longe do exit,
+            // força destruição para não vazar NPC na cena.
+            if (!_agent.hasPath || _agent.isStopped)
+            {
+                _agent.SetDestination(_exitPoint.position);
+            }
+
             yield return null;
         }
-        npcAnimationManager.SetAnimationState(NpcAnimationState.Idle);
-        yield return new WaitForSeconds(1.5f);
+
         Destroy(gameObject);
     }
-    public void SetTarget(Transform target, int index)
+
+    // ─── Fila do caixa ────────────────────────────────────────────────────────
+
+    /// <summary>Chamado pelo CashRegister para reposicionar o NPC na fila.</summary>
+    public void SetQueueTarget(Transform target, int index)
     {
         _queueIndex = index;
         _agent.SetDestination(target.position);
     }
+
+    // Mantém compatibilidade com o nome anterior usado pelo CashRegister
+    public void SetTarget(Transform target, int index) => SetQueueTarget(target, index);
+
+    // ─── Movimento genérico ───────────────────────────────────────────────────
+
     private IEnumerator GoToDest(Vector3 dest)
     {
         _agent.SetDestination(dest);
 
         yield return new WaitUntil(() => !_agent.pathPending);
 
-        npcAnimationManager.SetAnimationState(NpcAnimationState.Walk);
+        // Aguarda chegar: usa margem levemente maior que stoppingDistance para não travar
+        float arrivalThreshold = _agent.stoppingDistance + 0.05f;
 
-        while (_agent.remainingDistance > _agent.stoppingDistance)
-        {
+        while (_agent.remainingDistance > arrivalThreshold)
             yield return null;
-        }
-
-        npcAnimationManager.SetAnimationState(NpcAnimationState.Idle);
     }
-    private List<FurnitureInstance> SortFurniture(List<FurnitureInstance> originalList, int quant)
+
+    // ─── Seleção de furnitures ────────────────────────────────────────────────
+
+    private List<FurnitureInstance> PickFurnitures(List<FurnitureInstance> source, int count)
     {
-        List<FurnitureInstance> copy = new List<FurnitureInstance>(originalList);
-        List<FurnitureInstance> result = new List<FurnitureInstance>();
+        var copy   = new List<FurnitureInstance>(source);
+        var result = new List<FurnitureInstance>();
 
-        for (int i = 0; i < quant; i++)
+        for (int i = 0; i < count && copy.Count > 0; i++)
         {
-            if (copy.Count == 0) break;
-
-            int index = Random.Range(0, copy.Count);
-            result.Add(copy[index]);
-            copy.RemoveAt(index);
+            int idx = Random.Range(0, copy.Count);
+            result.Add(copy[idx]);
+            copy.RemoveAt(idx);
         }
 
         return result;

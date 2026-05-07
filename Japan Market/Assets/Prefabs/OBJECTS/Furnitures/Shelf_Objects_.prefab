@@ -1161,6 +1161,7 @@ GameObject:
   - component: {fileID: 6122663402572083065}
   - component: {fileID: 3807044564978151086}
   - component: {fileID: 7987586813106179042}
+  - component: {fileID: 6153118155556976842}
   m_Layer: 0
   m_Name: Shelf_Objects_
   m_TagString: Untagged
@@ -1241,6 +1242,20 @@ MonoBehaviour:
   shelf:
     _serializedList: []
   lastItemSegment: {fileID: 0}
+--- !u!114 &6153118155556976842
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7655635529144014900}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbf7bbbfbac242b4e99e144fb2907ea0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FurnitureOccupancy
+  _maxOccupants: 2
+  _slotOffsets: []
 --- !u!1 &7786545105815826245
 GameObject:
   m_ObjectHideFlags: 0
