@@ -3,19 +3,19 @@ using DG.Tweening;
 
 public class AutomaticDoor : MonoBehaviour
 {
-    [SerializeField] private Transform doorleft;
-    [SerializeField] private Transform doorRigth;
-    [SerializeField] private Vector3 leftClosedPos;
-    [SerializeField] private Vector3 leftOpenPos;
-    [SerializeField] private Vector3 rightClosedPos;
-    [SerializeField] private Vector3 rightOpenPos;
-    [SerializeField] private float speed = 1f;
-    [SerializeField] private float doorCloseTime = 2f;
-    [SerializeField] private Ease easeType = Ease.OutCubic;
-    private Tween leftTween;
-    private Tween rightTween;
-    private bool playerInside;
-    private float closeTimer;
+    [SerializeField] Transform doorleft;
+    [SerializeField] Transform doorRigth;
+    [SerializeField] Vector3 leftClosedPos;
+    [SerializeField] Vector3 leftOpenPos;
+    [SerializeField] Vector3 rightClosedPos;
+    [SerializeField] Vector3 rightOpenPos;
+    [SerializeField] float speed = 1f;
+    [SerializeField] float doorCloseTime = 2f;
+    [SerializeField] Ease easeType = Ease.OutCubic;
+    Tween leftTween;
+   Tween rightTween;
+   bool playerInside;
+   float closeTimer;
 
     private void Update()
     {

@@ -76,7 +76,7 @@ public class PaymentMoney : MonoBehaviour
         UptadeValue();
 
         givingText.transform.DOKill();
-        givingText.transform.DOPunchScale(Vector3.one * 0.02f, 0.25f, 4, 0.2f);
+        givingText.transform.DOPunchScale(Vector3.one * 0.011f, 0.21f, 2, 0.12f);
            
     }
     public void Undo()
@@ -124,9 +124,10 @@ public class PaymentMoney : MonoBehaviour
         ServiceLocator.Get<MarketManager>().Earn_Money(totalPrice);
         seq.Append(givingText.DOColor(Color.green, 0.2f));
         seq.AppendInterval(0.2f);
-        seq.Append(imagePayment.transform.DOScale(0f, 0.4f).SetEase(Ease.InOutSine));
+        seq.Append(givingText.DOColor(Color.white, 0.2f));
+        seq.Append(imagePayment.transform.DOScale(0f, 0.25f).SetEase(Ease.InOutSine));
 
-        seq.OnComplete(() =>
+        seq.OnComplete(() => 
         {
             imagePayment.SetActive(false);
             receivedText.gameObject.SetActive(false);
