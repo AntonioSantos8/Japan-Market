@@ -775,6 +775,34 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5513121979669134439, guid: 6570000121465ce44909f6c67cd8478f, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5513121979669134439, guid: 6570000121465ce44909f6c67cd8478f, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.54200006
+      objectReference: {fileID: 0}
+    - target: {fileID: 5513121979669134439, guid: 6570000121465ce44909f6c67cd8478f, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5513121979669134439, guid: 6570000121465ce44909f6c67cd8478f, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5513121979669134439, guid: 6570000121465ce44909f6c67cd8478f, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5513121979669134439, guid: 6570000121465ce44909f6c67cd8478f, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5513121979669134439, guid: 6570000121465ce44909f6c67cd8478f, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5996058394712543487, guid: 6570000121465ce44909f6c67cd8478f, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -933,6 +961,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7352843747105510057, guid: 6570000121465ce44909f6c67cd8478f, type: 3}
       propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7855600576754828605, guid: 6570000121465ce44909f6c67cd8478f, type: 3}
+      propertyPath: m_DeselectOnBackgroundClick
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8041141450273994984, guid: 6570000121465ce44909f6c67cd8478f, type: 3}
@@ -13845,11 +13877,6 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: -8678823145569952518, guid: 5de0f67337b3e984c8cf11dec33157c4, type: 3}
---- !u!1 &1632273484 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 4241414285599145572, guid: 1c0e10b6914ed6e43886c7e757e4eceb, type: 3}
-  m_PrefabInstance: {fileID: 7834607054474078549}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1634402360
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -15732,6 +15759,11 @@ Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 762f6919022142648915b508b318694e, type: 3}
   m_PrefabInstance: {fileID: 1858403156}
   m_PrefabAsset: {fileID: 0}
+--- !u!224 &1866480320 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 6862703088111924336, guid: 1c0e10b6914ed6e43886c7e757e4eceb, type: 3}
+  m_PrefabInstance: {fileID: 7834607054474078549}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1871861517
 GameObject:
   m_ObjectHideFlags: 0
@@ -16282,6 +16314,11 @@ PrefabInstance:
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 11f01e6f799fe59478de69313931e177, type: 3}
   m_PrefabInstance: {fileID: 1897279883}
+  m_PrefabAsset: {fileID: 0}
+--- !u!224 &1901762347 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 5113505526354366791, guid: 1c0e10b6914ed6e43886c7e757e4eceb, type: 3}
+  m_PrefabInstance: {fileID: 7834607054474078549}
   m_PrefabAsset: {fileID: 0}
 --- !u!1 &1905949775
 GameObject:
@@ -17557,6 +17594,11 @@ PrefabInstance:
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 33ff19b994d7ffa4d8422c52f3341076, type: 3}
   m_PrefabInstance: {fileID: 2101127570}
+  m_PrefabAsset: {fileID: 0}
+--- !u!224 &2116472775 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 2368483567269518445, guid: 1c0e10b6914ed6e43886c7e757e4eceb, type: 3}
+  m_PrefabInstance: {fileID: 7834607054474078549}
   m_PrefabAsset: {fileID: 0}
 --- !u!1 &2117808840
 GameObject:
@@ -27791,22 +27833,66 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 522855020}
     m_Modifications:
+    - target: {fileID: 376849475514254926, guid: 1c0e10b6914ed6e43886c7e757e4eceb, type: 3}
+      propertyPath: hoverScale.x
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 376849475514254926, guid: 1c0e10b6914ed6e43886c7e757e4eceb, type: 3}
+      propertyPath: hoverScale.y
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 376849475514254926, guid: 1c0e10b6914ed6e43886c7e757e4eceb, type: 3}
+      propertyPath: parentToRotate
+      value: 
+      objectReference: {fileID: 1866480320}
+    - target: {fileID: 376849475514254926, guid: 1c0e10b6914ed6e43886c7e757e4eceb, type: 3}
+      propertyPath: shakeRotationOnHover
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 376849475514254926, guid: 1c0e10b6914ed6e43886c7e757e4eceb, type: 3}
+      propertyPath: shakeScaleParams.vibrato
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 376849475514254926, guid: 1c0e10b6914ed6e43886c7e757e4eceb, type: 3}
+      propertyPath: shakeScaleParams.duration
+      value: 0.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 376849475514254926, guid: 1c0e10b6914ed6e43886c7e757e4eceb, type: 3}
+      propertyPath: shakeScaleParams.strenght.x
+      value: 0.4
+      objectReference: {fileID: 0}
+    - target: {fileID: 376849475514254926, guid: 1c0e10b6914ed6e43886c7e757e4eceb, type: 3}
+      propertyPath: shakeScaleParams.strenght.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 376849475514254926, guid: 1c0e10b6914ed6e43886c7e757e4eceb, type: 3}
+      propertyPath: shakeScaleParams.strenght.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 376849475514254926, guid: 1c0e10b6914ed6e43886c7e757e4eceb, type: 3}
+      propertyPath: shakeRotationParams.duration
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 376849475514254926, guid: 1c0e10b6914ed6e43886c7e757e4eceb, type: 3}
+      propertyPath: shakeRotationParams.strenght.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 376849475514254926, guid: 1c0e10b6914ed6e43886c7e757e4eceb, type: 3}
+      propertyPath: shakeRotationParams.strenght.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 376849475514254926, guid: 1c0e10b6914ed6e43886c7e757e4eceb, type: 3}
+      propertyPath: shakeRotationParams.strenght.z
+      value: -10
+      objectReference: {fileID: 0}
     - target: {fileID: 596960197280761844, guid: 1c0e10b6914ed6e43886c7e757e4eceb, type: 3}
       propertyPath: boxesSpawnPoint
       value: 
       objectReference: {fileID: 999520106}
     - target: {fileID: 596960197280761844, guid: 1c0e10b6914ed6e43886c7e757e4eceb, type: 3}
-      propertyPath: objects.Array.size
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 596960197280761844, guid: 1c0e10b6914ed6e43886c7e757e4eceb, type: 3}
       propertyPath: 'objects.Array.data[0]'
       value: 
       objectReference: {fileID: 573912331}
-    - target: {fileID: 596960197280761844, guid: 1c0e10b6914ed6e43886c7e757e4eceb, type: 3}
-      propertyPath: 'objects.Array.data[1]'
-      value: 
-      objectReference: {fileID: 1632273484}
     - target: {fileID: 832904198982489974, guid: 1c0e10b6914ed6e43886c7e757e4eceb, type: 3}
       propertyPath: m_IsActive
       value: 0
@@ -27814,6 +27900,58 @@ PrefabInstance:
     - target: {fileID: 913478418155697287, guid: 1c0e10b6914ed6e43886c7e757e4eceb, type: 3}
       propertyPath: m_IsActive
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1434301863596605821, guid: 1c0e10b6914ed6e43886c7e757e4eceb, type: 3}
+      propertyPath: hoverScale.x
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 1434301863596605821, guid: 1c0e10b6914ed6e43886c7e757e4eceb, type: 3}
+      propertyPath: hoverScale.y
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 1434301863596605821, guid: 1c0e10b6914ed6e43886c7e757e4eceb, type: 3}
+      propertyPath: parentToRotate
+      value: 
+      objectReference: {fileID: 1901762347}
+    - target: {fileID: 1434301863596605821, guid: 1c0e10b6914ed6e43886c7e757e4eceb, type: 3}
+      propertyPath: shakeRotationOnHover
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1434301863596605821, guid: 1c0e10b6914ed6e43886c7e757e4eceb, type: 3}
+      propertyPath: shakeScaleParams.vibrato
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 1434301863596605821, guid: 1c0e10b6914ed6e43886c7e757e4eceb, type: 3}
+      propertyPath: shakeScaleParams.duration
+      value: 0.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1434301863596605821, guid: 1c0e10b6914ed6e43886c7e757e4eceb, type: 3}
+      propertyPath: shakeScaleParams.strenght.x
+      value: 0.4
+      objectReference: {fileID: 0}
+    - target: {fileID: 1434301863596605821, guid: 1c0e10b6914ed6e43886c7e757e4eceb, type: 3}
+      propertyPath: shakeScaleParams.strenght.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1434301863596605821, guid: 1c0e10b6914ed6e43886c7e757e4eceb, type: 3}
+      propertyPath: shakeScaleParams.strenght.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1434301863596605821, guid: 1c0e10b6914ed6e43886c7e757e4eceb, type: 3}
+      propertyPath: shakeRotationParams.duration
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 1434301863596605821, guid: 1c0e10b6914ed6e43886c7e757e4eceb, type: 3}
+      propertyPath: shakeRotationParams.strenght.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1434301863596605821, guid: 1c0e10b6914ed6e43886c7e757e4eceb, type: 3}
+      propertyPath: shakeRotationParams.strenght.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1434301863596605821, guid: 1c0e10b6914ed6e43886c7e757e4eceb, type: 3}
+      propertyPath: shakeRotationParams.strenght.z
+      value: -10
       objectReference: {fileID: 0}
     - target: {fileID: 1641358398085975770, guid: 1c0e10b6914ed6e43886c7e757e4eceb, type: 3}
       propertyPath: m_Layer
@@ -27923,6 +28061,14 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 12
       objectReference: {fileID: 0}
+    - target: {fileID: 5113505526354366791, guid: 1c0e10b6914ed6e43886c7e757e4eceb, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 100
+      objectReference: {fileID: 0}
+    - target: {fileID: 5113505526354366791, guid: 1c0e10b6914ed6e43886c7e757e4eceb, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 100
+      objectReference: {fileID: 0}
     - target: {fileID: 5735175813083642718, guid: 1c0e10b6914ed6e43886c7e757e4eceb, type: 3}
       propertyPath: m_LocalPosition.y
       value: 445.8
@@ -27974,6 +28120,58 @@ PrefabInstance:
     - target: {fileID: 7997821809498909893, guid: 1c0e10b6914ed6e43886c7e757e4eceb, type: 3}
       propertyPath: _segment
       value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 8298143058217004005, guid: 1c0e10b6914ed6e43886c7e757e4eceb, type: 3}
+      propertyPath: hoverScale.x
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 8298143058217004005, guid: 1c0e10b6914ed6e43886c7e757e4eceb, type: 3}
+      propertyPath: hoverScale.y
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 8298143058217004005, guid: 1c0e10b6914ed6e43886c7e757e4eceb, type: 3}
+      propertyPath: parentToRotate
+      value: 
+      objectReference: {fileID: 2116472775}
+    - target: {fileID: 8298143058217004005, guid: 1c0e10b6914ed6e43886c7e757e4eceb, type: 3}
+      propertyPath: shakeRotationOnHover
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8298143058217004005, guid: 1c0e10b6914ed6e43886c7e757e4eceb, type: 3}
+      propertyPath: shakeScaleParams.vibrato
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 8298143058217004005, guid: 1c0e10b6914ed6e43886c7e757e4eceb, type: 3}
+      propertyPath: shakeScaleParams.duration
+      value: 0.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8298143058217004005, guid: 1c0e10b6914ed6e43886c7e757e4eceb, type: 3}
+      propertyPath: shakeScaleParams.strenght.x
+      value: 0.4
+      objectReference: {fileID: 0}
+    - target: {fileID: 8298143058217004005, guid: 1c0e10b6914ed6e43886c7e757e4eceb, type: 3}
+      propertyPath: shakeScaleParams.strenght.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8298143058217004005, guid: 1c0e10b6914ed6e43886c7e757e4eceb, type: 3}
+      propertyPath: shakeScaleParams.strenght.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8298143058217004005, guid: 1c0e10b6914ed6e43886c7e757e4eceb, type: 3}
+      propertyPath: shakeRotationParams.duration
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 8298143058217004005, guid: 1c0e10b6914ed6e43886c7e757e4eceb, type: 3}
+      propertyPath: shakeRotationParams.strenght.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8298143058217004005, guid: 1c0e10b6914ed6e43886c7e757e4eceb, type: 3}
+      propertyPath: shakeRotationParams.strenght.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8298143058217004005, guid: 1c0e10b6914ed6e43886c7e757e4eceb, type: 3}
+      propertyPath: shakeRotationParams.strenght.z
+      value: -10
       objectReference: {fileID: 0}
     - target: {fileID: 8632440985379600125, guid: 1c0e10b6914ed6e43886c7e757e4eceb, type: 3}
       propertyPath: m_Layer
