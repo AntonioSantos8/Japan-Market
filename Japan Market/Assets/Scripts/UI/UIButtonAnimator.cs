@@ -76,6 +76,7 @@ public class UIButtonAnimator : MonoBehaviour, IPointerEnterHandler, IPointerExi
  
     Vector3 targetScale;
 
+    public UnityEvent onClicked, onSelection, onDeselection;
     void Awake()
     {
         rect = GetComponent<RectTransform>();
@@ -100,6 +101,7 @@ public class UIButtonAnimator : MonoBehaviour, IPointerEnterHandler, IPointerExi
     {
         targetScale = hoverScale;
         lerpSpeed = hoverSpeed;
+        onSelection?.Invoke();
         if (shakeScaleOnHover) 
         {
             parentToShake.DOShakeScale(shakeScaleParams.duration, shakeScaleParams.strenght, shakeScaleParams.vibrato, shakeScaleParams.randomness);
@@ -116,12 +118,49 @@ public class UIButtonAnimator : MonoBehaviour, IPointerEnterHandler, IPointerExi
     {
         targetScale = Vector3.zero;
          lerpSpeed = normalSpeed;
-      
+      onDeselection?.Invoke();
         PlaySound(unhoverClip);
     }
 
     
     public void OnPointerClick(PointerEventData eventData)
+    {
+        if (!animateClick) return;
+
+        Sequence seq = DOTween.Sequence();
+        seq.Append(rect.DOScale(clickScale, clickDuration).SetEase(clickEase).SetUpdate(true));
+        seq.Append(rect.DOScale(animateScale ? hoverScale : baseScale, clickDuration).SetEase(clickEase).SetUpdate(true));
+
+        PlaySound(clickClip);
+    }
+
+    public void OnSelect(BaseEventData eventData)
+    {
+        targetScale = hoverScale;
+         lerpSpeed = hoverSpeed;
+         onSelection?.Invoke();
+        if (shakeScaleOnHover)
+        {
+            parentToShake.DOShakeScale(shakeScaleParams.duration, shakeScaleParams.strenght, shakeScaleParams.vibrato, shakeScaleParams.randomness);
+        }
+        if (shakeRotationOnHover)
+        {
+            parentToShake.DOShakeRotation(shakeRotationParams.duration, shakeRotationParams.strenght, shakeRotationParams.vibrato, shakeRotationParams.randomness);
+        }
+        PlaySound(hoverClip);
+        onSelect?.Invoke();
+    }
+
+    public void OnDeselect(BaseEventData eventData)
+    {
+        targetScale = Vector3.zero;
+        lerpSpeed = normalSpeed;
+           onDeselection?.Invoke();
+        PlaySound(unhoverClip);
+    }
+  
+
+    public void OnSubmit(BaseEventData eventData)
     {
         if (!animateClick) return;
 
@@ -140,40 +179,5 @@ public class UIButtonAnimator : MonoBehaviour, IPointerEnterHandler, IPointerExi
     {
         if (!useAudio || clip == null) return;
         audioSource.PlayOneShot(clip);
-    }
-
-    public void OnSelect(BaseEventData eventData)
-    {
-        targetScale = hoverScale;
-         lerpSpeed = hoverSpeed;
-        if (shakeScaleOnHover)
-        {
-            parentToShake.DOShakeScale(shakeScaleParams.duration, shakeScaleParams.strenght, shakeScaleParams.vibrato, shakeScaleParams.randomness);
-        }
-        if (shakeRotationOnHover)
-        {
-            parentToShake.DOShakeRotation(shakeRotationParams.duration, shakeRotationParams.strenght, shakeRotationParams.vibrato, shakeRotationParams.randomness);
-        }
-        PlaySound(hoverClip);
-        onSelect?.Invoke();
-    }
-
-    public void OnDeselect(BaseEventData eventData)
-    {
-                targetScale = Vector3.zero;
-        lerpSpeed = normalSpeed;
-        PlaySound(unhoverClip);
-    }
-  
-
-    public void OnSubmit(BaseEventData eventData)
-    {
-        if (!animateClick) return;
-
-        Sequence seq = DOTween.Sequence();
-        seq.Append(rect.DOScale(clickScale, clickDuration).SetEase(clickEase).SetUpdate(true));
-        seq.Append(rect.DOScale(animateScale ? hoverScale : baseScale, clickDuration).SetEase(clickEase).SetUpdate(true));
-
-        PlaySound(clickClip);
     }
 }   
