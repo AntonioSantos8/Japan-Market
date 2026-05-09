@@ -17,7 +17,8 @@ public class ButtonOrganizer : MonoBehaviour
     }
     public void SetLastSelectedButton() 
     {
-
+        eventSystem.SetSelectedGameObject(null   );
+        lastSelectedButton.GetComponent<UIButtonAnimator>().OnSelect( null);
         eventSystem.SetSelectedGameObject(lastSelectedButton);
 
     }
