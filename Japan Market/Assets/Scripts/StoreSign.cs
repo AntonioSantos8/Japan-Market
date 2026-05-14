@@ -8,12 +8,12 @@ public class StoreSign : MonoBehaviour
     [SerializeField] float interactDistance = 5f;
     [SerializeField] Ease ease = Ease.OutBack;
     bool isRotating = false;
-    bool isOpen = false; 
+    bool isOpen = false;
     Vector3 originalPos;
     float originalYRotation;
 
     void Start()
-    {//so pq tu pediu
+    {
         originalPos = transform.localPosition;
         originalYRotation = transform.eulerAngles.y;
     }
@@ -42,8 +42,8 @@ public class StoreSign : MonoBehaviour
         isRotating = true;
 
         float targetRotation = isOpen
-            ? originalYRotation              
-            : originalYRotation + rotationY; 
+            ? originalYRotation
+            : originalYRotation + rotationY;
 
         Sequence seq = DOTween.Sequence();
 
@@ -63,9 +63,15 @@ public class StoreSign : MonoBehaviour
         );
 
         seq.OnComplete(() =>
-        {
-            isRotating = false;
-            isOpen = !isOpen;
-        });
+    {
+        isRotating = false;
+        isOpen = !isOpen;
+        ServiceLocator.Get<MarketManager>().Open = isOpen;
+
+        if (isOpen)
+            ServiceLocator.Get<NpcManager>().StartSpawning();
+        else
+            ServiceLocator.Get<NpcManager>().StopSpawning();
+    });
     }
 }

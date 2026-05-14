@@ -2,19 +2,19 @@ using UnityEngine;
 
 public class HoldableItem : InteractableBase
 {
-   
+
 
     public override void Interact()
     {
         var controller = ServiceLocator.Get<ItemRaycastController>();
         controller.PickItem(rb);
-   
+
     }
 
     public override void Awake()
     {
         base.Awake();
-          currentResistance = maxResistance;    
+        currentResistance = maxResistance;
     }
 
     public float followForce = 150f;
@@ -33,7 +33,7 @@ public class HoldableItem : InteractableBase
 
     [SerializeField] float rbAngularDamping = 13;
 
-  
+
     void FixedUpdate()
     {
         if (!isHeld || holdPoint == null) return;
@@ -46,7 +46,7 @@ public class HoldableItem : InteractableBase
 
         rb.linearDamping = followDrag;
     }
-void Start(){rb.angularDamping = rbAngularDamping;}
+    void Start() { rb.angularDamping = rbAngularDamping; }
     void OnCollisionEnter(Collision collision)
     {
         if (!canBreak || isBroken) return;
@@ -82,7 +82,7 @@ void Start(){rb.angularDamping = rbAngularDamping;}
         rb.linearDamping = followDrag;
 
         //if (ServiceLocator.Get<ItemRaycastController>().PickItem(rb))
-          
+
     }
 
     public void StopHolding()
@@ -94,11 +94,11 @@ void Start(){rb.angularDamping = rbAngularDamping;}
         rb.linearDamping = 0f;
     }
 
-  
- 
-   
-   
-   
- 
+
+
+
+
+
+
 }
 

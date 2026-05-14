@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Android.Gradle.Manifest;
 using UnityEngine;
 
 /// <summary>
@@ -31,13 +32,33 @@ public class NpcManager : MonoBehaviour
 
     private void Start()
     {
-        StartCoroutine(SpawnRoutine());
+        ServiceLocator.Register(this);
+    }
+    private Coroutine _spawnCoroutine;
+
+    public void StartSpawning()
+    {
+        if (_spawnCoroutine != null)
+            StopCoroutine(_spawnCoroutine);
+
+        _spawnCoroutine = StartCoroutine(SpawnRoutine());
     }
 
+    public void StopSpawning()
+    {
+        if (_spawnCoroutine != null)
+        {
+            StopCoroutine(_spawnCoroutine);
+            _spawnCoroutine = null;
+        }
+    }
     private IEnumerator SpawnRoutine()
     {
         while (true)
         {
+            if (!ServiceLocator.Get<MarketManager>().Open)
+                yield break;
+
             float interval = Random.Range(_minSpawnInterval, _maxSpawnInterval);
             yield return new WaitForSeconds(interval);
 
@@ -46,6 +67,7 @@ public class NpcManager : MonoBehaviour
             if (_maxNpcsInScene > 0 && _activeNpcs.Count >= _maxNpcsInScene)
             {
                 Debug.Log("[NpcManager] Cap de NPCs atingido, aguardando...");
+                yield return null;
                 continue;
             }
 
@@ -60,7 +82,7 @@ public class NpcManager : MonoBehaviour
 
         int idx = Random.Range(0, _npcPrefabs.Length);
 
-        Vector2 circle   = Random.insideUnitCircle * _spawnRadius;
+        Vector2 circle = Random.insideUnitCircle * _spawnRadius;
         Vector3 spawnPos = _spawnPoint.position + new Vector3(circle.x, 0f, circle.y);
 
         GameObject npc = Instantiate(_npcPrefabs[idx], spawnPos, _spawnPoint.rotation);
