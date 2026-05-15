@@ -9,17 +9,17 @@ public class ComputerButtonsManager : MonoBehaviour
     [SerializeField] float indicatorsSpacing = 1f;
 
     [SerializeField] float switchDuration = 0.4f;
-    [SerializeField] Vector3 switchScalePunch = new Vector3(0.4f, -0.2f, 0f); 
-    [SerializeField] Vector3 switchRotPunch   = new Vector3(0f, 0f, 12f);    
-    [SerializeField] int   switchVibrato      = 2;
-    [SerializeField] float switchElasticity   = 0.4f;
+    [SerializeField] Vector3 switchScalePunch = new Vector3(0.4f, -0.2f, 0f);
+    [SerializeField] Vector3 switchRotPunch = new Vector3(0f, 0f, 12f);
+    [SerializeField] int switchVibrato = 2;
+    [SerializeField] float switchElasticity = 0.4f;
 
 
     [SerializeField] float clickDuration = 0.3f;
-    [SerializeField] Vector3 clickScalePunch = new Vector3(-0.15f, 0.35f, 0f); 
-    [SerializeField] Vector3 clickRotPunch   = new Vector3(0f, 0f, 6f);
-    [SerializeField] int   clickVibrato      = 1;
-    [SerializeField] float clickElasticity   = 0.3f;
+    [SerializeField] Vector3 clickScalePunch = new Vector3(-0.15f, 0.35f, 0f);
+    [SerializeField] Vector3 clickRotPunch = new Vector3(0f, 0f, 6f);
+    [SerializeField] int clickVibrato = 1;
+    [SerializeField] float clickElasticity = 0.3f;
 
     RectTransform targetButton;
     Vector3 rightTarget, leftTarget;
@@ -35,9 +35,9 @@ public class ComputerButtonsManager : MonoBehaviour
     void Start()
     {
         rightBaseScale = rightIndicator.localScale;
-        leftBaseScale  = leftIndicator.localScale;
-        rightBaseRot   = rightIndicator.localRotation;
-        leftBaseRot    = leftIndicator.localRotation;
+        leftBaseScale = leftIndicator.localScale;
+        rightBaseRot = rightIndicator.localRotation;
+        leftBaseRot = leftIndicator.localRotation;
 
         foreach (UIButtonAnimator b in allButtons)
         {
@@ -56,14 +56,14 @@ public class ComputerButtonsManager : MonoBehaviour
 
     void ResetIndicators()
     {
-       
+
         leftIndicator.DOKill();
         rightIndicator.DOKill();
 
 
 
-        leftIndicator.localScale    = leftBaseScale;
-        rightIndicator.localScale   = rightBaseScale;
+        leftIndicator.localScale = leftBaseScale;
+        rightIndicator.localScale = rightBaseScale;
         leftIndicator.localRotation = leftBaseRot;
         rightIndicator.localRotation = rightBaseRot;
     }
@@ -72,12 +72,12 @@ public class ComputerButtonsManager : MonoBehaviour
     {
         ResetIndicators();
 
-     
+
         rightIndicator.DOPunchScale(switchScalePunch, switchDuration, switchVibrato, switchElasticity).SetUpdate(true);
         rightIndicator.DOPunchRotation(switchRotPunch, switchDuration, switchVibrato, switchElasticity).SetUpdate(true);
 
-    
-        leftIndicator.DOPunchScale(new Vector3(-switchScalePunch.x, switchScalePunch.y, 0f), switchDuration, switchVibrato, switchElasticity)  .SetUpdate(true);
+
+        leftIndicator.DOPunchScale(switchScalePunch, switchDuration, switchVibrato, switchElasticity).SetUpdate(true);
         leftIndicator.DOPunchRotation(new Vector3(0f, 0f, -switchRotPunch.z), switchDuration, switchVibrato, switchElasticity).SetUpdate(true);
     }
 
