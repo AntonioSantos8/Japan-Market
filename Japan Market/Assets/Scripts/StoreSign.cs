@@ -1,6 +1,6 @@
 ﻿using DG.Tweening;
 using UnityEngine;
-public class StoreSign : MonoBehaviour
+public class StoreSign : InteractableBase
 {
     [SerializeField] float rotationY = 90f;
     [SerializeField] float duration = 0.5f;
@@ -17,14 +17,19 @@ public class StoreSign : MonoBehaviour
         originalPos = transform.localPosition;
         originalYRotation = transform.eulerAngles.y;
     }
+    public override void Interact()
+    {
+        var controller = ServiceLocator.Get<ItemRaycastController>();
+        controller.PickItem(rb, true);
+    }
+
     void Update()
     {
         if (Input.GetButtonDown("Fire1"))
         {
             TryRotate();
         }
-    }
-    void TryRotate()
+    }    void TryRotate()
     {
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         RaycastHit hit;
