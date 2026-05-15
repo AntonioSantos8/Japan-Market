@@ -42,8 +42,9 @@ public class CashRegister : InteractableBase
     private List<NpcTraject> queue = new List<NpcTraject>();
     public bool hasClient;
 
-    void Awake()
+    public override void Awake()
     {
+        base.Awake();
         ServiceLocator.Register(this);
     }
 

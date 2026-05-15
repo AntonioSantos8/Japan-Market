@@ -8,7 +8,12 @@ public class PlayerInput : MonoBehaviour
     public bool RunPressed { get; private set; }
 
     public bool InteractPressed { get; private set; }
+    private void Awake()
+    {
 
+        Application.targetFrameRate = -1;
+        QualitySettings.vSyncCount = 0;
+    }
     void Update()
     {
         MoveInput = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
