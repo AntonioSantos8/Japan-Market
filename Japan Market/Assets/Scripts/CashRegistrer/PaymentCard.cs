@@ -35,7 +35,7 @@ public class PaymentCard : MonoBehaviour
         currentValue += number;
         UpdateText();
 
-        valueText.transform.DOPunchScale(Vector3.one * 0.1f, 0.15f, 10, 1);
+        valueText.transform.DOPunchScale(Vector3.one * 0.1f, 0.21f, 2, 0.12f);
     }
     public void AddPoint()
     {
@@ -50,7 +50,7 @@ public class PaymentCard : MonoBehaviour
             UpdateText();
         }
     }
-    public void Delete()
+    public void Delete()    
     {
         if (currentValue.Length == 0) return;
 
