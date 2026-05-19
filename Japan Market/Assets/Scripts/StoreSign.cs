@@ -1,4 +1,5 @@
 ﻿using DG.Tweening;
+using Unity.Android.Gradle.Manifest;
 using UnityEngine;
 public class StoreSign : InteractableBase
 {
@@ -23,6 +24,16 @@ public class StoreSign : InteractableBase
     {
         if (isRotating) return;
 
+        if (ServiceLocator.Get<Warnings>().IsWarningActive) return;
+
+        if (isOpen)
+        {
+            ServiceLocator.Get<Warnings>().ShowWarning("Store is Closed!", false);
+        }
+        else
+        {
+            ServiceLocator.Get<Warnings>().ShowWarning("Store is Open!", true);
+        }
         isRotating = true;
         float targetRotation = isOpen
             ? originalYRotation

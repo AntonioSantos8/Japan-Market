@@ -39,7 +39,7 @@ public abstract class InteractableBase : MonoBehaviour, IInteractable
         outline.OutlineMode = Outline.Mode.OutlineAll;
         outline.OutlineColor = Color.white;
         outline.OutlineWidth = 4f;
-        outline.enabled = false;
+        //outline.enabled = false;
     }
 
     public abstract void Interact();

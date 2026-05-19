@@ -7,7 +7,10 @@ public class Warnings : MonoBehaviour
 {
     [SerializeField] private TMP_Text warningTmp;
     [SerializeField] private float warningDuration = 2f;
-    private bool isWarningActive = false;
+    [SerializeField] private bool isWarningActive = false;
+
+    public bool IsWarningActive { get => isWarningActive; set => isWarningActive = value; }
+
     private void Start()
     {
         ServiceLocator.Register(this);
@@ -21,14 +24,18 @@ public class Warnings : MonoBehaviour
     {
         warningTmp.DOFade(0f, 0.4f)
             .SetEase(Ease.InCubic)
-            .OnComplete(() => warningTmp.text = "");
+            .OnComplete(() =>
+            {
+                warningTmp.text = "";
+                IsWarningActive = false;
+            });
     }
 
     private IEnumerator WarningCoroutine(string message, bool goodWarning)
     {
-        if (isWarningActive)
+        if (IsWarningActive)
             yield break;
-        isWarningActive = true;
+        IsWarningActive = true;
 
         if (goodWarning)
             warningTmp.color = Color.green;
@@ -40,7 +47,6 @@ public class Warnings : MonoBehaviour
         warningTmp.DOFade(1f, 0.35f).SetEase(Ease.OutCubic);
         warningTmp.transform.DOPunchScale(Vector3.one * 0.08f, 0.35f, 5, 0.5f);
         yield return new WaitForSeconds(warningDuration);
-        isWarningActive = false;
         HideWarning();
     }
 }
