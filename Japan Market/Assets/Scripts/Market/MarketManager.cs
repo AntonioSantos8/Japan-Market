@@ -8,11 +8,12 @@ public class MarketManager : MonoBehaviour
     private float money;
     private float late_money;
     private Tweener moneyTween;
-
+    [SerializeField] private float clients;
     [SerializeField] private TextMeshProUGUI moneyText;
 
     public float Money { get => money; set => money = value; }
     public bool Open { get => open; set => open = value; }
+    public float Clients { get => clients; set => clients = value; }
 
     void Start()
     {
@@ -27,7 +28,7 @@ public class MarketManager : MonoBehaviour
     }
 
     [ContextMenu("Test Earn")]
-    public void TestEarn() => Earn_Money(100);
+    public void TestEarn() => Earn_Money(1000);
 
     public void Earn_Money(float quantity)
     {

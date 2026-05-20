@@ -1,19 +1,25 @@
 using UnityEngine;
 using TMPro;
 using DG.Tweening;
-public class PaymentCard : MonoBehaviour
+public class PaymentCard : InteractableBase
 {
     [SerializeField] GameObject imagepayment;
     [SerializeField] TextMeshProUGUI valueText;
     [SerializeField] CashRegister cashRegister;
     string currentValue = "";
     float totalPrice;
-    Vector3 originalScale;
+  //  Vector3 originalScale;
     void Start()
     {
         imagepayment.SetActive(false);
         originalScale = imagepayment.transform.localScale;  
     }
+    public override void Interact()
+    {
+        var controller = ServiceLocator.Get<ItemRaycastController>();
+        controller.PickItem(rb, true);
+    }
+
     void OnMouseDown()
     {
         OpenPayment();

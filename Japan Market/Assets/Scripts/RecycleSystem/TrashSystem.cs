@@ -17,12 +17,17 @@ public class TrashSystem : MonoBehaviour
     {
         while (true)
         {
-            yield return new WaitForSeconds(1f); // checa a cada 1 segundo
+            if (ServiceLocator.Get<MarketManager>().Clients == 0)
+            {
+                yield return null;
+                continue;
+            }
+            yield return new WaitForSeconds(1f);
 
             if (!ServiceLocator.Get<MarketManager>().Open)
                 continue;
 
-            if (activeTrashes.Count < maxTrashCount)
+            if (activeTrashes.Count < maxTrashCount && Random.value <= 0.3f)
                 Spawn();
         }
     }

@@ -4,15 +4,15 @@ public abstract class InteractableBase : MonoBehaviour, IInteractable
 {
     public UnityEvent OnDropEvent;
     public UnityEvent OnPickEvent;
-   
+
     protected Rigidbody rb;
     protected Outline outline;
     protected Vector3 originalScale;
     protected bool isOutlineable = true;
-    protected bool isMarkable = true;   
+    protected bool isMarkable = true;
     protected bool canInteract = true;
     protected bool addOutline = true;
-    public string interactionText ;
+    public string interactionText;
 
 
     // InteractableBase
@@ -39,7 +39,7 @@ public abstract class InteractableBase : MonoBehaviour, IInteractable
         outline.OutlineMode = Outline.Mode.OutlineAll;
         outline.OutlineColor = Color.white;
         outline.OutlineWidth = 4f;
-        outline.enabled = false;
+        //outline.enabled = false;
     }
 
     public abstract void Interact();
@@ -72,30 +72,30 @@ public abstract class InteractableBase : MonoBehaviour, IInteractable
     }
     public virtual void OnLookAway()
     {
-        if (outline == null)
+        if (outline != null)
             outline = GetComponentInChildren<Outline>(true);
 
         if (outline != null)
             outline.enabled = false;
     }
-    public void SetCanInteract(bool value) 
+    public void SetCanInteract(bool value)
     {
 
         canInteract = value;
     }
-    
+
 
 
 
     [ContextMenu("Can Interact True")]
-     void SetCanInteractTrue() 
+    void SetCanInteractTrue()
     {
         SetCanInteract(true);
-    
-    
+
+
     }
-   
-    
+
+
 
     public Transform GetTransform()
     {
@@ -104,10 +104,10 @@ public abstract class InteractableBase : MonoBehaviour, IInteractable
 
     public Rigidbody GetRb()
     {
-  
+
         return rb;
     }
-   
+
     public GameObject GetGameObject()
     {
         return gameObject;

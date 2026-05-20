@@ -1,4 +1,5 @@
 using System;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public enum PaymentType { Cash, Card }
@@ -22,7 +23,7 @@ public class NpcInstance : MonoBehaviour
     [SerializeField] private int _maxHumorCoins = 100;
 
     // Thresholds configuráveis pelo designer no Inspector
-    [SerializeField] private int _happyThreshold  = 70;
+    [SerializeField] private int _happyThreshold = 70;
     [SerializeField] private int _neutralThreshold = 30;
 
     public NpcHumor CurrentHumor { get; private set; } = NpcHumor.Happy;
@@ -61,7 +62,20 @@ public class NpcInstance : MonoBehaviour
         _humorCoins = Mathf.Clamp(_humorCoins + delta, 0, _maxHumorCoins);
         RefreshHumorState();
     }
-
+    void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("Entrance"))
+        {
+            ServiceLocator.Get<MarketManager>().Clients++;
+        }
+    }
+    void OnTriggerExit(Collider other)
+    {
+        if (other.CompareTag("Entrance"))
+        {
+            ServiceLocator.Get<MarketManager>().Clients--;
+        }
+    }
     private void RefreshHumorState()
     {
         NpcHumor newHumor;

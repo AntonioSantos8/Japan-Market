@@ -2,7 +2,7 @@
 using TMPro;
 using System.Collections.Generic;
 using DG.Tweening;
-public class PaymentMoney : MonoBehaviour
+public class PaymentMoney : InteractableBase
 {
     [SerializeField] GameObject imagePayment;
     [SerializeField] TextMeshPro receivedText;
@@ -14,12 +14,18 @@ public class PaymentMoney : MonoBehaviour
     float totalPrice;
     float customerPaid; 
     float giving = 0f;
-    Vector3 originalScale;
+    //Vector3 originalScale;
     void Start()
     {
         imagePayment.SetActive(false);
         originalScale = imagePayment.transform.localScale;
     }
+    public override void Interact()
+    {
+        var controller = ServiceLocator.Get<ItemRaycastController>();
+        controller.PickItem(rb, true);
+    }
+
     void OnMouseDown()
     {
         OpenPayment();
