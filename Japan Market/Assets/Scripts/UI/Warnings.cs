@@ -22,6 +22,7 @@ public class Warnings : MonoBehaviour
 
     private void HideWarning()
     {
+        warningTmp.transform.DOPunchRotation(Vector3.forward * 15, 0.15f);
         warningTmp.DOFade(0f, 0.4f)
             .SetEase(Ease.InCubic)
             .OnComplete(() =>
@@ -41,11 +42,13 @@ public class Warnings : MonoBehaviour
             warningTmp.color = Color.green;
         else
             warningTmp.color = Color.red;
+
         warningTmp.alpha = 0f;
         warningTmp.text = message;
 
         warningTmp.DOFade(1f, 0.35f).SetEase(Ease.OutCubic);
-        warningTmp.transform.DOPunchScale(Vector3.one * 0.08f, 0.35f, 5, 0.5f);
+        warningTmp.transform.DOPunchRotation(Vector3.forward * 15, 0.15f).SetDelay(0.1f);
+        warningTmp.transform.DOPunchScale(Vector3.one * 0.11f, 0.35f, 5, 0.5f);
         yield return new WaitForSeconds(warningDuration);
         HideWarning();
     }

@@ -1,5 +1,4 @@
 ﻿using DG.Tweening;
-using Unity.Android.Gradle.Manifest;
 using UnityEngine;
 public class StoreSign : InteractableBase
 {
@@ -11,10 +10,17 @@ public class StoreSign : InteractableBase
     bool isOpen = false;
     Vector3 originalPos;
     float originalYRotation;
+    Warnings warnings;
+    MarketManager marketManager;
+    NpcManager npcManager;
+
     void Start()
     {
         originalPos = transform.localPosition;
         originalYRotation = transform.eulerAngles.y;
+        warnings = ServiceLocator.Get<Warnings>();
+        marketManager = ServiceLocator.Get<MarketManager>();
+        npcManager = ServiceLocator.Get<NpcManager>();
     }
     public override void Interact()
     {
@@ -24,15 +30,15 @@ public class StoreSign : InteractableBase
     {
         if (isRotating) return;
 
-        if (ServiceLocator.Get<Warnings>().IsWarningActive) return;
+        if (warnings.IsWarningActive) return;
 
         if (isOpen)
         {
-            ServiceLocator.Get<Warnings>().ShowWarning("Store is Closed!", false);
+            warnings.ShowWarning("Store is Closed!", false);
         }
         else
         {
-            ServiceLocator.Get<Warnings>().ShowWarning("Store is Open!", true);
+            warnings.ShowWarning("Store is Open!", true);
         }
         isRotating = true;
         float targetRotation = isOpen
@@ -47,11 +53,11 @@ public class StoreSign : InteractableBase
         {
             isRotating = false;
             isOpen = !isOpen;
-            ServiceLocator.Get<MarketManager>().Open = isOpen;
+            marketManager.Open = isOpen;
             if (isOpen)
-                ServiceLocator.Get<NpcManager>().StartSpawning();
+            npcManager.StartSpawning();
             else
-                ServiceLocator.Get<NpcManager>().StopSpawning();
+                npcManager.StopSpawning();
         });
     }
 }
