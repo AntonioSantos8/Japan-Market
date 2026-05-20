@@ -46,9 +46,9 @@ public class StoreSign : InteractableBase
             : originalYRotation + rotationY;
 
         Sequence seq = DOTween.Sequence();
-        seq.Append(transform.DOMoveZ(originalPos.z - moveBack, duration * 0.3f).SetEase(Ease.OutQuad));
-        seq.Append(transform.DORotate(new Vector3(0, targetRotation, 0), duration).SetEase(ease));
-        seq.Join(transform.DOMoveZ(originalPos.z, duration).SetEase(Ease.OutBack));
+        seq.Append(transform.DOLocalMoveZ(originalPos.z - moveBack, duration * 0.3f).SetEase(Ease.OutQuad));
+        seq.Append(transform.DOLocalRotate(new Vector3(0, targetRotation, 0), duration).SetEase(ease));
+        seq.Join(transform.DOLocalMoveZ(originalPos.z, duration).SetEase(Ease.OutBack));
         seq.OnComplete(() =>
         {
             isRotating = false;
