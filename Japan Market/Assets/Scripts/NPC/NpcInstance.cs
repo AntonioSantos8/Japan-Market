@@ -67,6 +67,7 @@ public class NpcInstance : MonoBehaviour
         if (other.CompareTag("Entrance"))
         {
             ServiceLocator.Get<MarketManager>().Clients++;
+            Debug.Log($"[Market] Cliente entrou. Total: {ServiceLocator.Get<MarketManager>().Clients}");
         }
     }
     void OnTriggerExit(Collider other)
@@ -74,6 +75,8 @@ public class NpcInstance : MonoBehaviour
         if (other.CompareTag("Entrance"))
         {
             ServiceLocator.Get<MarketManager>().Clients--;
+            Debug.Log($"[Market] Cliente saiu. Total: {ServiceLocator.Get<MarketManager>().Clients}");
+
         }
     }
     private void RefreshHumorState()
