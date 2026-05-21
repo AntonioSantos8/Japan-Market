@@ -124,11 +124,11 @@ public class CashRegister : InteractableBase
         //ServiceLocator.Get<ItemRaycastController>().SetGeneralCanInteract(false);
 
         DOTween.Sequence()
-            .Append(playerMotor.transform.DOMove(cashPosition.position, 0.3f).SetEase(Ease.OutQuad))
+            .Append(playerMotor.transform.DOMove(cashPosition.position, 0.3f).SetEase(Ease.OutSine))
             .Join(DOTween.To(
                 () => cam.Lens.FieldOfView,
                 x => cam.Lens.FieldOfView = x,
-                zoom, 0.4f).SetEase(Ease.OutQuad));
+                zoom, 0.4f).SetEase(Ease.OutBack));
     }
 
     public void ExitCashMode()

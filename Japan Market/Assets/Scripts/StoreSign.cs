@@ -3,9 +3,10 @@ using UnityEngine;
 public class StoreSign : InteractableBase
 {
     [SerializeField] float rotationY = 90f;
-    [SerializeField] float duration = 0.5f;
-    [SerializeField] float moveBack = 0.33f;
+    [SerializeField] float duration = 1f;
+    [SerializeField] float moveBack = 0.32f;
     [SerializeField] Ease ease = Ease.OutBack;
+    [SerializeField] Transform placaTransform;
     bool isRotating = false;
     bool isOpen = false;
     Vector3 originalPos;
@@ -13,7 +14,6 @@ public class StoreSign : InteractableBase
     Warnings warnings;
     MarketManager marketManager;
     NpcManager npcManager;
-    [SerializeField] private Transform placaTransform;
     void Start()
     {
         originalPos = placaTransform.localPosition;
@@ -46,7 +46,7 @@ public class StoreSign : InteractableBase
             : originalYRotation + rotationY;
 
         Sequence seq = DOTween.Sequence();
-        seq.Append(placaTransform.DOLocalMoveZ(originalPos.z - moveBack, duration * 0.3f).SetEase(Ease.OutQuad));
+        seq.Append(placaTransform.DOLocalMoveZ(originalPos.z - moveBack, duration * 0.3f).SetEase(Ease.OutSine));
         seq.Append(placaTransform.DOLocalRotate(new Vector3(0, targetRotation, 0), duration).SetEase(ease));
         seq.Join(placaTransform.DOLocalMoveZ(originalPos.z, duration).SetEase(Ease.OutBack));
         seq.OnComplete(() =>
