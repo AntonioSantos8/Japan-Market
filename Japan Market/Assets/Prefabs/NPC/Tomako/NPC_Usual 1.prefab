@@ -1350,7 +1350,6 @@ GameObject:
   - component: {fileID: 2905092840999694739}
   - component: {fileID: 9098127682322704240}
   - component: {fileID: 9130308640336131257}
-  - component: {fileID: 1916358206670316582}
   m_Layer: 13
   m_Name: Visual
   m_TagString: Untagged
@@ -1430,29 +1429,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!136 &1916358206670316582
-CapsuleCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2129390396090192100}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 0.5
-  m_Height: 2
-  m_Direction: 1
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &2179893173397707101
 GameObject:
   m_ObjectHideFlags: 0
@@ -3705,8 +3681,8 @@ Transform:
   m_GameObject: {fileID: 5342482067624042977}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.29, z: 3.72}
-  m_LocalScale: {x: 1, y: 0.8793, z: 1.0766811}
+  m_LocalPosition: {x: 0, y: -0.35295, z: 3.72}
+  m_LocalScale: {x: 1, y: 0.94770956, z: 1.0766811}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 8910944236021827829}
@@ -3777,7 +3753,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e1b9905e4f2293142a474361f63a246d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NpcInstance
-  data: {fileID: 0}
+  data: {fileID: 11400000, guid: 5888b0bd416ca764d86feef5b162ce76, type: 2}
   paymentType: 0
   _humorCoins: 100
   _maxHumorCoins: 100

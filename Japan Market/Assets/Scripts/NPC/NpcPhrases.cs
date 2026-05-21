@@ -16,7 +16,7 @@ public class NpcPhrases : MonoBehaviour
 
     [Header("Timing")]
     [SerializeField] private float _displayDuration = 5f;
-    [SerializeField] private float _fadeDuration    = 0.8f;
+    [SerializeField] private float _fadeDuration = 0.8f;
     [SerializeField] private float _silenceDuration = 2f;
 
     private NpcInstance _npcInstance;
@@ -79,7 +79,7 @@ public class NpcPhrases : MonoBehaviour
             yield return new WaitForSeconds(_displayDuration);
             yield break;
         }
-
+        if (_phraseText == null) yield break;
         _phraseText.text = phrase;
         _phraseText.DOKill();
         yield return _phraseText.DOFade(1f, _fadeDuration).WaitForCompletion();

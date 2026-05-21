@@ -24,7 +24,7 @@ public class TrashSystem : MonoBehaviour
             }
             yield return new WaitForSeconds(1f);
 
-            if (!ServiceLocator.Get<MarketManager>().Open)
+            if (ServiceLocator.Get<MarketManager>().Open)
                 continue;
 
             if (activeTrashes.Count < maxTrashCount && Random.value <= 0.3f)
