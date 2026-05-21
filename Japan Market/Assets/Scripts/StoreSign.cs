@@ -13,11 +13,11 @@ public class StoreSign : InteractableBase
     Warnings warnings;
     MarketManager marketManager;
     NpcManager npcManager;
-
+    [SerializeField] private Transform placaTransform;
     void Start()
     {
-        originalPos = transform.localPosition;
-        originalYRotation = transform.eulerAngles.y;
+        originalPos = placaTransform.localPosition;
+        originalYRotation = placaTransform.eulerAngles.y;
         warnings = ServiceLocator.Get<Warnings>();
         marketManager = ServiceLocator.Get<MarketManager>();
         npcManager = ServiceLocator.Get<NpcManager>();
@@ -46,16 +46,16 @@ public class StoreSign : InteractableBase
             : originalYRotation + rotationY;
 
         Sequence seq = DOTween.Sequence();
-        seq.Append(transform.DOLocalMoveZ(originalPos.z - moveBack, duration * 0.3f).SetEase(Ease.OutQuad));
-        seq.Append(transform.DOLocalRotate(new Vector3(0, targetRotation, 0), duration).SetEase(ease));
-        seq.Join(transform.DOLocalMoveZ(originalPos.z, duration).SetEase(Ease.OutBack));
+        seq.Append(placaTransform.DOLocalMoveZ(originalPos.z - moveBack, duration * 0.3f).SetEase(Ease.OutQuad));
+        seq.Append(placaTransform.DOLocalRotate(new Vector3(0, targetRotation, 0), duration).SetEase(ease));
+        seq.Join(placaTransform.DOLocalMoveZ(originalPos.z, duration).SetEase(Ease.OutBack));
         seq.OnComplete(() =>
         {
             isRotating = false;
             isOpen = !isOpen;
             marketManager.Open = isOpen;
             if (isOpen)
-            npcManager.StartSpawning();
+                npcManager.StartSpawning();
             else
                 npcManager.StopSpawning();
         });
