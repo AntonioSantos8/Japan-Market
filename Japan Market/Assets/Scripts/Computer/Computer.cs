@@ -39,8 +39,10 @@ public class Computer : InteractableBase
                 reticle.SetActive(true);
                 isInComputer = false;
 
-                ServiceLocator.Get<ShopManager>().ExitFurnitureSesion();
+                Cursor.lockState = CursorLockMode.Locked;
+                Cursor.visible = false;
 
+                ServiceLocator.Get<ShopManager>().ExitFurnitureSesion();
             }
 
 

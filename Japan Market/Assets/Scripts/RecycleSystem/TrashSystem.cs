@@ -4,7 +4,6 @@ using UnityEngine;
 
 public class TrashSystem : MonoBehaviour
 {
-    [SerializeField] private Transform[] spawns;
     [SerializeField] private TrashData[] trashDatas;
     [SerializeField] private int maxTrashCount = 10;
 
@@ -17,34 +16,39 @@ public class TrashSystem : MonoBehaviour
     {
         while (true)
         {
-            if (ServiceLocator.Get<MarketManager>().Clients == 0)
+            yield return new WaitForSeconds(10f);
+            print("Tentando spawnar lixo...");
+            MarketManager market = ServiceLocator.Get<MarketManager>();
+
+            if (!market.Open || market.Clients == 0)
+                continue;
+
+            if (activeTrashes.Count >= maxTrashCount)
+                continue;
+
+            foreach (var client in market.ClientTransforms)
             {
-                yield return null;
-                continue;
+                if (Random.value <= 1f / 6f)
+                {
+                    SpawnAt(client.position);
+                    break;
+                }
             }
-            yield return new WaitForSeconds(1f);
-
-            if (ServiceLocator.Get<MarketManager>().Open)
-                continue;
-
-            if (activeTrashes.Count < maxTrashCount && Random.value <= 0.3f)
-                Spawn();
         }
     }
 
-    private void Spawn()
+    private void SpawnAt(Vector3 position)
     {
-        if (spawns == null || trashDatas.Length == 0) return;
-        int spawnIndex = Random.Range(0, spawns.Length);
+        if (trashDatas.Length == 0) return;
+
         int dataIndex = Random.Range(0, trashDatas.Length);
 
         GameObject go = Instantiate(
-    trashDatas[dataIndex].prefab,
-    spawns[spawnIndex].position,
-    Quaternion.identity,
-    this.transform
-
-    );
+            trashDatas[dataIndex].prefab,
+            position,
+            Quaternion.identity,
+            this.transform
+        );
 
         if (go.TryGetComponent(out TrashInstance instance))
         {

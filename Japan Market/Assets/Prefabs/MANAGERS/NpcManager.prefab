@@ -44,10 +44,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9665099f58d388c4282d5c938572b849, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NpcManager
-  npcCommonPrefab:
-  - {fileID: 5342482067624042977, guid: b233dca5da2ff484b94b6389c27c9883, type: 3}
-  - {fileID: 5342482067624042977, guid: 643d6c85e9cdf574eac9720863595751, type: 3}
-  - {fileID: 5342482067624042977, guid: 8258b137eb736cd49a20473b2fd743da, type: 3}
+  _npcPrefabs:
+  - {fileID: 5342482067624042977, guid: f147af26892d06241af8d64b2e0d89db, type: 3}
   - {fileID: 5342482067624042977, guid: 881b7011751582541b7fd1709dc8e5ee, type: 3}
-  spawnPoint: {fileID: 5942673708262505543}
-  spawnInterval: 20
+  _spawnPoint: {fileID: 5942673708262505543}
+  _spawnRadius: 0.5
+  _minSpawnInterval: 10
+  _maxSpawnInterval: 60
+  _maxNpcsInScene: 10

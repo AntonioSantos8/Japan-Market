@@ -66,6 +66,7 @@ public class NpcInstance : MonoBehaviour
     {
         if (other.CompareTag("Entrance"))
         {
+            ServiceLocator.Get<MarketManager>().RegisterClient(transform);
             ServiceLocator.Get<MarketManager>().Clients++;
             Debug.Log($"[Market] Cliente entrou. Total: {ServiceLocator.Get<MarketManager>().Clients}");
         }
@@ -74,6 +75,7 @@ public class NpcInstance : MonoBehaviour
     {
         if (other.CompareTag("Entrance"))
         {
+            ServiceLocator.Get<MarketManager>().UnregisterClient(transform);
             ServiceLocator.Get<MarketManager>().Clients--;
             Debug.Log($"[Market] Cliente saiu. Total: {ServiceLocator.Get<MarketManager>().Clients}");
 

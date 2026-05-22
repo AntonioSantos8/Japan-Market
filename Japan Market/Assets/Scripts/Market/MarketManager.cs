@@ -1,6 +1,7 @@
 using UnityEngine;
 using DG.Tweening;
 using TMPro;
+using System.Collections.Generic;
 
 public class MarketManager : MonoBehaviour
 {
@@ -14,7 +15,12 @@ public class MarketManager : MonoBehaviour
     public float Money { get => money; set => money = value; }
     public bool Open { get => open; set => open = value; }
     public float Clients { get => clients; set => clients = value; }
+    // MarketManager.cs — adicione estes membros:
+    private List<Transform> clientTransforms = new List<Transform>();
+    public IReadOnlyList<Transform> ClientTransforms => clientTransforms;
 
+    public void RegisterClient(Transform client) => clientTransforms.Add(client);
+    public void UnregisterClient(Transform client) => clientTransforms.Remove(client);
     void Start()
     {
         LoadMoney();

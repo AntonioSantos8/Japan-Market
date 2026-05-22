@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using TMPro;
 using DG.Tweening;
 using Unity.Cinemachine;
+using UnityEngine.UI;
 
 public class CashRegister : InteractableBase
 {
@@ -16,7 +17,6 @@ public class CashRegister : InteractableBase
     [SerializeField] GameObject money;
     [SerializeField] GameObject quitButton;
     [SerializeField] GameObject reticle;
-
     [Header("UI")]
     [SerializeField] TextMeshPro nameItemText;
     [SerializeField] TextMeshPro priceItemText;
@@ -52,9 +52,11 @@ public class CashRegister : InteractableBase
     {
         creditCard.SetActive(false);
         money.SetActive(false);
-        quitButton.SetActive(false);
-        cashregisterText.gameObject.SetActive(false);
 
+        quitButton.transform.localScale = Vector3.one;
+        quitButton.SetActive(false);
+
+        cashregisterText.gameObject.SetActive(false);
         cashregisterText.text = "";
         totalPriceText.text = "";
         nameItemText.text = "";
@@ -69,6 +71,11 @@ public class CashRegister : InteractableBase
 
         if (Input.GetMouseButtonDown(0))
             ItemClicked();
+        
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            ExitCashMode();
+        }
     }
 
     // -------------------------
@@ -118,17 +125,41 @@ public class CashRegister : InteractableBase
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
 
-        quitButton.SetActive(true);
+        quitButton.SetActive(false);
         reticle.SetActive(false);
 
-        //ServiceLocator.Get<ItemRaycastController>().SetGeneralCanInteract(false);
+        // Parte do FOV atual e vai comprimindo até o zoom alvo
+        float currentFov = cam.Lens.FieldOfView;
 
         DOTween.Sequence()
-            .Append(playerMotor.transform.DOMove(cashPosition.position, 0.3f).SetEase(Ease.OutSine))
+            .Append(playerMotor.transform
+                .DOMove(cashPosition.position, 0.6f)
+                .SetEase(Ease.OutQuart))
+
+            // FOV aperta junto com o movimento — sensação de "puxar" a câmera
             .Join(DOTween.To(
                 () => cam.Lens.FieldOfView,
                 x => cam.Lens.FieldOfView = x,
-                zoom, 0.4f).SetEase(Ease.OutBack));
+                zoom - 3f, 0.55f)
+                .SetEase(Ease.InQuart))
+
+            // Pequeno recuo no FOV ao chegar — respira
+            .Append(DOTween.To(
+                () => cam.Lens.FieldOfView,
+                x => cam.Lens.FieldOfView = x,
+                zoom, 0.25f)
+                .SetEase(Ease.OutSine))
+
+            // ENTER — botão
+            .AppendCallback(() =>
+            {
+                quitButton.transform.DOKill(true);
+                quitButton.transform.localScale = Vector3.zero;
+                quitButton.SetActive(true);
+                quitButton.transform
+                    .DOScale(new Vector3(0.9314623f, 4.4853f, 4.4853f), 0.35f)
+                    .SetEase(Ease.OutBack);
+});
     }
 
     public void ExitCashMode()
@@ -141,19 +172,34 @@ public class CashRegister : InteractableBase
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
 
-        quitButton.SetActive(false);
-        reticle.SetActive(true);
+        reticle.SetActive(false);
 
         ServiceLocator.Get<ItemRaycastController>().SetGeneralCanInteract(true);
-
-        DOTween.To(
-            () => cam.Lens.FieldOfView,
-            x => cam.Lens.FieldOfView = x,
-            zoomOri, 0.35f).SetEase(Ease.OutQuad);
 
         totalPrice = 0;
         paymentMoney?.ClosePaymentMoney();
         paymentCard?.ClosePaymentCredi();
+
+        DOTween.Sequence()
+            // Botão encolhe antes de tudo
+            .Append(quitButton.transform
+                .DOScale(Vector3.zero, 0.2f)
+                .SetEase(Ease.InBack))
+            .AppendCallback(() => quitButton.SetActive(false))
+
+            .Append(DOTween.To(
+                () => cam.Lens.FieldOfView,
+                x => cam.Lens.FieldOfView = x,
+                zoomOri + 8f, 0.15f)
+                .SetEase(Ease.OutQuart))
+
+            .Append(DOTween.To(
+                () => cam.Lens.FieldOfView,
+                x => cam.Lens.FieldOfView = x,
+                zoomOri, 0.4f)
+                .SetEase(Ease.OutSine))
+
+            .AppendCallback(() => reticle.SetActive(true));
     }
 
     // -------------------------
