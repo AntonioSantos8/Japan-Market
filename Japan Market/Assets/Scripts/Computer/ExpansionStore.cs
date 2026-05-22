@@ -238,7 +238,7 @@ public class ExpansionStore : MonoBehaviour
     {
         if (!HasMoreExpansions())
         {
-            buttonExpansion.text = "Purchased All";
+            buttonExpansion.text = "Maximum";
         }
     }
     public int GetCurrentExpansion() => currentExpansion;
