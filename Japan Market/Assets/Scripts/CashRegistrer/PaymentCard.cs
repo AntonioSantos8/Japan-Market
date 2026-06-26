@@ -6,13 +6,17 @@ public class PaymentCard : InteractableBase
     [SerializeField] GameObject imagepayment;
     [SerializeField] TextMeshProUGUI valueText;
     [SerializeField] CashRegister cashRegister;
+    [SerializeField] float clickRadius = 0.05f;
+    private Camera mainCamera;
+    private bool isPaymentOpen;
     string currentValue = "";
     float totalPrice;
   //  Vector3 originalScale;
     void Start()
     {
+        mainCamera = Camera.main;
         imagepayment.SetActive(false);
-        originalScale = imagepayment.transform.localScale;  
+        originalScale = imagepayment.transform.localScale;
     }
     public override void Interact()
     {
@@ -20,12 +24,32 @@ public class PaymentCard : InteractableBase
         controller.PickItem(rb, true);
     }
 
-    void OnMouseDown()
+    // Substitui OnMouseDown (raycast interno da Unity, que para no primeiro
+    // collider que encontra) por um SphereCastAll, igual ao usado pro clique
+    // nos itens: assim o trigger do balcão na frente não bloqueia o clique.
+    void Update()
     {
-        OpenPayment();
+        if (!isPaymentOpen && Input.GetMouseButtonDown(0) && IsClickedByMouse())
+            OpenPayment();
+    }
+
+    private bool IsClickedByMouse()
+    {
+        Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
+        RaycastHit[] hits = Physics.SphereCastAll(ray, clickRadius);
+
+        foreach (var hit in hits)
+        {
+            if (hit.collider.gameObject == gameObject)
+                return true;
+        }
+
+        return false;
     }
     void OpenPayment()
     {
+        isPaymentOpen = true;
+
         imagepayment.SetActive(true);
         imagepayment.transform.localScale = originalScale;
         cashRegister.PaymentTextCash("Card Checkout");
@@ -97,6 +121,8 @@ public class PaymentCard : InteractableBase
 
         seq.OnComplete(() =>
         {
+            isPaymentOpen = false;
+
             imagepayment.SetActive(false);
 
             cashRegister.FinalizeTransaction();
@@ -118,6 +144,7 @@ public class PaymentCard : InteractableBase
     }
     public void ClosePaymentCredi()
     {
+        isPaymentOpen = false;
         imagepayment.SetActive(false);
     }
 }

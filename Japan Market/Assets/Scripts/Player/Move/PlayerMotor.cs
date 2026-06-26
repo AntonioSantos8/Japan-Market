@@ -54,10 +54,21 @@ public class PlayerMotor : MonoBehaviour
             noise.FrequencyGain = 0f;
         }
 
-        StopAllCoroutines(); 
+        StopAllCoroutines();
 
         fovValue = 60f;
         cam.Lens.FieldOfView = fovValue;
+
+        // TiltCamera() para de rodar quando canMove fica false (ex.: modo caixa),
+        // mas deixava o roll residual do strafe travado na câmera, desviando
+        // qualquer raycast feito fora do centro da tela (ex.: clique do mouse).
+        inputX = 0f;
+        currentTilt = 0f;
+        if (cameraTiltTransform != null)
+        {
+            Vector3 euler = cameraTiltTransform.localRotation.eulerAngles;
+            cameraTiltTransform.localRotation = Quaternion.Euler(euler.x, euler.y, 0f);
+        }
     }
 
     public void Move(Vector2 input, bool jump, bool run)

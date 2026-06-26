@@ -10,13 +10,17 @@ public class PaymentMoney : InteractableBase
     [SerializeField] TextMeshPro givingText;
     [SerializeField] CashRegister cashRegister;
     [SerializeField] List<float> possiblePayments = new List<float>();
+    [SerializeField] float clickRadius = 0.05f;
     private List<float> moneyStack = new List<float>();
+    private Camera mainCamera;
+    private bool isPaymentOpen;
     float totalPrice;
-    float customerPaid; 
+    float customerPaid;
     float giving = 0f;
     //Vector3 originalScale;
     void Start()
     {
+        mainCamera = Camera.main;
         imagePayment.SetActive(false);
         originalScale = imagePayment.transform.localScale;
     }
@@ -26,12 +30,32 @@ public class PaymentMoney : InteractableBase
         controller.PickItem(rb, true);
     }
 
-    void OnMouseDown()
+    // Substitui OnMouseDown (raycast interno da Unity, que para no primeiro
+    // collider que encontra) por um SphereCastAll, igual ao usado pro clique
+    // nos itens: assim o trigger do balcão na frente não bloqueia o clique.
+    void Update()
     {
-        OpenPayment();
+        if (!isPaymentOpen && Input.GetMouseButtonDown(0) && IsClickedByMouse())
+            OpenPayment();
+    }
+
+    private bool IsClickedByMouse()
+    {
+        Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
+        RaycastHit[] hits = Physics.SphereCastAll(ray, clickRadius);
+
+        foreach (var hit in hits)
+        {
+            if (hit.collider.gameObject == gameObject)
+                return true;
+        }
+
+        return false;
     }
     public void OpenPayment()
     {
+        isPaymentOpen = true;
+
         imagePayment.SetActive(true);
         imagePayment.transform.localScale = originalScale;
         cashRegister.PaymentTextCash("Cash Checkout");
@@ -133,8 +157,10 @@ public class PaymentMoney : InteractableBase
         seq.Append(givingText.DOColor(Color.white, 0.2f));
         seq.Append(imagePayment.transform.DOScale(0f, 0.25f).SetEase(Ease.InOutSine));
 
-        seq.OnComplete(() => 
+        seq.OnComplete(() =>
         {
+            isPaymentOpen = false;
+
             imagePayment.SetActive(false);
             receivedText.gameObject.SetActive(false);
             changeText.gameObject.SetActive(false);
@@ -161,6 +187,7 @@ public class PaymentMoney : InteractableBase
     }
     public void ClosePaymentMoney()
     {
+        isPaymentOpen = false;
         imagePayment.SetActive(false);
     }
 }

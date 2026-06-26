@@ -34,7 +34,12 @@ public class CashRegister : InteractableBase
     [SerializeField] CinemachineCamera cam;
     [SerializeField] float zoom = 25f;
 
+    [Header("Item Click")]
+    [Tooltip("Raio de tolerância do SphereCast usado para detectar o item clicado.")]
+    [SerializeField] float clickRadius = 0.05f;
+
     // State
+    private Camera mainCamera;
     private float zoomOri;
     private float totalPrice;
     private bool cashMode;
@@ -50,6 +55,8 @@ public class CashRegister : InteractableBase
 
     void Start()
     {
+        mainCamera = Camera.main;
+
         creditCard.SetActive(false);
         money.SetActive(false);
 
@@ -71,7 +78,7 @@ public class CashRegister : InteractableBase
 
         if (Input.GetMouseButtonDown(0))
             ItemClicked();
-        
+
         if (Input.GetKeyDown(KeyCode.Escape))
         {
             ExitCashMode();
@@ -159,7 +166,7 @@ public class CashRegister : InteractableBase
                 quitButton.transform
                     .DOScale(new Vector3(0.9314623f, 4.4853f, 4.4853f), 0.35f)
                     .SetEase(Ease.OutBack);
-});
+            });
     }
 
     public void ExitCashMode()
@@ -207,26 +214,34 @@ public class CashRegister : InteractableBase
     // -------------------------
     private void ItemClicked()
     {
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        if (!TryGetClickedItem(out Item item)) return;
 
-        if (!Physics.Raycast(ray, out RaycastHit hit)) return;
-
-        Item item = hit.collider.GetComponent<Item>();
-
-        if (item == null) return; // Sai cedo se não tem Item
-
-        Debug.Log(item.PassedItem());
-        Debug.Log(itemsQueue.Contains(item));
-        // Verifica o que tem na fila vs o que você clicou
-        foreach (var i in itemsQueue)
-        {
-            Debug.Log($"Na fila: {i.GetInstanceID()} | Clicado: {item.GetInstanceID()}");
-        }
         if (!item.PassedItem() && itemsQueue.Contains(item))
         {
             RemoveFromQueue(item);
             SendItemToBag(item);
         }
+    }
+
+    // SphereCastAll (em vez de Raycast) em uma câmera cacheada: tolera tanto
+    // pequenos desvios de mira quanto colliders da mobília/área de scan (ex.: o
+    // trigger do próprio balcão) que ficariam entre a câmera e o item e, sendo
+    // o hit mais próximo, fariam um Raycast simples nunca alcançar o Item.
+    private bool TryGetClickedItem(out Item item)
+    {
+        item = null;
+
+        Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
+        RaycastHit[] hits = Physics.SphereCastAll(ray, clickRadius);
+        System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
+        Debug.DrawRay(ray.origin, ray.direction * 10f, Color.red, 0.5f);
+        foreach (var hit in hits)
+        {
+            if (hit.collider.TryGetComponent(out item))
+                return true;
+        }
+
+        return false;
     }
 
     private void RemoveFromQueue(Item item)
