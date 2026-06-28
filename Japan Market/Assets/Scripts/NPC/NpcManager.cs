@@ -25,7 +25,7 @@ public class NpcManager : MonoBehaviour
 
     [Header("Crowd Control")]
     [Tooltip("Número máximo de NPCs vivos ao mesmo tempo. 0 = sem limite.")]
-    [SerializeField] private int _maxNpcsInScene = 10;
+    [SerializeField] private int _maxNpcsInScene = 5;
 
     private readonly List<GameObject> _activeNpcs = new List<GameObject>();
 

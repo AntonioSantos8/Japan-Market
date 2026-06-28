@@ -10,7 +10,7 @@ public class PaymentMoney : InteractableBase
     [SerializeField] TextMeshPro givingText;
     [SerializeField] CashRegister cashRegister;
     [SerializeField] List<float> possiblePayments = new List<float>();
-    [SerializeField] float clickRadius = 0.05f;
+    [SerializeField] float clickRadius = 0.2f;
     private List<float> moneyStack = new List<float>();
     private Camera mainCamera;
     private bool isPaymentOpen;

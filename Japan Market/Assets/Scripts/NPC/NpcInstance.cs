@@ -62,10 +62,13 @@ public class NpcInstance : MonoBehaviour
         _humorCoins = Mathf.Clamp(_humorCoins + delta, 0, _maxHumorCoins);
         RefreshHumorState();
     }
+    private bool _isRegisteredClient = false;
+
     void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Entrance"))
+        if (other.CompareTag("Entrance") && !_isRegisteredClient)
         {
+            _isRegisteredClient = true;
             ServiceLocator.Get<MarketManager>().RegisterClient(transform);
             ServiceLocator.Get<MarketManager>().Clients++;
             Debug.Log($"[Market] Cliente entrou. Total: {ServiceLocator.Get<MarketManager>().Clients}");
@@ -74,12 +77,24 @@ public class NpcInstance : MonoBehaviour
     void OnTriggerExit(Collider other)
     {
         if (other.CompareTag("Entrance"))
-        {
-            ServiceLocator.Get<MarketManager>().UnregisterClient(transform);
-            ServiceLocator.Get<MarketManager>().Clients--;
-            Debug.Log($"[Market] Cliente saiu. Total: {ServiceLocator.Get<MarketManager>().Clients}");
+            UnregisterAsClient();
+    }
 
-        }
+    // Garante que o NPC saia da lista de clientes mesmo quando é destruído
+    // pelo NpcTraject ao sair pelo ponto de "Exit", sem voltar a passar pelo "Entrance".
+    private void OnDestroy() => UnregisterAsClient();
+
+    private void UnregisterAsClient()
+    {
+        if (!_isRegisteredClient) return;
+        _isRegisteredClient = false;
+
+        MarketManager market = ServiceLocator.Get<MarketManager>();
+        if (market == null) return;
+
+        market.UnregisterClient(transform);
+        market.Clients--;
+        Debug.Log($"[Market] Cliente saiu. Total: {market.Clients}");
     }
     private void RefreshHumorState()
     {

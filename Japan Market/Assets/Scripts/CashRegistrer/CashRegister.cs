@@ -129,6 +129,8 @@ public class CashRegister : InteractableBase
         playerMotor.ResetCameraEffects();
         playerLook.CanLook = false;
 
+        ServiceLocator.Get<ItemRaycastController>().SetGeneralCanInteract(false);
+
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
 

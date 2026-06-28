@@ -19,7 +19,12 @@ public class MarketManager : MonoBehaviour
     private List<Transform> clientTransforms = new List<Transform>();
     public IReadOnlyList<Transform> ClientTransforms => clientTransforms;
 
-    public void RegisterClient(Transform client) => clientTransforms.Add(client);
+    public void RegisterClient(Transform client)
+    {
+        if (!clientTransforms.Contains(client))
+            clientTransforms.Add(client);
+    }
+
     public void UnregisterClient(Transform client) => clientTransforms.Remove(client);
     void Start()
     {

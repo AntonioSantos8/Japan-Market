@@ -6,7 +6,7 @@ public class PaymentCard : InteractableBase
     [SerializeField] GameObject imagepayment;
     [SerializeField] TextMeshProUGUI valueText;
     [SerializeField] CashRegister cashRegister;
-    [SerializeField] float clickRadius = 0.05f;
+    [SerializeField] float clickRadius = 0.2f;
     private Camera mainCamera;
     private bool isPaymentOpen;
     string currentValue = "";

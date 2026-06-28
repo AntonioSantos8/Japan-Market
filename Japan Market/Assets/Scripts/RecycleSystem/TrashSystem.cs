@@ -28,6 +28,8 @@ public class TrashSystem : MonoBehaviour
 
             foreach (var client in market.ClientTransforms)
             {
+                if (client == null) continue;
+
                 if (Random.value <= 1f / 6f)
                 {
                     SpawnAt(client.position);
