@@ -1,10 +1,19 @@
 using DG.Tweening;
 using TMPro;
 using UnityEngine;
+[System.Serializable]
+public class PcItems
+{
+    [SerializeField] Transform visual;
+    [SerializeField] AllIThingsData data;
 
+    public GameObject Obj => visual.gameObject;
+    public Transform Visual { get => visual; set => visual = value; }
+    public AllIThingsData Data { get => data; set => data = value; }
+}
 public class ShopBuyItems : MonoBehaviour
 {
-    [SerializeField] GameObject[] objects;
+    [SerializeField] PcItems[] objects;
     [SerializeField] float duration = 0.25f;
 
     int currentIndex = 0;
@@ -21,19 +30,19 @@ public class ShopBuyItems : MonoBehaviour
 
         for (int i = 0; i < objects.Length; i++)
         {
-            originalScales[i] = objects[i].transform.localScale;
+            originalScales[i] = objects[i].Visual.localScale;
 
             if (i == currentIndex)
-                objects[i].SetActive(true);
+                objects[i].Obj.SetActive(true);
             else
             {
-                objects[i].SetActive(false);
-                Vector3 s = objects[i].transform.localScale;
+                objects[i].Obj.SetActive(false);
+                Vector3 s = objects[i].Visual.localScale;
                 s.y = 0;
-                objects[i].transform.localScale = s;
+                objects[i].Visual.localScale = s;
             }
         }
-        if (objects[currentIndex].gameObject.TryGetComponent(out ItemsExample atd))
+        if (objects[currentIndex].Obj.TryGetComponent(out ItemsExample atd))
         {
             AllIThingsData at = atd.GetAllThingsData();
             currentItemPrefab = at.itemPrefab;
@@ -47,12 +56,12 @@ public class ShopBuyItems : MonoBehaviour
     {
         float price = 0f;
 
-        if (objects[currentIndex].TryGetComponent(out ItemsExample atd))
+        if (objects[currentIndex].Obj.TryGetComponent(out ItemsExample atd))
         {
             AllIThingsData at = atd.GetAllThingsData();
             price = at.singleItemPrice;
         }
-        else if (objects[currentIndex].TryGetComponent(out FurnitureBox fb))
+        else if (objects[currentIndex].Obj.TryGetComponent(out FurnitureBox fb))
         {
             price = fb.GetData().data.singleItemPrice;
         }
@@ -98,8 +107,8 @@ public class ShopBuyItems : MonoBehaviour
 
         isTweening = true;
 
-        Transform current = objects[currentIndex].transform;
-        Transform next = objects[newIndex].transform;
+        Transform current = objects[currentIndex].Visual;
+        Transform next = objects[newIndex].Visual;
 
 
         DOTween.Kill(nameText.transform);
@@ -122,9 +131,9 @@ public class ShopBuyItems : MonoBehaviour
 
             current.DOScaleY(0f, duration).OnComplete(() =>
             {
-                objects[currentIndex].SetActive(false);
+                objects[currentIndex].Obj.SetActive(false);
                 currentIndex = newIndex;
-                objects[currentIndex].SetActive(true);
+                objects[currentIndex].Obj.SetActive(true);
 
                 Vector3 startScale = originalScales[currentIndex];
                 startScale.y = 0;
