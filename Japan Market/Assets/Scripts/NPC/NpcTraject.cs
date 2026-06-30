@@ -26,6 +26,12 @@ public class NpcTraject : MonoBehaviour
     [Header("Dest Config")]
     [SerializeField] private float _waitTimeAtShelf = 3f;
 
+    [Header("Compra")]
+    [Tooltip("Quantidade máxima de itens que o NPC carrega na sacola, somando todas as furnitures visitadas.")]
+    [SerializeField] private int _maxInventorySize = 6;
+    [Tooltip("Quantidades possíveis de itens pegos por furniture visitada. Repita os valores menores pra deixá-los mais prováveis (ex.: {1,1,1,2,2,3} = 50% 1 item, ~33% 2 itens, ~17% 3 itens).")]
+    [SerializeField] private int[] _itemsPerFurnitureWeights = { 1, 1, 1, 2, 2, 3 };
+
     [Header("Exit Config")]
     [Tooltip("Distância do Exit em que o NPC é destruído (resolve bug de aglomeração na saída).")]
     [SerializeField] private float _exitDestroyDistance = 1.5f;
@@ -33,8 +39,10 @@ public class NpcTraject : MonoBehaviour
     // Referência ao exit point
     private Transform _exitPoint;
 
-    // Inventário: item → preço no momento da compra
-    private readonly Dictionary<Items, float> _inventory = new Dictionary<Items, float>();
+    // Inventário: cada item pego, com o preço no momento da compra.
+    // É uma lista (não um Dictionary) porque o NPC pode pegar o mesmo
+    // tipo de item mais de uma vez.
+    private readonly List<ShoppingItem> _inventory = new List<ShoppingItem>();
 
     // Slot reservado na furniture atual
     private FurnitureOccupancy _currentOccupancy;
@@ -42,7 +50,7 @@ public class NpcTraject : MonoBehaviour
 
     // Controle de caixa
     private bool _itemsPlaced = false;
-    private int _queueIndex  = -1;
+    private int _queueIndex = -1;
 
     private bool _isLeaving = false;
     private Coroutine _queueWaiter;
@@ -51,14 +59,14 @@ public class NpcTraject : MonoBehaviour
 
     private void Awake()
     {
-        _agent        = GetComponent<NavMeshAgent>();
-        _npcInstance  = GetComponent<NpcInstance>();
+        _agent = GetComponent<NavMeshAgent>();
+        _npcInstance = GetComponent<NpcInstance>();
     }
 
     private void Start()
     {
-        _exitPoint      = GameObject.FindGameObjectWithTag("Exit").transform;
-        _cashRegister   = ServiceLocator.Get<CashRegister>();
+        _exitPoint = GameObject.FindGameObjectWithTag("Exit").transform;
+        _cashRegister = ServiceLocator.Get<CashRegister>();
         _furnitureManager = ServiceLocator.Get<FurnitureManager>();
 
         if (_furnitureManager == null)
@@ -101,9 +109,9 @@ public class NpcTraject : MonoBehaviour
     {
         yield return new WaitForSeconds(0.2f);
 
-        foreach (var pair in _inventory)
+        foreach (var shoppingItem in _inventory)
         {
-            _cashRegister.SpawnItemWithAnimation(pair.Key, pair.Value);
+            _cashRegister.SpawnItemWithAnimation(shoppingItem.Type, shoppingItem.Price);
             yield return new WaitForSeconds(0.2f);
         }
 
@@ -129,25 +137,23 @@ public class NpcTraject : MonoBehaviour
 
     private IEnumerator ShoppingRoutine()
     {
-        yield return new WaitForSeconds(Random.Range(2f, 5f)); // leve variação no start
+        yield return new WaitForSeconds(Random.Range(2f, 5f));
 
         var allFurnitures = _furnitureManager.GetPlacedFurnitures();
 
         if (allFurnitures != null && allFurnitures.Count > 0)
         {
             int quantToVisit = Random.Range(1, Mathf.Min(allFurnitures.Count + 1, 6));
-            var selected     = PickFurnitures(allFurnitures, quantToVisit);
+            var selected = PickFurnitures(allFurnitures, quantToVisit);
 
             foreach (var furniture in selected)
             {
-                // Tenta reservar um slot nesta furniture
                 var occupancy = furniture.GetComponent<FurnitureOccupancy>();
 
                 if (occupancy != null)
                 {
                     if (!occupancy.TryReserve(out _reservedSlotPosition))
                     {
-                        // Furniture lotada — pula para a próxima
                         Debug.Log("[NPC] Furniture lotada, pulando.");
                         continue;
                     }
@@ -155,28 +161,17 @@ public class NpcTraject : MonoBehaviour
                 }
                 else
                 {
-                    // Furniture sem FurnitureOccupancy: usa InteractionPosition diretamente
                     _reservedSlotPosition = furniture.InteractionPosition;
                     _currentOccupancy = null;
                 }
 
                 yield return StartCoroutine(GoToDest(_reservedSlotPosition));
 
-                // Pega item se possível
-                if (furniture.shelf != null && _inventory.Count < 5)
-                {
-                    Items item = furniture.shelf.TakeRandomItem();
-                    if (item != Items.None)
-                    {
-                        float price = ServiceLocator.Get<GlobalPrices>().GetItemCurrentPrice(item);
-                        _inventory[item] = price;
-                        Debug.Log($"[NPC] Pegou: {item}");
-                    }
-                }
+                if (furniture.shelf != null)
+                    CollectItemsFromShelf(furniture.shelf);
 
                 yield return new WaitForSeconds(_waitTimeAtShelf);
 
-                // Libera slot
                 _currentOccupancy?.Release(_reservedSlotPosition);
                 _currentOccupancy = null;
             }
@@ -217,19 +212,14 @@ public class NpcTraject : MonoBehaviour
     {
         _agent.SetDestination(_exitPoint.position);
 
-        // Aguarda o agente começar a se mover
         yield return new WaitForSeconds(0.3f);
         yield return new WaitUntil(() => !_agent.pathPending);
 
-        // Destroi por distância em vez de esperar chegar no ponto exato.
-        // Isso evita que vários NPCs fiquem travados esperando a vez no exit.
         while (true)
         {
             float dist = Vector3.Distance(transform.position, _exitPoint.position);
             if (dist <= _exitDestroyDistance) break;
 
-            // Segurança: se o agente ficou parado por muito tempo longe do exit,
-            // força destruição para não vazar NPC na cena.
             if (!_agent.hasPath || _agent.isStopped)
             {
                 _agent.SetDestination(_exitPoint.position);
@@ -267,7 +257,6 @@ public class NpcTraject : MonoBehaviour
         _queueWaiter = null;
     }
 
-    // Mantém compatibilidade com o nome anterior usado pelo CashRegister
     public void SetTarget(Transform target, int index) => SetQueueTarget(target, index);
 
     // ─── Movimento genérico ───────────────────────────────────────────────────
@@ -278,7 +267,6 @@ public class NpcTraject : MonoBehaviour
 
         yield return new WaitUntil(() => !_agent.pathPending);
 
-        // Aguarda chegar: usa margem levemente maior que stoppingDistance para não travar
         float arrivalThreshold = _agent.stoppingDistance + 0.05f;
 
         while (_agent.remainingDistance > arrivalThreshold)
@@ -289,7 +277,7 @@ public class NpcTraject : MonoBehaviour
 
     private List<FurnitureInstance> PickFurnitures(List<FurnitureInstance> source, int count)
     {
-        var copy   = new List<FurnitureInstance>(source);
+        var copy = new List<FurnitureInstance>(source);
         var result = new List<FurnitureInstance>();
 
         for (int i = 0; i < count && copy.Count > 0; i++)
@@ -300,5 +288,53 @@ public class NpcTraject : MonoBehaviour
         }
 
         return result;
+    }
+
+    // ─── Compras / Inventário ─────────────────────────────────────────────────
+
+    /// <summary>
+    /// Pega de 1 a N itens da prateleira (quantidade sorteada por chance),
+    /// respeitando o limite total de itens que o NPC carrega na sacola.
+    /// Para cedo se a prateleira ficar vazia no meio da coleta.
+    /// </summary>
+    private void CollectItemsFromShelf(Shelf shelf)
+    {
+        var globalPrices = ServiceLocator.Get<GlobalPrices>();
+        int quantity = RollItemQuantity();
+
+        for (int i = 0; i < quantity && _inventory.Count < _maxInventorySize; i++)
+        {
+            Items item = shelf.TakeRandomItem();
+            if (item == Items.None) break;
+
+            float price = globalPrices.GetItemCurrentPrice(item);
+            _inventory.Add(new ShoppingItem(item, price));
+            Debug.Log($"[NPC] Pegou: {item}");
+        }
+    }
+
+    /// <summary>
+    /// Sorteia quantos itens o NPC pega de uma furniture, com base nos pesos
+    /// configurados em <see cref="_itemsPerFurnitureWeights"/>.
+    /// </summary>
+    private int RollItemQuantity()
+    {
+        if (_itemsPerFurnitureWeights == null || _itemsPerFurnitureWeights.Length == 0)
+            return 1;
+
+        return _itemsPerFurnitureWeights[Random.Range(0, _itemsPerFurnitureWeights.Length)];
+    }
+
+    /// <summary>Item comprado pelo NPC, com o preço travado no momento da compra.</summary>
+    private readonly struct ShoppingItem
+    {
+        public readonly Items Type;
+        public readonly float Price;
+
+        public ShoppingItem(Items type, float price)
+        {
+            Type = type;
+            Price = price;
+        }
     }
 }
