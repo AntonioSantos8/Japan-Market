@@ -93,8 +93,11 @@ public class NpcTraject : MonoBehaviour
     {
         while (true)
         {
+            bool isCurrentCustomer = _cashRegister.GetCurrentCustomer() == this;
+            Debug.Log($"[NPC:{name}] itemsPlaced={_itemsPlaced} isCurrentCustomer={isCurrentCustomer} arrived={HasArrivedAtQueueTarget} queueIndex={_queueIndex}");
+
             if (!_itemsPlaced
-                && _cashRegister.GetCurrentCustomer() == this
+                && isCurrentCustomer
                 && HasArrivedAtQueueTarget)
             {
                 PlaceItemsOnCounter();
