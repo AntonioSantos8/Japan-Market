@@ -80,8 +80,6 @@ public class NpcInstance : MonoBehaviour
             UnregisterAsClient();
     }
 
-    // Garante que o NPC saia da lista de clientes mesmo quando é destruído
-    // pelo NpcTraject ao sair pelo ponto de "Exit", sem voltar a passar pelo "Entrance".
     private void OnDestroy() => UnregisterAsClient();
 
     private void UnregisterAsClient()

@@ -8,6 +8,7 @@ public class TrashSystem : MonoBehaviour
     [SerializeField] private int maxTrashCount = 10;
 
     private List<GameObject> activeTrashes = new List<GameObject>();
+    private HashSet<Transform> _trashSpawners = new HashSet<Transform>();
     private void Start() => StartSpawningTrash();
 
     public void StartSpawningTrash() => StartCoroutine(SpawnTrashRoutine());
@@ -29,9 +30,11 @@ public class TrashSystem : MonoBehaviour
             foreach (var client in market.ClientTransforms)
             {
                 if (client == null) continue;
+                if (_trashSpawners.Contains(client)) continue;
 
                 if (Random.value <= 1f / 6f)
                 {
+                    _trashSpawners.Add(client);
                     SpawnAt(client.position);
                     break;
                 }

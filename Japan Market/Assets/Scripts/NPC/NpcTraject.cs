@@ -32,7 +32,6 @@ public class NpcTraject : MonoBehaviour
 
     // Referência ao exit point
     private Transform _exitPoint;
-    private Transform _queueFinalPoint;
 
     // Inventário: item → preço no momento da compra
     private readonly Dictionary<Items, float> _inventory = new Dictionary<Items, float>();
@@ -46,6 +45,7 @@ public class NpcTraject : MonoBehaviour
     private int _queueIndex  = -1;
 
     private bool _isLeaving = false;
+    private Coroutine _queueWaiter;
 
     // ─── Unity ────────────────────────────────────────────────────────────────
 
@@ -70,8 +70,6 @@ public class NpcTraject : MonoBehaviour
             GoAway();
             return;
         }
-
-        _queueFinalPoint = _cashRegister.queuePoints[_cashRegister.queuePoints.Length - 1];
 
         StartCoroutine(CashRegisterWatcher());
         StartCoroutine(ShoppingRoutine());
@@ -191,8 +189,6 @@ public class NpcTraject : MonoBehaviour
             yield break;
         }
 
-        // Vai para a fila do caixa
-        yield return StartCoroutine(GoToDest(_queueFinalPoint.position));
         _cashRegister.EnterQueue(this);
         Debug.Log("[NPC] Entrou na fila.");
     }
@@ -204,10 +200,16 @@ public class NpcTraject : MonoBehaviour
         if (_isLeaving) return;
         _isLeaving = true;
 
-        // Libera slot caso saia antes do tempo
         _currentOccupancy?.Release(_reservedSlotPosition);
         _currentOccupancy = null;
 
+        if (_queueWaiter != null)
+        {
+            StopCoroutine(_queueWaiter);
+            _queueWaiter = null;
+        }
+
+        _agent.isStopped = false;
         StartCoroutine(LeaveRoutine());
     }
 
@@ -241,11 +243,28 @@ public class NpcTraject : MonoBehaviour
 
     // ─── Fila do caixa ────────────────────────────────────────────────────────
 
-    /// <summary>Chamado pelo CashRegister para reposicionar o NPC na fila.</summary>
     public void SetQueueTarget(Transform target, int index)
     {
         _queueIndex = index;
+
+        if (_queueWaiter != null)
+            StopCoroutine(_queueWaiter);
+
+        _agent.isStopped = false;
         _agent.SetDestination(target.position);
+        _queueWaiter = StartCoroutine(WaitUntilAtQueuePosition(target));
+    }
+
+    private IEnumerator WaitUntilAtQueuePosition(Transform target)
+    {
+        yield return new WaitUntil(() => !_agent.pathPending);
+
+        float threshold = Mathf.Max(_agent.stoppingDistance, 0.05f);
+        while (Vector3.Distance(transform.position, target.position) > threshold)
+            yield return null;
+
+        _agent.isStopped = true;
+        _queueWaiter = null;
     }
 
     // Mantém compatibilidade com o nome anterior usado pelo CashRegister
