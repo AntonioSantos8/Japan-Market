@@ -21,8 +21,8 @@ public class PriceDisplayUI : MonoBehaviour
         transform.localScale = new Vector3(0, inicialScale.y, inicialScale.z);
           transform.DOScale(inicialScale, transitionTime ).SetEase(ease);
         ServiceLocator.Get<ItemRaycastController>().SetGeneralCanInteract(false);
-        _currentPrice.text = currentPrice.ToString();
-        _marketPrice.text = marketPrice.ToString();
+        _currentPrice.text = "¥" + Mathf.RoundToInt(currentPrice);
+        _marketPrice.text = "¥" + Mathf.RoundToInt(marketPrice);
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
         ServiceLocator.Get<PlayerLook>().CanLook = false;

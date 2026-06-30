@@ -49,14 +49,8 @@ public void ResetInputs()
 
   public void AddDot()
     {
-        if (hasDot) return;
-
-        if (currentValue.Length == 0)
-            currentValue.Append("0");
-
-        currentValue.Append(".");
-        hasDot = true;
-        UpdateDisplay();
+        // Iene não tem subunidade decimal — preço é sempre número inteiro,
+        // então essa tecla fica desativada (mantida só pra não quebrar o botão na UI).
     }
 
     public void RemoveLast()
@@ -75,7 +69,7 @@ public void ResetInputs()
 {
     if (currentValue.Length == 0) return ServiceLocator.Get<GlobalPrices>().GetItemCurrentPrice(itemType);
 
-    float value = float.Parse(currentValue.ToString(), CultureInfo.InvariantCulture);
+    float value = Mathf.RoundToInt(float.Parse(currentValue.ToString(), CultureInfo.InvariantCulture));
     currentValue.Clear();
     hasDot = false;
     UpdateDisplay();
@@ -85,12 +79,12 @@ public void ResetInputs()
    private void UpdateDisplay()
 {
     if (currentValue.Length == 0)
-    {  _displayText.text = "0.00";
+    {  _displayText.text = "¥0";
         return;
     }
 
     if (float.TryParse(currentValue.ToString(), NumberStyles.Any, CultureInfo.InvariantCulture, out float value))
-       {_displayText.text = value.ToString("F2", CultureInfo.InvariantCulture);
+       {_displayText.text = "¥" + Mathf.RoundToInt(value);
        }else
         {_displayText.text = currentValue.ToString();}
 }

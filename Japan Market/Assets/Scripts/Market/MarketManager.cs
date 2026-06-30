@@ -79,9 +79,9 @@ public class MarketManager : MonoBehaviour
     }
     private string FormatMoney(float value)
     {
-        if (value >= 1_000_000_000f) return $"{value / 1_000_000_000f:0.##}b";
-        if (value >= 1_000_000f) return $"{value / 1_000_000f:0.##}m";
-        if (value >= 1_000f) return $"{value / 1_000f:0.##}k";
-        return Mathf.FloorToInt(value).ToString();
+        if (value >= 1_000_000_000f) return $"¥{value / 1_000_000_000f:0.##}b";
+        if (value >= 1_000_000f) return $"¥{value / 1_000_000f:0.##}m";
+        if (value >= 1_000f) return $"¥{value / 1_000f:0.##}k";
+        return "¥" + Mathf.FloorToInt(value);
     }
 }

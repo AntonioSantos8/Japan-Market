@@ -45,7 +45,6 @@ public class CashRegister : InteractableBase
     private bool cashMode;
     private Queue<Item> itemsQueue = new Queue<Item>();
     private List<NpcTraject> queue = new List<NpcTraject>();
-    public bool hasClient;
 
     public override void Awake()
     {
@@ -288,7 +287,7 @@ public class CashRegister : InteractableBase
             float price = item.GetComponent<ItemPrice>().Price;
 
             nameItemText.text = data.itemName;
-            priceItemText.text = "¥" + price.ToString("F2");
+            priceItemText.text = "¥" + Mathf.RoundToInt(price);
             totalPrice += price;
 
             if (itemsQueue.Count == 0)
@@ -319,7 +318,7 @@ public class CashRegister : InteractableBase
     {
         nameItemText.text = "";
         priceItemText.text = "";
-        totalPriceText.text = "Total ¥" + totalPrice.ToString("F2");
+        totalPriceText.text = "Total ¥" + Mathf.RoundToInt(totalPrice);
     }
 
     // -------------------------

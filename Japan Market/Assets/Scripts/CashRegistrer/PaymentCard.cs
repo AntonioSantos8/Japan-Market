@@ -69,16 +69,8 @@ public class PaymentCard : InteractableBase
     }
     public void AddPoint()
     {
-        if (!currentValue.Contains("."))
-        {
-            if (currentValue == "")
-                currentValue = "0.";
-
-            else
-                currentValue += ".";
-
-            UpdateText();
-        }
+        // Iene não tem subunidade decimal — preço é sempre número inteiro,
+        // então essa tecla fica desativada (mantida só pra não quebrar o botão na UI).
     }
     public void Delete()    
     {
@@ -101,7 +93,11 @@ public class PaymentCard : InteractableBase
         if (!float.TryParse(currentValue, out typedValue))
             return;
 
-        if (Mathf.Abs(typedValue - totalPrice) < 0.01f)
+        Debug.Log($"[PaymentCard] digitado={typedValue:F4} | totalPrice={totalPrice:F4}");
+
+        // Tolerância de meio iene (em vez de 0.01) porque os valores agora são
+        // sempre inteiros — 0.01 era resquício de comparação em centavos.
+        if (Mathf.Abs(typedValue - totalPrice) < 0.5f)
         {
             PaymentSuccess();
         }

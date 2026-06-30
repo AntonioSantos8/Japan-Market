@@ -40,7 +40,7 @@ public class ShopBuyItems : MonoBehaviour
             currentItemBox = at.itemBoxPrefab;
             nameText.text = at.name;
             descriptionText.text = at.description;
-            singlePriceText.text = at.singleItemPrice.ToString();
+            singlePriceText.text = "¥" + Mathf.RoundToInt(at.singleItemPrice);
         }
     }
     public void BuyBox()
@@ -140,7 +140,7 @@ public class ShopBuyItems : MonoBehaviour
 
                     nameText.text = at.name;
                     descriptionText.text = at.description;
-                    singlePriceText.text = at.singleItemPrice.ToString();
+                    singlePriceText.text = "¥" + Mathf.RoundToInt(at.singleItemPrice);
                 }
 
 

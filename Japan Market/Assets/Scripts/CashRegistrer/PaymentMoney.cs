@@ -96,7 +96,7 @@ public class PaymentMoney : InteractableBase
             customerPaid = validPayments[Random.Range(0, validPayments.Count)];
         }
 
-      customerPaid = Mathf.Round(customerPaid * 100f) / 100f;
+      customerPaid = Mathf.Round(customerPaid); // iene não tem subunidade decimal
     }
     public void AddMoney(float value)
     {
@@ -131,15 +131,17 @@ public class PaymentMoney : InteractableBase
     {
         float change = Mathf.Max(0, customerPaid - totalPrice);
 
-        receivedText.text = "Received: ¥" + customerPaid.ToString("F2");
-        changeText.text = "Change: ¥" + change.ToString("F2");
-        givingText.text = "Giving: ¥" + giving.ToString("F2");
+        receivedText.text = "Received: ¥" + Mathf.RoundToInt(customerPaid);
+        changeText.text = "Change: ¥" + Mathf.RoundToInt(change);
+        givingText.text = "Giving: ¥" + Mathf.RoundToInt(giving);
     }
     public void Confirm()
     {
         float correctChange = customerPaid - totalPrice;
 
-        if (Mathf.Abs(giving - correctChange) < 0.01f)
+        // Tolerância de meio iene (em vez de 0.01) porque os valores agora são
+        // sempre inteiros — 0.01 era resquício de comparação em centavos.
+        if (Mathf.Abs(giving - correctChange) < 0.5f)
         {
             PaymentSuccess();
         }

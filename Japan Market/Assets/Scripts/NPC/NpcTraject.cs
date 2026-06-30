@@ -52,6 +52,10 @@ public class NpcTraject : MonoBehaviour
     private bool _itemsPlaced = false;
     private int _queueIndex = -1;
 
+    // True quando este NPC já chegou (parou) na posição de fila que recebeu.
+    // É dono do próprio estado de chegada — não depende de trigger compartilhado.
+    public bool HasArrivedAtQueueTarget { get; private set; }
+
     private bool _isLeaving = false;
     private Coroutine _queueWaiter;
 
@@ -91,7 +95,7 @@ public class NpcTraject : MonoBehaviour
         {
             if (!_itemsPlaced
                 && _cashRegister.GetCurrentCustomer() == this
-                && _cashRegister.hasClient)
+                && HasArrivedAtQueueTarget)
             {
                 PlaceItemsOnCounter();
             }
@@ -117,20 +121,6 @@ public class NpcTraject : MonoBehaviour
 
         _inventory.Clear();
         Debug.Log("[NPC] Itens colocados no balcão.");
-    }
-
-    // ─── Trigger (área do caixa) ──────────────────────────────────────────────
-
-    private void OnTriggerEnter(Collider other)
-    {
-        if (other.CompareTag("CashRegister"))
-            _cashRegister.hasClient = true;
-    }
-
-    private void OnTriggerExit(Collider other)
-    {
-        if (other.CompareTag("CashRegister"))
-            _cashRegister.hasClient = false;
     }
 
     // ─── Rotina principal de compras ──────────────────────────────────────────
@@ -236,6 +226,7 @@ public class NpcTraject : MonoBehaviour
     public void SetQueueTarget(Transform target, int index)
     {
         _queueIndex = index;
+        HasArrivedAtQueueTarget = false;
 
         if (_queueWaiter != null)
             StopCoroutine(_queueWaiter);
@@ -254,6 +245,7 @@ public class NpcTraject : MonoBehaviour
             yield return null;
 
         _agent.isStopped = true;
+        HasArrivedAtQueueTarget = true;
         _queueWaiter = null;
     }
 
