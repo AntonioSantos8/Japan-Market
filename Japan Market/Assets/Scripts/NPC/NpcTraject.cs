@@ -4,16 +4,6 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.AI;
 
-/// <summary>
-/// Controla a movimentação, compras e saída do NPC da loja.
-/// 
-/// Melhorias em relação à versão anterior:
-/// - Usa FurnitureOccupancy para evitar aglomeração em prateleiras.
-/// - A saída não depende de chegar num ponto exato: destrói o NPC por distância
-///   do exit, resolvendo o bug de múltiplos NPCs travados no exit.
-/// - Animação agora é gerenciada automaticamente por NpcAnimationManager via Update,
-///   mas SetTarget e GoAway ainda podem forçar se necessário.
-/// </summary>
 [RequireComponent(typeof(NavMeshAgent))]
 public class NpcTraject : MonoBehaviour
 {
@@ -36,24 +26,14 @@ public class NpcTraject : MonoBehaviour
     [Tooltip("Distância do Exit em que o NPC é destruído (resolve bug de aglomeração na saída).")]
     [SerializeField] private float _exitDestroyDistance = 1.5f;
 
-    // Referência ao exit point
     private Transform _exitPoint;
-
-    // Inventário: cada item pego, com o preço no momento da compra.
-    // É uma lista (não um Dictionary) porque o NPC pode pegar o mesmo
-    // tipo de item mais de uma vez.
     private readonly List<ShoppingItem> _inventory = new List<ShoppingItem>();
 
     // Slot reservado na furniture atual
     private FurnitureOccupancy _currentOccupancy;
     private Vector3 _reservedSlotPosition;
-
-    // Controle de caixa
     private bool _itemsPlaced = false;
     private int _queueIndex = -1;
-
-    // True quando este NPC já chegou (parou) na posição de fila que recebeu.
-    // É dono do próprio estado de chegada — não depende de trigger compartilhado.
     public bool HasArrivedAtQueueTarget { get; private set; }
 
     private bool _isLeaving = false;
@@ -108,6 +88,7 @@ public class NpcTraject : MonoBehaviour
 
     private void PlaceItemsOnCounter()
     {
+        print("[NPC] Colocando itens no balcão.");
         _itemsPlaced = true;
         StartCoroutine(UnloadInventoryRoutine());
     }
@@ -229,11 +210,11 @@ public class NpcTraject : MonoBehaviour
     public void SetQueueTarget(Transform target, int index)
     {
         _queueIndex = index;
-        HasArrivedAtQueueTarget = false;
 
         if (_queueWaiter != null)
             StopCoroutine(_queueWaiter);
 
+        HasArrivedAtQueueTarget = false;
         _agent.isStopped = false;
         _agent.SetDestination(target.position);
         _queueWaiter = StartCoroutine(WaitUntilAtQueuePosition(target));
@@ -243,15 +224,24 @@ public class NpcTraject : MonoBehaviour
     {
         yield return new WaitUntil(() => !_agent.pathPending);
 
-        float threshold = Mathf.Max(_agent.stoppingDistance, 0.05f);
-        while (Vector3.Distance(transform.position, target.position) > threshold)
+        float elapsed = 0f;
+        const float timeout = 15f;
+
+        while ((_agent.remainingDistance > _agent.stoppingDistance
+               || (_agent.hasPath && _agent.velocity.sqrMagnitude > 0.01f))
+               && elapsed < timeout)
+        {
+            elapsed += Time.deltaTime;
             yield return null;
+        }
+
+        if (elapsed >= timeout)
+            Debug.LogWarning($"[NPC:{name}] Timeout esperando chegar na fila — forçando chegada.");
 
         _agent.isStopped = true;
         HasArrivedAtQueueTarget = true;
         _queueWaiter = null;
     }
-
     public void SetTarget(Transform target, int index) => SetQueueTarget(target, index);
 
     // ─── Movimento genérico ───────────────────────────────────────────────────
@@ -286,12 +276,6 @@ public class NpcTraject : MonoBehaviour
     }
 
     // ─── Compras / Inventário ─────────────────────────────────────────────────
-
-    /// <summary>
-    /// Pega de 1 a N itens da prateleira (quantidade sorteada por chance),
-    /// respeitando o limite total de itens que o NPC carrega na sacola.
-    /// Para cedo se a prateleira ficar vazia no meio da coleta.
-    /// </summary>
     private void CollectItemsFromShelf(Shelf shelf)
     {
         var globalPrices = ServiceLocator.Get<GlobalPrices>();
@@ -308,10 +292,6 @@ public class NpcTraject : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Sorteia quantos itens o NPC pega de uma furniture, com base nos pesos
-    /// configurados em <see cref="_itemsPerFurnitureWeights"/>.
-    /// </summary>
     private int RollItemQuantity()
     {
         if (_itemsPerFurnitureWeights == null || _itemsPerFurnitureWeights.Length == 0)
@@ -320,7 +300,6 @@ public class NpcTraject : MonoBehaviour
         return _itemsPerFurnitureWeights[Random.Range(0, _itemsPerFurnitureWeights.Length)];
     }
 
-    /// <summary>Item comprado pelo NPC, com o preço travado no momento da compra.</summary>
     private readonly struct ShoppingItem
     {
         public readonly Items Type;
