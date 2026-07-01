@@ -124,14 +124,17 @@ public class FurnitureManager : MonoBehaviour
     }
     public void SelectFurniture(FurnitureType type)
     {
+        if (!_furnitureLibrary.TryGetValue(type, out FurnitureData data))
+        {
+            Debug.LogError($"[FurnitureManager] Tipo '{type}' não encontrado na library. Verifique se o FurnitureData está na lista 'availableFurniture'.");
+            return;
+        }
+
         if (_activeGhost != null) Destroy(_activeGhost);
 
-        if (_furnitureLibrary.TryGetValue(type, out _currentSelected))
-        {
-
-            _activeGhost = Instantiate(_currentSelected.ghostPrefab);
-            ghostValidator = _activeGhost.GetComponent<FurniturePlacementValidator>();
-        }
+        _currentSelected = data;
+        _activeGhost = Instantiate(_currentSelected.ghostPrefab);
+        ghostValidator = _activeGhost.GetComponent<FurniturePlacementValidator>();
     }
 
     private void TryPickUpFurniture()
@@ -143,27 +146,37 @@ public class FurnitureManager : MonoBehaviour
             return;
         }
 
-        Ray ray = Camera.main.ScreenPointToRay
-        (new Vector3(Screen.width / 2, Screen.height / 2));
+        Ray ray = Camera.main.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2));
 
         if (Physics.Raycast(ray, out RaycastHit hit, 5f, furnitureLayer))
         {
-            if (hit.collider.GetComponentInParent<FurnitureInstance>() != null)
+            FurnitureInstance instance = hit.collider.GetComponentInParent<FurnitureInstance>();
+            if (instance == null) return;
+
+            if (!_furnitureLibrary.ContainsKey(instance.Data.type))
             {
-                FurnitureInstance instance = hit.collider.GetComponentInParent<FurnitureInstance>();
-                _placedFurnitures.Remove(instance);
-                HasFurnitureInInventory = true;
-                _tempSaveData = instance.SaveData;
-                SelectFurniture(instance.Data.type);
-                _activeGhost.transform.rotation = instance.transform.rotation;
-                Destroy(instance.gameObject);
-                ServiceLocator.Get<ConstructionUI>().SetText();
+                Debug.LogError($"[FurnitureManager] '{instance.Data.type}' não está na library. Pickup cancelado.");
+                ServiceLocator.Get<Warnings>().ShowWarning("This furniture can't be picked up right now.", false);
+                return;
             }
+
+            _placedFurnitures.Remove(instance);
+            HasFurnitureInInventory = true;
+            _tempSaveData = instance.SaveData;
+            SelectFurniture(instance.Data.type);
+            _activeGhost.transform.rotation = instance.transform.rotation;
+            Destroy(instance.gameObject);
+            ServiceLocator.Get<ConstructionUI>().SetText();
         }
     }
 
     private void PlaceFurniture()
     {
+        if (ServiceLocator.Get<PlayerMotor>().PlayerIsInMarket == false)
+        {
+            ServiceLocator.Get<Warnings>().ShowWarning("You can only place furniture inside the market.", false);
+            return;
+        }
 
         GameObject obj = Instantiate(_currentSelected.prefab, _activeGhost.transform.position, _activeGhost.transform.rotation);
         obj.transform.SetParent(furnitureContainer);
@@ -175,17 +188,18 @@ public class FurnitureManager : MonoBehaviour
             if (_tempSaveData != null)
             {
                 instance.SaveData = _tempSaveData;
-                _currentSelected = null;
                 _tempSaveData = null;
             }
 
-
             _placedFurnitures.Add(instance);
         }
-        ToggleBuildingMode();
+
+        _currentSelected = null;
         HasFurnitureInInventory = false;
         Destroy(_activeGhost);
         _activeGhost = null;
+
+        ToggleBuildingMode();
     }
 
     public List<FurnitureInstance> GetPlacedFurnitures() => _placedFurnitures;

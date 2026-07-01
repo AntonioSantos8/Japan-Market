@@ -15,7 +15,6 @@ public class MarketManager : MonoBehaviour
     public float Money { get => money; set => money = value; }
     public bool Open { get => open; set => open = value; }
     public float Clients { get => clients; set => clients = value; }
-    // MarketManager.cs — adicione estes membros:
     private List<Transform> clientTransforms = new List<Transform>();
     public IReadOnlyList<Transform> ClientTransforms => clientTransforms;
 
@@ -39,7 +38,7 @@ public class MarketManager : MonoBehaviour
     }
 
     [ContextMenu("Test Earn")]
-    public void TestEarn() => Earn_Money(1000);
+    public void TestEarn() => Earn_Money(100000);
 
     public void Earn_Money(float quantity)
     {

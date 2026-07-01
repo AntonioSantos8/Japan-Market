@@ -13,6 +13,7 @@ public class PlayerMotor : MonoBehaviour
 
     public bool IsRunning { get; set; }
     public bool IsMoving { get; set; }
+    public bool PlayerIsInMarket { get => playerIsInMarket; set => playerIsInMarket = value; }
 
     [SerializeField] private PlayerSettings settings;
     [SerializeField] private CinemachineBasicMultiChannelPerlin noise;
@@ -24,13 +25,14 @@ public class PlayerMotor : MonoBehaviour
     [SerializeField] private CinemachineCamera cam;
     [SerializeField] private AudioClip passos;
     [SerializeField] private AudioSource passosSource;
-
     bool canMove = true;
     public void SetCanMove(bool value) { canMove = value; }
     private float fovValue = 60f;
     private float currentTilt = 0f;
     private float inputX = 0f;
     private Coroutine fovCoroutine;
+    private bool playerIsInMarket = false;
+    
 
     void Awake()
     {
@@ -46,6 +48,20 @@ public class PlayerMotor : MonoBehaviour
         TiltCamera();
         HandleFootsteps();
     }
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("Entrance"))
+        {
+            playerIsInMarket = true;
+        }
+    }
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.CompareTag("Entrance"))
+        {
+            playerIsInMarket = false;
+        }
+    }
     public void ResetCameraEffects()
     {
         if (noise != null)
@@ -59,9 +75,6 @@ public class PlayerMotor : MonoBehaviour
         fovValue = 60f;
         cam.Lens.FieldOfView = fovValue;
 
-        // TiltCamera() para de rodar quando canMove fica false (ex.: modo caixa),
-        // mas deixava o roll residual do strafe travado na câmera, desviando
-        // qualquer raycast feito fora do centro da tela (ex.: clique do mouse).
         inputX = 0f;
         currentTilt = 0f;
         if (cameraTiltTransform != null)

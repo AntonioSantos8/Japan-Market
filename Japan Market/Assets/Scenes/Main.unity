@@ -6152,6 +6152,22 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6500693336694945929, guid: 6570000121465ce44909f6c67cd8478f, type: 3}
+      propertyPath: gridSize
+      value: 0.25
+      objectReference: {fileID: 0}
+    - target: {fileID: 6500693336694945929, guid: 6570000121465ce44909f6c67cd8478f, type: 3}
+      propertyPath: storeArea
+      value: 
+      objectReference: {fileID: 499462662}
+    - target: {fileID: 6500693336694945929, guid: 6570000121465ce44909f6c67cd8478f, type: 3}
+      propertyPath: scrollSpeed
+      value: 15
+      objectReference: {fileID: 0}
+    - target: {fileID: 6500693336694945929, guid: 6570000121465ce44909f6c67cd8478f, type: 3}
+      propertyPath: viewDistance
+      value: 2
+      objectReference: {fileID: 0}
     - target: {fileID: 6514195435806603589, guid: 6570000121465ce44909f6c67cd8478f, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -6288,7 +6304,8 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 4837779449873148766, guid: 6570000121465ce44909f6c67cd8478f, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects:
     - targetCorrespondingSourceObject: {fileID: 3879432245105764073, guid: 6570000121465ce44909f6c67cd8478f, type: 3}
@@ -18018,6 +18035,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 3807044564978151086, guid: 319b6b59b1bc3774da5cd5abb404f8e5, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7520978891628807407, guid: 319b6b59b1bc3774da5cd5abb404f8e5, type: 3}
       propertyPath: m_LocalPosition.x
       value: 22.49286
@@ -18061,6 +18082,10 @@ PrefabInstance:
     - target: {fileID: 7655635529144014900, guid: 319b6b59b1bc3774da5cd5abb404f8e5, type: 3}
       propertyPath: m_Name
       value: Shelf_Objects_
+      objectReference: {fileID: 0}
+    - target: {fileID: 7655635529144014900, guid: 319b6b59b1bc3774da5cd5abb404f8e5, type: 3}
+      propertyPath: m_Layer
+      value: 7
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -60346,7 +60371,7 @@ PrefabInstance:
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 1f072e6529cebe44b8c2e447d8a471b6, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 955453360}
+      addedObject: {fileID: 955453363}
   m_SourcePrefab: {fileID: 100100000, guid: 1f072e6529cebe44b8c2e447d8a471b6, type: 3}
 --- !u!4 &663543897 stripped
 Transform:
@@ -90074,8 +90099,8 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 1f072e6529cebe44b8c2e447d8a471b6, type: 3}
   m_PrefabInstance: {fileID: 663543896}
   m_PrefabAsset: {fileID: 0}
---- !u!64 &955453360
-MeshCollider:
+--- !u!65 &955453363
+BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -90092,10 +90117,9 @@ MeshCollider:
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 0
-  m_CookingOptions: 30
-  m_Mesh: {fileID: -5495902117074765545, guid: 1f072e6529cebe44b8c2e447d8a471b6, type: 3}
+  serializedVersion: 3
+  m_Size: {x: 0.1354829, y: 0.30560112, z: 0.333939}
+  m_Center: {x: -0.051987566, y: -0.13704695, z: 0.15696941}
 --- !u!4 &956124355 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3587188065289658224, guid: 135e59a5d1c1e1843a11b9b9f92c81a7, type: 3}
@@ -202265,6 +202289,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: FurnituresManager
       objectReference: {fileID: 0}
+    - target: {fileID: 3120888785912031086, guid: e0a871c8d696995458ec6f63284dadca, type: 3}
+      propertyPath: m_TagString
+      value: Untagged
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -214972,6 +215000,22 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1334868011}
     m_Modifications:
+    - target: {fileID: 1835926773358936641, guid: 1efcaca1f084d754997f672266975cf1, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.9938122
+      objectReference: {fileID: 0}
+    - target: {fileID: 1835926773358936641, guid: 1efcaca1f084d754997f672266975cf1, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.6818096
+      objectReference: {fileID: 0}
+    - target: {fileID: 1835926773358936641, guid: 1efcaca1f084d754997f672266975cf1, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 0.5531501
+      objectReference: {fileID: 0}
+    - target: {fileID: 1835926773358936641, guid: 1efcaca1f084d754997f672266975cf1, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 20.8
+      objectReference: {fileID: 0}
     - target: {fileID: 4209708405728669964, guid: 1efcaca1f084d754997f672266975cf1, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -215015,6 +215059,14 @@ PrefabInstance:
     - target: {fileID: 4372120821060393053, guid: 1efcaca1f084d754997f672266975cf1, type: 3}
       propertyPath: m_Name
       value: UIManager
+      objectReference: {fileID: 0}
+    - target: {fileID: 9014586144377102928, guid: 1efcaca1f084d754997f672266975cf1, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.95963407
+      objectReference: {fileID: 0}
+    - target: {fileID: 9014586144377102928, guid: 1efcaca1f084d754997f672266975cf1, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 20.80001
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -216470,6 +216522,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 2910709990833503260, guid: 1c0e10b6914ed6e43886c7e757e4eceb, type: 3}
+    - {fileID: 4583360724593867809, guid: 1c0e10b6914ed6e43886c7e757e4eceb, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects:
     - targetCorrespondingSourceObject: {fileID: 5735175813083642718, guid: 1c0e10b6914ed6e43886c7e757e4eceb, type: 3}
