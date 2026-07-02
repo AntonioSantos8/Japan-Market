@@ -1,12 +1,18 @@
-using UnityEngine;
-
 public class MoveTutorialState : ITutorialStates
 {
     TutorialManager _manager;
-    public MoveTutorialState(TutorialManager manager) 
+    TutorialStepData myData;
+    public MoveTutorialState(TutorialManager manager, TutorialStepData data) 
     {
         _manager = manager;
+        myData = data;
     }
+
+    public void Complete()
+    {
+      
+    }
+
     public void Enter()
     {
         
