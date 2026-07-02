@@ -13,7 +13,6 @@ GameObject:
   - component: {fileID: 8592542092958637446}
   - component: {fileID: 2415528818969884049}
   - component: {fileID: 6970962676190247443}
-  - component: {fileID: 7804577836958203691}
   m_Layer: 7
   m_Name: KetchupV2
   m_TagString: Untagged
@@ -117,31 +116,6 @@ MonoBehaviour:
   precomputeOutline: 0
   bakeKeys: []
   bakeValues: []
---- !u!114 &7804577836958203691
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2771454168300163697}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3b5b663da327bea4787cf5e988bbbb43, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::HoldableItem
-  OnDropEvent:
-    m_PersistentCalls:
-      m_Calls: []
-  OnPickEvent:
-    m_PersistentCalls:
-      m_Calls: []
-  interactionText: kee
-  followForce: 150
-  followDrag: 2
-  canBreak: 1
-  maxResistance: 100
-  breakThreshold: 15
-  rbAngularDamping: 13
 --- !u!1 &3587072207353111997
 GameObject:
   m_ObjectHideFlags: 0

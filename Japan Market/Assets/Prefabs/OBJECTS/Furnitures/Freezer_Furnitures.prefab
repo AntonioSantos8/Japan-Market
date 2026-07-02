@@ -44,6 +44,7 @@ Transform:
   - {fileID: 524285190820533222}
   - {fileID: 4492732878152832098}
   - {fileID: 8481925238449747069}
+  - {fileID: 151964978457099311}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &2454437452664478688
@@ -61,8 +62,8 @@ MonoBehaviour:
   SaveData:
     qntDoces: 0
     qntSalgadinhos: 0
-  shelf: {fileID: 0}
-  interactionPoint: {fileID: 0}
+  shelf: {fileID: 3338044430421539479}
+  interactionPoint: {fileID: 151964978457099311}
 --- !u!114 &919087010036807332
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -141,7 +142,40 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FurnitureOccupancy
   _maxOccupants: 2
-  _slotOffsets: []
+  _slotOffsets:
+  - {x: 0, y: 0, z: -2.37}
+  - {x: 0, y: 0, z: -4.8}
+--- !u!1 &8828758622818278859
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 151964978457099311}
+  m_Layer: 2
+  m_Name: InteractionPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &151964978457099311
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8828758622818278859}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: -3.29}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 6419750505039771639}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &580669332608181100
 PrefabInstance:
   m_ObjectHideFlags: 0
