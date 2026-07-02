@@ -11,11 +11,22 @@ public class PcItems
     public Transform Visual { get => visual; set => visual = value; }
     public AllIThingsData Data { get => data; set => data = value; }
 }
+public class ComputerStats
+{
+    string name;
+    string description;
+    float singlePrice;
+
+    public string Name { get => name; set => name = value; }
+    public string Description { get => description; set => description = value; }
+    public float SinglePrice { get => singlePrice; set => singlePrice = value; }
+}
+
 public class ShopBuyItems : MonoBehaviour
 {
     [SerializeField] PcItems[] objects;
     [SerializeField] float duration = 0.25f;
-
+    PcItems currentObj;
     int currentIndex = 0;
     Vector3[] originalScales;
     bool isTweening;
@@ -33,7 +44,11 @@ public class ShopBuyItems : MonoBehaviour
             originalScales[i] = objects[i].Visual.localScale;
 
             if (i == currentIndex)
+            {   
+                currentObj = objects[i];
                 objects[i].Obj.SetActive(true);
+                
+            }
             else
             {
                 objects[i].Obj.SetActive(false);
@@ -42,29 +57,21 @@ public class ShopBuyItems : MonoBehaviour
                 objects[i].Visual.localScale = s;
             }
         }
-        if (objects[currentIndex].Obj.TryGetComponent(out ItemsExample atd))
-        {
-            AllIThingsData at = atd.GetAllThingsData();
-            currentItemPrefab = at.itemPrefab;
-            currentItemBox = at.itemBoxPrefab;
-            nameText.text = at.name;
-            descriptionText.text = at.description;
-            singlePriceText.text = "¥" + Mathf.RoundToInt(at.singleItemPrice);
-        }
+
+
+        AllIThingsData at = currentObj.Data;
+        currentItemPrefab = at.itemPrefab;
+        currentItemBox = at.itemBoxPrefab;
+        nameText.text = at.name;
+        descriptionText.text = at.description;
+        singlePriceText.text = "¥" + Mathf.RoundToInt(at.singleItemPrice);
+        
     }
     public void BuyBox()
     {
         float price = 0f;
 
-        if (objects[currentIndex].Obj.TryGetComponent(out ItemsExample atd))
-        {
-            AllIThingsData at = atd.GetAllThingsData();
-            price = at.singleItemPrice;
-        }
-        else if (objects[currentIndex].Obj.TryGetComponent(out FurnitureBox fb))
-        {
-            price = fb.GetData().data.singleItemPrice;
-        }
+        price = currentObj.Data.singleItemPrice;
 
         MarketManager market = ServiceLocator.Get<MarketManager>();
 
@@ -132,25 +139,29 @@ public class ShopBuyItems : MonoBehaviour
             current.DOScaleY(0f, duration).OnComplete(() =>
             {
                 objects[currentIndex].Obj.SetActive(false);
+
                 currentIndex = newIndex;
+
                 objects[currentIndex].Obj.SetActive(true);
+
+                currentObj = objects[currentIndex];
 
                 Vector3 startScale = originalScales[currentIndex];
                 startScale.y = 0;
                 next.localScale = startScale;
 
 
-                if (next.TryGetComponent(out ItemsExample atd))
-                {
-                    AllIThingsData at = atd.GetAllThingsData();
+
+                     AllIThingsData at = currentObj.Data;
 
                     currentItemPrefab = at.itemPrefab;
                     currentItemBox = at.itemBoxPrefab;
-
+                  
+                    
                     nameText.text = at.name;
                     descriptionText.text = at.description;
                     singlePriceText.text = "¥" + Mathf.RoundToInt(at.singleItemPrice);
-                }
+                
 
 
                 next.DOScaleY(originalScales[currentIndex].y, duration)
@@ -177,5 +188,11 @@ public class ShopBuyItems : MonoBehaviour
     public void RefreshCurrentItem()
     {
         ChangeItem(currentIndex);
+    }
+    public void UpdateComputerTexts(ComputerStats stats) 
+    {
+        nameText.text = stats.Name;
+        descriptionText.text = stats.Description;
+        singlePriceText.text = " " + Mathf.RoundToInt(stats.SinglePrice);
     }
 }
