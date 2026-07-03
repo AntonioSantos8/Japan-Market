@@ -1,8 +1,10 @@
-public class MoveTutorialState : ITutorialStates
+
+
+public class WelcomeMenuState : ITutorialStates
 {
     TutorialManager _manager;
     TutorialStepData myData;
-    public MoveTutorialState(TutorialManager manager, TutorialStepData data) 
+    public WelcomeMenuState(TutorialManager manager, TutorialStepData data) 
     {
         _manager = manager;
         myData = data;
@@ -15,7 +17,7 @@ public class MoveTutorialState : ITutorialStates
 
     public void Enter()
     {
-        
+       
     }
 
     public void Exit()

@@ -37,8 +37,6 @@ public class ItemBox : MonoBehaviour
         }
 
         var itemManager = ServiceLocator.Get<ItemManager>();
-        if (itemManager == null) return;
-
         Sprite icon = itemManager.GetItemIcon(boxType);
 
         if (icon != null)

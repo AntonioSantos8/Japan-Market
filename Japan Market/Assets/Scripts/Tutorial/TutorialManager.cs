@@ -33,19 +33,39 @@ public class MascotSettings
 [Serializable]
 public class TutorialStepData
 {
-    [SerializeField] Transform mascotPosition;
-    [SerializeField] DialogueData mascotDialogues;
+    [SerializeField] RectTransform mascotPosition;
+    [SerializeField] RectTransform mascotTextPosition;
+    [SerializeField] DialogueData[] mascotDialogues;
 
-    public DialogueData MascotDialogue { get => mascotDialogues; set => mascotDialogues = value; }
+    public DialogueData[] MascotDialogue { get => mascotDialogues; set => mascotDialogues = value; }
 }
 [Serializable]
-public class DialogueData 
+public class DialogueData : MonoBehaviour
 {
-    [SerializeField] string[] dialogues;
+    [SerializeField] string dialogue;
     [SerializeField] int timeToGoToTheNextDialogue;
 
-    public string[] Dialogues { get => dialogues; set => dialogues = value; }
+    public string Dialogue { get => dialogue; set => dialogue = value; }
     public int TimeToGoToTheNextDialogue { get => timeToGoToTheNextDialogue; set => timeToGoToTheNextDialogue = value; }
+    public void WriteDialogueData(TutorialStepData data, TMP_Text mascotText, float timeForEachLetter) { StartCoroutine(WriteDialogue(data, mascotText, timeForEachLetter)); }
+    IEnumerator WriteDialogue(TutorialStepData data, TMP_Text mascotText, float timeForEachLetter)
+    {
+        for (int i = 0; i < data.MascotDialogue.Length; i++)
+        {
+            char[] letters = data.MascotDialogue[i].Dialogue.ToCharArray();
+            StringBuilder currentDialogue = new StringBuilder();
+            for (int j = 0; j < letters.Length; j++)
+            {
+                currentDialogue.Append(letters[j]);
+                mascotText.text = currentDialogue.ToString();
+                yield return new WaitForSeconds(timeForEachLetter);
+
+            }
+            yield return new WaitForSeconds(data.MascotDialogue[i].TimeToGoToTheNextDialogue);
+
+
+        }
+    }
 }
 
 public class TutorialManager : MonoBehaviour
@@ -54,11 +74,14 @@ public class TutorialManager : MonoBehaviour
     [SerializeField] TutorialStepData awsdTutorial;
     [SerializeField] float timeForEachLetter;
     ITutorialStates currentState;
-    MoveTutorialState moveState;
+    WelcomeMenuState moveState;
+
+    public MascotSettings MascotSettings { get => mascotSettings; set => mascotSettings = value; }
+
     private void Awake()
     {
-        moveState = new MoveTutorialState(this, awsdTutorial);
-        mascotSettings.Init();
+        moveState = new WelcomeMenuState(this, awsdTutorial);
+        MascotSettings.Init();
         ChangeState(moveState);
     }
     public void ChangeState(ITutorialStates state) 
@@ -70,27 +93,6 @@ public class TutorialManager : MonoBehaviour
     private void Update()
     {
         currentState?.Update();
-        mascotSettings.Animate();
+        MascotSettings.Animate();
     }   
-    public void WriteDialogueData(TutorialStepData data) { StartCoroutine(WriteDialogue(data)); }
-    IEnumerator WriteDialogue(TutorialStepData data) 
-    {
-        for (int i = 0; i < data.MascotDialogue.Dialogues.Length; i++)
-        {
-            char[] letters = data.MascotDialogue.Dialogues[i].ToCharArray();
-            StringBuilder currentDialogue = new StringBuilder();
-            for (int j = 0; j < letters.Length; j++) 
-            {
-                currentDialogue.Append(letters[j]);
-                mascotSettings.SetText(currentDialogue.ToString());
-                yield return new WaitForSeconds(timeForEachLetter);
-                
-            }
-            yield return new WaitForSeconds(data.MascotDialogue.TimeToGoToTheNextDialogue);
-
-
-        }
-    }
-    
-
 }
