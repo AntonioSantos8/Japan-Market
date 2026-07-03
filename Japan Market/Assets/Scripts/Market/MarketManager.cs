@@ -34,7 +34,7 @@ public class MarketManager : MonoBehaviour
     public void LoadMoney()
     {
         late_money = money;
-        moneyText.text = $"Money: {FormatMoney(money)}";
+        moneyText.text = $"Iene: {FormatMoney(money)}";
     }
 
     [ContextMenu("Test Earn")]
@@ -50,7 +50,7 @@ public class MarketManager : MonoBehaviour
             x =>
             {
                 late_money = x;
-                moneyText.text = $"Money: {FormatMoney(late_money)}";
+                moneyText.text = $"Iene: {FormatMoney(late_money)}";
             },
             money,
             1f
@@ -69,7 +69,7 @@ public class MarketManager : MonoBehaviour
                 x =>
                 {
                     late_money = x;
-                    moneyText.text = $"Money: {FormatMoney(late_money)}";
+                    moneyText.text = $"Iene: {FormatMoney(late_money)}";
                 },
                 money,
                 1f
