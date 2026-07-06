@@ -3,6 +3,8 @@ using System.Collections;
 using System.Text;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
+
 public class MascotController : MonoBehaviour
 {
     [SerializeField] private RectTransform mascotRoot;
@@ -30,13 +32,34 @@ public class MascotController : MonoBehaviour
 
    
     public event Action OnDialogueSequenceFinished;
-
+    Image visual;
+    [SerializeField] Sprite defaultSprite;
+    [SerializeField] Sprite[] talkingSprites;
+    int currentSpriteIndex;
+    [SerializeField] float timeBetweenTalkingSprites;
+    Coroutine talkingCoroutine;
     private void Awake()
     {
         if (mascotVisual != null)
             _idleBasePos = mascotVisual.anchoredPosition;
     }
-
+    IEnumerator StartTalkingCoroutine() 
+    {
+        
+        yield return new WaitForSeconds(timeBetweenTalkingSprites);
+        int newSprite = 0;
+        do 
+        {
+            newSprite = UnityEngine.Random.Range(0, talkingSprites.Length);
+                
+        } while (newSprite == currentSpriteIndex);
+        visual.sprite = talkingSprites[currentSpriteIndex];
+        
+    
+    
+    }
+    public void StartTalking(){ talkingCoroutine = StartCoroutine(StartTalkingCoroutine()); }
+    public void StopTalking() { StopCoroutine(talkingCoroutine); visual.sprite = defaultSprite; }
     private void Update()
     {
         if (mascotVisual == null) return;
@@ -88,6 +111,7 @@ public class MascotController : MonoBehaviour
     public void PlayDialogueSequence(DialogueLine[] lines, float timePerLetterOverride = -1f)
     {
         StopDialogueSequence();
+        StartTalking();
         float speed = timePerLetterOverride > 0f ? timePerLetterOverride : defaultTimePerLetter;
         _typeRoutine = StartCoroutine(TypeSequenceRoutine(lines, speed));
     }
@@ -98,6 +122,7 @@ public class MascotController : MonoBehaviour
         {
             StopCoroutine(_typeRoutine);
             _typeRoutine = null;
+            StopTalking();
         }
     }
 

@@ -270,14 +270,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0.9600265, b: 1, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 0}
+  m_Sprite: {fileID: 21300000, guid: 68b98b7c2bf5fa34897ff7a29eab016f, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -455,11 +455,13 @@ MonoBehaviour:
     textBoxTargetPosition: {fileID: 3217876424232810313}
     textBoxTargetSize: {x: 477.801, y: 170}
     dialogueLines:
-    - text: "Agora, espere pelo pr\xF3ximo cliente"
+    - text: "Olhe, um cliente est\xE1 vindo"
+      extraWaitAfterLine: 2
+    - text: Espere ele escolher os produtos q ele quer
       extraWaitAfterLine: 2
     timePerLetterOverride: 0
     completionMode: 2
-    requiredEventId: ClienteCame
+    requiredEventId: 
     delayBeforeNextStep: 1
   startAutomatically: 1
 --- !u!1 &7888318325625049025
@@ -646,3 +648,9 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   defaultTimePerLetter: 0.03
+  defaultSprite: {fileID: 21300000, guid: 68b98b7c2bf5fa34897ff7a29eab016f, type: 3}
+  talkingSprites:
+  - {fileID: 21300000, guid: 2d89a581161835244b39d64332a979dc, type: 3}
+  - {fileID: 21300000, guid: 0cec68b727dcb1b41bf192041605464e, type: 3}
+  - {fileID: 21300000, guid: 85efb4d2c7b39bc4a816b6217d95c85d, type: 3}
+  timeBetweenTalkingSprites: 0.3
