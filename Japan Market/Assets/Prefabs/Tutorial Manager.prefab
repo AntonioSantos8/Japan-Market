@@ -389,14 +389,77 @@ MonoBehaviour:
     textBoxTargetPosition: {fileID: 3217876424232810313}
     textBoxTargetSize: {x: 477.801, y: 170}
     dialogueLines:
-    - text: "Agora que voc\xEA comprou tudo que precisava, aperte [ESC] para sair
-        do pc"
-      extraWaitAfterLine: 3
-    - text: depois disso pegue as caixa bla bla
+    - text: "Voc\xEA comprou o que precisava\t\t\t"
+      extraWaitAfterLine: 2
+    - text: Agora pegue a caixa com icone de prateleira e coloque no interior da
+        loja
       extraWaitAfterLine: 3
     timePerLetterOverride: 0
     completionMode: 2
-    requiredEventId: 
+    requiredEventId: HasPutFurniture
+    delayBeforeNextStep: 1
+  - stepId: HasPutFurniture
+    mascotTargetPosition: {fileID: 4938137836108460407}
+    textBoxTargetPosition: {fileID: 3217876424232810313}
+    textBoxTargetSize: {x: 477.801, y: 170}
+    dialogueLines:
+    - text: "Voc\xEA gostou do lugar em que a pratelria foi colocada? caso n\xE3o,
+        pressione B para entrar no modo de constru\xE7\xE3o e segure o bot\xE3o direito
+        do mouse na prateleira para muda-la de posi\xE7\xE3o."
+      extraWaitAfterLine: 3
+    timePerLetterOverride: 0
+    completionMode: 2
+    requiredEventId: HasMovedFurniture
+    delayBeforeNextStep: 1
+  - stepId: HasMovedFurniture
+    mascotTargetPosition: {fileID: 4938137836108460407}
+    textBoxTargetPosition: {fileID: 3217876424232810313}
+    textBoxTargetSize: {x: 477.801, y: 170}
+    dialogueLines:
+    - text: "J\xE1 que moveu a furniture, agora, pegue a caixa e coloque na prateleira,
+        no segmento que desejar"
+      extraWaitAfterLine: 3
+    timePerLetterOverride: 0
+    completionMode: 2
+    requiredEventId: HasPutFood
+    delayBeforeNextStep: 1
+  - stepId: HasPutFood
+    mascotTargetPosition: {fileID: 4938137836108460407}
+    textBoxTargetPosition: {fileID: 3217876424232810313}
+    textBoxTargetSize: {x: 477.801, y: 170}
+    dialogueLines:
+    - text: "Esse UI que apareceu na sua tela indica o pre\xE7o que o produto est\xE1
+        no mercado global e no seu."
+      extraWaitAfterLine: 2
+    - text: "para mudar, clique no pre\xE7o de mercado e digite o novo valor."
+      extraWaitAfterLine: 2
+    - text: "mas cuidado, se estiver muito caro os clientes poder\xE3o n\xE3o gostar."
+      extraWaitAfterLine: 2
+    timePerLetterOverride: 0
+    completionMode: 2
+    requiredEventId: HasPutPrice
+    delayBeforeNextStep: 1
+  - stepId: HasPutPrice
+    mascotTargetPosition: {fileID: 4938137836108460407}
+    textBoxTargetPosition: {fileID: 3217876424232810313}
+    textBoxTargetSize: {x: 477.801, y: 170}
+    dialogueLines:
+    - text: "Agora, espere pelo pr\xF3ximo cliente"
+      extraWaitAfterLine: 2
+    timePerLetterOverride: 0
+    completionMode: 2
+    requiredEventId: ClientCame
+    delayBeforeNextStep: 1
+  - stepId: ClientCame
+    mascotTargetPosition: {fileID: 4938137836108460407}
+    textBoxTargetPosition: {fileID: 3217876424232810313}
+    textBoxTargetSize: {x: 477.801, y: 170}
+    dialogueLines:
+    - text: "Agora, espere pelo pr\xF3ximo cliente"
+      extraWaitAfterLine: 2
+    timePerLetterOverride: 0
+    completionMode: 2
+    requiredEventId: ClienteCame
     delayBeforeNextStep: 1
   startAutomatically: 1
 --- !u!1 &7888318325625049025

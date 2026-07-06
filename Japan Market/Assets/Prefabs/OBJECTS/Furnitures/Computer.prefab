@@ -4087,6 +4087,10 @@ MonoBehaviour:
   anchor: {fileID: 8224724432498262107}
   viewDistance: 3
   gridSize: 0.5
+  storeArea: {fileID: 0}
+  scrollSpeed: 15
+  minViewDistance: 1.5
+  maxViewDistance: 10
 --- !u!1 &2695370732962709329
 GameObject:
   m_ObjectHideFlags: 0
@@ -5382,13 +5386,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ShopBuyItems
   objects:
-  - {fileID: 7088009955915501894}
-  - {fileID: 3441157272711553318}
+  - visual: {fileID: 1448436900637272393}
+    data: {fileID: 11400000, guid: efd74a6b0532c2444a03cf6960fa7a5d, type: 2}
+  - visual: {fileID: 7869589540089389403}
+    data: {fileID: 11400000, guid: 3d3a032e966809d46ab7c66bb10746a7, type: 2}
+  - visual: {fileID: 0}
+    data: {fileID: 11400000, guid: dde2596aafbb6b84f867906abe163ca9, type: 2}
+  - visual: {fileID: 0}
+    data: {fileID: 11400000, guid: 8fce44d78a8b2494aae972f8cc2342dd, type: 2}
   duration: 0.1
   nameText: {fileID: 917351516277181133}
   descriptionText: {fileID: 5449500174552345859}
   singlePriceText: {fileID: 885521819859644328}
   boxesSpawnPoint: {fileID: 0}
+  _sellingItemType: 1
 --- !u!1 &3438172387892933878
 GameObject:
   m_ObjectHideFlags: 0
@@ -6616,12 +6627,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ShopBuyItems
   objects:
-  - {fileID: 913810607696803670}
+  - visual: {fileID: 0}
+    data: {fileID: 0}
   duration: 0.1
   nameText: {fileID: 6718169041593341078}
   descriptionText: {fileID: 6016571008602060424}
   singlePriceText: {fileID: 8550795087891084250}
   boxesSpawnPoint: {fileID: 0}
+  _sellingItemType: 0
 --- !u!1 &4017605128856051333
 GameObject:
   m_ObjectHideFlags: 0
@@ -13598,13 +13611,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ShopBuyItems
   objects:
-  - {fileID: 5209615005273128373}
-  - {fileID: 4241414285599145572}
+  - visual: {fileID: 0}
+    data: {fileID: 0}
+  - visual: {fileID: 0}
+    data: {fileID: 0}
   duration: 0.1
   nameText: {fileID: 4545577235201364054}
   descriptionText: {fileID: 4208728948945086930}
   singlePriceText: {fileID: 5181210400700259993}
   boxesSpawnPoint: {fileID: 0}
+  _sellingItemType: 0
 --- !u!1 &7491759469129247778
 GameObject:
   m_ObjectHideFlags: 0
