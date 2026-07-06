@@ -1,6 +1,7 @@
 using DG.Tweening;
 using TMPro;
 using UnityEngine;
+public enum SellingItemType{ Furniture, Food}
 [System.Serializable]
 public class PcItems
 {
@@ -35,6 +36,9 @@ public class ShopBuyItems : MonoBehaviour
     TMP_Text nameText, descriptionText,
      singlePriceText;
     [SerializeField] Transform boxesSpawnPoint;
+    [SerializeField] SellingItemType _sellingItemType;
+    TutorialManager _tutorialManager;
+    void Awake(){ _tutorialManager = ServiceLocator.Get<TutorialManager>();}
     void Start()
     {
         originalScales = new Vector3[objects.Length];
@@ -82,6 +86,8 @@ public class ShopBuyItems : MonoBehaviour
         }
 
         market.Lose_Money(price);
+        if(_tutorialManager)
+            _tutorialManager.BoughtItem(_sellingItemType);
         Instantiate(currentItemBox, boxesSpawnPoint.position, Quaternion.identity);
     }
 

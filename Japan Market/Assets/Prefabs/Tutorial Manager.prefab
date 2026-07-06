@@ -296,7 +296,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8020761910419541692}
-  - component: {fileID: 3013890725697593746}
+  - component: {fileID: 7250432448065081678}
   m_Layer: 0
   m_Name: Tutorial Manager
   m_TagString: Untagged
@@ -320,7 +320,7 @@ Transform:
   - {fileID: 7399270451897465105}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &3013890725697593746
+--- !u!114 &7250432448065081678
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -329,22 +329,76 @@ MonoBehaviour:
   m_GameObject: {fileID: 7187480845623899683}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bdb2235b6e45e7e4a85ea49a91e9bb97, type: 3}
+  m_Script: {fileID: 11500000, guid: fcb8a97fd60b0fa4686fd4b68bf6fbb2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TutorialManager
-  mascotSettings:
-    mascotMover: {fileID: 4938137836108460407}
-    mascotTransform: {fileID: 4963331386332117243}
-    mascotText: {fileID: 2756528579975140111}
-    yIdleSpeed: 2
-    yIdleAmplitude: 0.05
-  awsdTutorial:
-    mascotPosition: {fileID: 0}
-    mascotTextPosition: {fileID: 0}
-    mascotDialogues:
-    - {fileID: 0}
-    - {fileID: 0}
-  timeForEachLetter: 0.05
+  mascotController: {fileID: 2451364668924045033}
+  steps:
+  - stepId: Welcome
+    mascotTargetPosition: {fileID: 4938137836108460407}
+    textBoxTargetPosition: {fileID: 3217876424232810313}
+    textBoxTargetSize: {x: 477.801, y: 170}
+    dialogueLines:
+    - text: bem vindo ao esse jogo aqui meus amigos
+      extraWaitAfterLine: 2
+    - text: "Quantas vezes sao necessarias\t\t"
+      extraWaitAfterLine: 2
+    - text: Quantas quiser
+      extraWaitAfterLine: 2
+    - text: bla bla bla
+      extraWaitAfterLine: 2
+    - text: ...
+      extraWaitAfterLine: 2
+    - text: Agora, caminhe entre na loja para prosseguir
+      extraWaitAfterLine: 2
+    timePerLetterOverride: 0
+    completionMode: 2
+    requiredEventId: EnteredStore
+    delayBeforeNextStep: 2
+  - stepId: EnteredStore
+    mascotTargetPosition: {fileID: 4938137836108460407}
+    textBoxTargetPosition: {fileID: 3217876424232810313}
+    textBoxTargetSize: {x: 477.801, y: 170}
+    dialogueLines:
+    - text: ACabou de entrar na loja
+      extraWaitAfterLine: 1
+    - text: "agora caminhe em dire\xE7\xE3o ao computador"
+      extraWaitAfterLine: 2
+    - text: e use
+      extraWaitAfterLine: 2
+    timePerLetterOverride: 0
+    completionMode: 2
+    requiredEventId: EnteredComputer
+    delayBeforeNextStep: 1
+  - stepId: EnteredComputer
+    mascotTargetPosition: {fileID: 4938137836108460407}
+    textBoxTargetPosition: {fileID: 3217876424232810313}
+    textBoxTargetSize: {x: 477.801, y: 170}
+    dialogueLines:
+    - text: Agora que entrou no pc, use [A] e [D] para navegar e [ENTER] para selecionar.
+      extraWaitAfterLine: 3
+    - text: "use o dinheiro que voc\xEA tem para comprar uma prateleira e um produto
+        para vender."
+      extraWaitAfterLine: 3
+    timePerLetterOverride: 0
+    completionMode: 2
+    requiredEventId: BoughtFurnitureAndFood
+    delayBeforeNextStep: 1
+  - stepId: BoughtFurnitureAndFood
+    mascotTargetPosition: {fileID: 4938137836108460407}
+    textBoxTargetPosition: {fileID: 3217876424232810313}
+    textBoxTargetSize: {x: 477.801, y: 170}
+    dialogueLines:
+    - text: "Agora que voc\xEA comprou tudo que precisava, aperte [ESC] para sair
+        do pc"
+      extraWaitAfterLine: 3
+    - text: depois disso pegue as caixa bla bla
+      extraWaitAfterLine: 3
+    timePerLetterOverride: 0
+    completionMode: 2
+    requiredEventId: 
+    delayBeforeNextStep: 1
+  startAutomatically: 1
 --- !u!1 &7888318325625049025
 GameObject:
   m_ObjectHideFlags: 0
@@ -456,6 +510,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4938137836108460407}
+  - component: {fileID: 2451364668924045033}
   m_Layer: 0
   m_Name: MascotMover
   m_TagString: Untagged
@@ -484,3 +539,47 @@ RectTransform:
   m_AnchoredPosition: {x: -841, y: 384}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &2451364668924045033
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8052351375827762701}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e4d10814694cdf74182c1b206fcbb34f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MascotController
+  mascotRoot: {fileID: 4938137836108460407}
+  mascotVisual: {fileID: 4963331386332117243}
+  textBoxRect: {fileID: 3217876424232810313}
+  dialogueText: {fileID: 2756528579975140111}
+  idleSpeed: 2
+  idleAmplitude: 10
+  moveDuration: 0.5
+  moveEase:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  defaultTimePerLetter: 0.03

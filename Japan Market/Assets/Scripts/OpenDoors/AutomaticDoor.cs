@@ -17,6 +17,12 @@ public class AutomaticDoor : MonoBehaviour
    bool playerInside;
    float closeTimer;
 
+   TutorialManager _tutorialManager;
+
+    void Start()
+    {
+        _tutorialManager = ServiceLocator.Get<TutorialManager>();
+    }
     private void Update()
     {
         if (!playerInside)
@@ -51,6 +57,9 @@ public class AutomaticDoor : MonoBehaviour
 
     private void OpenDoors()
     {
+
+        if(_tutorialManager)
+        _tutorialManager.NotifyGameEvent("EnteredStore");
         leftTween?.Kill();
         rightTween?.Kill();
 

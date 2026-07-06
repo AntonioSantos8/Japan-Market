@@ -1,5 +1,6 @@
 
 using Unity.Cinemachine;
+using UnityEditor.Localization.Plugins.XLIFF.V20;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -10,10 +11,18 @@ public class Computer : InteractableBase
     [SerializeField] CinemachineCamera computerCamera;
     [SerializeField] GameObject reticle;
     public UnityEvent onEnterComputer, onLeaveComputer;
+    TutorialManager _tutorialManager;
+   
+    void Start(){
+        _tutorialManager = ServiceLocator.Get<TutorialManager>();
+    }
     public override void Interact()
     {
         if (!isInComputer)
         {
+            if(_tutorialManager)
+                _tutorialManager.NotifyGameEvent("EnteredComputer");
+
             computerScreen.SetActive(true);
             computerCamera.Priority = 5;
             isInComputer = true;
