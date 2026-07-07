@@ -1071,6 +1071,18 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+      - m_Target: {fileID: 6872590404485187007}
+        m_TargetAssemblyTypeName: NumbersDisplay, Assembly-CSharp
+        m_MethodName: GoToReturnPos
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &2334114011733160010
 GameObject:
   m_ObjectHideFlags: 0
@@ -2214,6 +2226,10 @@ MonoBehaviour:
   anchor: {fileID: 291153512167312465}
   viewDistance: 3
   gridSize: 0.1
+  storeArea: {fileID: 0}
+  scrollSpeed: 15
+  minViewDistance: 1.5
+  maxViewDistance: 10
 --- !u!1 &3661409379689623403
 GameObject:
   m_ObjectHideFlags: 0
@@ -2818,10 +2834,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NumbersDisplay
   _displayText: {fileID: 618763784532120839}
-  normalPos: {fileID: 0}
-  returnPos: {fileID: 0}
-  transitionTime: 0
-  ease: 0
+  normalPos: {fileID: 1662402134932100056}
+  returnPos: {fileID: 5441201504476576011}
+  transitionTime: 0.3
+  ease: 4
 --- !u!1 &5068937073932091505
 GameObject:
   m_ObjectHideFlags: 0
@@ -4156,6 +4172,18 @@ MonoBehaviour:
       - m_Target: {fileID: 7947478411118504597}
         m_TargetAssemblyTypeName: PriceDisplayUI, Assembly-CSharp
         m_MethodName: LockMouse
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 6872590404485187007}
+        m_TargetAssemblyTypeName: NumbersDisplay, Assembly-CSharp
+        m_MethodName: GoToReturnPos
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -5563,6 +5591,10 @@ MonoBehaviour:
   anchor: {fileID: 6265047335781970512}
   viewDistance: 4
   gridSize: 0.5
+  storeArea: {fileID: 0}
+  scrollSpeed: 15
+  minViewDistance: 1.5
+  maxViewDistance: 10
 --- !u!114 &4100640894405694350
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6270,6 +6302,18 @@ MonoBehaviour:
         m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
         m_MethodName: SetActive
         m_Mode: 6
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 1
+        m_CallState: 2
+      - m_Target: {fileID: 6872590404485187007}
+        m_TargetAssemblyTypeName: NumbersDisplay, Assembly-CSharp
+        m_MethodName: ShowNumbers
+        m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine

@@ -15,6 +15,8 @@ public class MascotController : MonoBehaviour
 
     [SerializeField] private float idleSpeed = 2f;
     [SerializeField] private float idleAmplitude = 10f;
+    [SerializeField] private float idleRotationSpeed = 2f;
+    [SerializeField] private float idleRotationAmplitude = 10f;
 
 
     [SerializeField] private float moveDuration = 0.5f;
@@ -23,6 +25,7 @@ public class MascotController : MonoBehaviour
     [SerializeField] private float defaultTimePerLetter = 0.03f;
 
     private Vector2 _idleBasePos;
+    private float _idleBaseZRotation;
     private Coroutine _moveRoutine;
     private Coroutine _typeRoutine;
     private bool _skipRequested;
@@ -32,34 +35,70 @@ public class MascotController : MonoBehaviour
 
    
     public event Action OnDialogueSequenceFinished;
-    Image visual;
-    [SerializeField] Sprite defaultSprite;
-    [SerializeField] Sprite[] talkingSprites;
-    int currentSpriteIndex;
-    [SerializeField] float timeBetweenTalkingSprites;
-    Coroutine talkingCoroutine;
+    private Image visual;
+    [SerializeField] private Sprite defaultSprite;
+    [SerializeField] private Sprite[] talkingSprites;
+    private int currentSpriteIndex = -1;
+    [SerializeField] private float timeBetweenTalkingSprites = 0.08f;
+    private Coroutine talkingCoroutine;
+
     private void Awake()
     {
         if (mascotVisual != null)
-            _idleBasePos = mascotVisual.anchoredPosition;
-    }
-    IEnumerator StartTalkingCoroutine() 
-    {
-        
-        yield return new WaitForSeconds(timeBetweenTalkingSprites);
-        int newSprite = 0;
-        do 
         {
-            newSprite = UnityEngine.Random.Range(0, talkingSprites.Length);
-                
-        } while (newSprite == currentSpriteIndex);
-        visual.sprite = talkingSprites[currentSpriteIndex];
-        
-    
-    
+            _idleBasePos = mascotVisual.anchoredPosition;
+            _idleBaseZRotation = mascotVisual.localEulerAngles.z;
+            visual = mascotVisual.GetComponent<Image>();
+        }
     }
-    public void StartTalking(){ talkingCoroutine = StartCoroutine(StartTalkingCoroutine()); }
-    public void StopTalking() { StopCoroutine(talkingCoroutine); visual.sprite = defaultSprite; }
+
+    private IEnumerator StartTalkingCoroutine()
+    {
+        if (visual == null || talkingSprites == null || talkingSprites.Length == 0)
+            yield break;
+
+        while (true)
+        {
+            int newSprite;
+            if (talkingSprites.Length == 1)
+            {
+                newSprite = 0;
+            }
+            else
+            {
+                do
+                {
+                    newSprite = UnityEngine.Random.Range(0, talkingSprites.Length);
+                } while (newSprite == currentSpriteIndex);
+            }
+
+            currentSpriteIndex = newSprite;
+            visual.sprite = talkingSprites[currentSpriteIndex];
+            yield return new WaitForSeconds(timeBetweenTalkingSprites);
+        }
+    }
+
+    public void StartTalking()
+    {
+        if (talkingCoroutine != null)
+            StopCoroutine(talkingCoroutine);
+
+        talkingCoroutine = StartCoroutine(StartTalkingCoroutine());
+    }
+
+    public void StopTalking()
+    {
+        if (talkingCoroutine != null)
+        {
+            StopCoroutine(talkingCoroutine);
+            talkingCoroutine = null;
+        }
+
+        currentSpriteIndex = -1;
+        if (visual != null && defaultSprite != null)
+            visual.sprite = defaultSprite;
+    }
+
     private void Update()
     {
         if (mascotVisual == null) return;
@@ -67,6 +106,9 @@ public class MascotController : MonoBehaviour
        
         float y = Mathf.Sin(Time.time * idleSpeed) * idleAmplitude;
         mascotVisual.anchoredPosition = new Vector2(_idleBasePos.x, _idleBasePos.y + y);
+
+        float z = Mathf.Sin(Time.time * idleRotationSpeed) * idleRotationAmplitude;
+        mascotVisual.localEulerAngles = new Vector3(0f, 0f, _idleBaseZRotation + z);
     }
 
   
@@ -111,7 +153,6 @@ public class MascotController : MonoBehaviour
     public void PlayDialogueSequence(DialogueLine[] lines, float timePerLetterOverride = -1f)
     {
         StopDialogueSequence();
-        StartTalking();
         float speed = timePerLetterOverride > 0f ? timePerLetterOverride : defaultTimePerLetter;
         _typeRoutine = StartCoroutine(TypeSequenceRoutine(lines, speed));
     }
@@ -151,6 +192,7 @@ public class MascotController : MonoBehaviour
             sb.Clear();
             dialogueText.text = string.Empty;
             _skipRequested = false;
+            StartTalking();
 
             string fullText = lines[i].text ?? string.Empty;
 
@@ -171,10 +213,12 @@ public class MascotController : MonoBehaviour
 
             dialogueText.text = fullText;
             _skipRequested = false;
+            StopTalking();
 
             yield return new WaitForSeconds(lines[i].extraWaitAfterLine);
         }
 
+        StopTalking();
         _typeRoutine = null;
         OnDialogueSequenceFinished?.Invoke();
     }

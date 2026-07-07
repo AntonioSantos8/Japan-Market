@@ -86,6 +86,10 @@ public class NpcManager : MonoBehaviour
 
         GameObject npc = Instantiate(_npcPrefabs[idx], spawnPos, _spawnPoint.rotation);
         _activeNpcs.Add(npc);
+
+        TutorialManager tutorialManager = ServiceLocator.Get<TutorialManager>();
+        if (tutorialManager != null)
+            tutorialManager.NotifyGameEvent("ClientCame");
     }
 
     /// <summary>Remove entradas nulas (NPCs já destruídos) da lista.</summary>

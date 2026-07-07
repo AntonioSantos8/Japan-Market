@@ -295,6 +295,7 @@ public void RemoveItem(int groupIndex, int spaceIndex)
     }
 
          Items type = box.GetBoxType();
+        bool placedAnyItemFromBox = false;
         box.transform.root.DOPunchScale(-Vector3.right * .03f, .3f, 2);
         while (true)
         {
@@ -313,7 +314,17 @@ public void RemoveItem(int groupIndex, int spaceIndex)
 
                 break;
             }
+
+            placedAnyItemFromBox = true;
         }
+
+        if (placedAnyItemFromBox)
+        {
+            TutorialManager tutorialManager = ServiceLocator.Get<TutorialManager>();
+            if (tutorialManager != null)
+                tutorialManager.NotifyGameEvent("HasPutFood");
+        }
+
         OnLookAtWithRestriction();
 
 visualDelay = 0;

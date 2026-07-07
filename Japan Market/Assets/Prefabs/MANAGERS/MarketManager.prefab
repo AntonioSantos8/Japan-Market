@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3764650471404870928}
   - component: {fileID: 6840938327871740964}
+  - component: {fileID: 430691683665003098}
   m_Layer: 0
   m_Name: MarketManager
   m_TagString: Untagged
@@ -46,3 +47,34 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MarketManager
   clients: 0
   moneyText: {fileID: 0}
+--- !u!114 &430691683665003098
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8212743243116777077}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2d4d233b80bc1904182832d3217a6ed8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::KonamiCode
+  allCodes:
+  - sequence: 660000006600000066000000
+    onComplete:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 6840938327871740964}
+          m_TargetAssemblyTypeName: MarketManager, Assembly-CSharp
+          m_MethodName: Earn_Money
+          m_Mode: 4
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 7000
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+  timeToResetSequence: 0.6
+  timer: 0

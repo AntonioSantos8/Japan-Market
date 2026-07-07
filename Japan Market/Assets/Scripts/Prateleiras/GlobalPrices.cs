@@ -52,7 +52,14 @@ public class GlobalPrices : MonoBehaviour
     }
     public void Apply()
     {
+        if (currentDisplayType == Items.None)
+            return;
+
         SetCurrentPrice(_keyboarNumbers.Apply(currentDisplayType) , currentDisplayType);
+
+        TutorialManager tutorialManager = ServiceLocator.Get<TutorialManager>();
+        if (tutorialManager != null)
+            tutorialManager.NotifyGameEvent("HasPutPrice");
 
        SetCurrentDisplayNone();
     }

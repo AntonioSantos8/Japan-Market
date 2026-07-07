@@ -42,10 +42,12 @@ public class ItemRaycastController : MonoBehaviour
     [SerializeField] float reticleTweenTime;
     [SerializeField] Ease easeReticleScale;
     bool generalCanInteract = true;
+    bool isReticleFocused;
     public void SetGeneralCanInteract(bool to){ generalCanInteract = to;}
 
     float currentHoldTime;
     InteractableBase currentHoldingInteractable;
+    bool waitMouseReleaseAfterInteract;
 
     bool useItemRotation;
 
@@ -95,6 +97,10 @@ public class ItemRaycastController : MonoBehaviour
     }
     public void ChangeNormalReticleState(bool to)
     {   
+        if (isReticleFocused == to)
+            return;
+
+        isReticleFocused = to;
         normalReticleScleTween?.Kill();
 
         if(to)
@@ -127,12 +133,19 @@ public class ItemRaycastController : MonoBehaviour
                 {
                     lastLookedInteractable?.OnLookAway();
                     lastLookedInteractable = interactable;
-                    bool canLookAt = lastLookedInteractable.OnLookAt();
-                    canInteract = canLookAt;
-                    if(canLookAt)
-                    {
-                        ChangeNormalReticleState(true);
-                    }
+                }
+
+                bool canLookAtNow = interactable.OnLookAt();
+                canInteract = canLookAtNow;
+                ChangeNormalReticleState(canLookAtNow);
+
+                if (!Input.GetMouseButton(0))
+                    waitMouseReleaseAfterInteract = false;
+
+                if (waitMouseReleaseAfterInteract)
+                {
+                    ResetHold();
+                    return;
                 }
 
                 if (Input.GetMouseButton(0) && canInteract && generalCanInteract)
@@ -153,6 +166,7 @@ public class ItemRaycastController : MonoBehaviour
                         currentHoldTime = 0f;
                         holdImage.fillAmount = 0f;
                         currentHoldingInteractable = null;
+                        waitMouseReleaseAfterInteract = true;
                     }
                 }
                 else
@@ -204,6 +218,7 @@ public class ItemRaycastController : MonoBehaviour
             lastLookedInteractable = null;
         }
 
+        waitMouseReleaseAfterInteract = false;
         ResetHold();
     }
 

@@ -178,6 +178,8 @@ public class FurnitureManager : MonoBehaviour
             return;
         }
 
+        bool wasMovingExistingFurniture = _tempSaveData != null;
+
         GameObject obj = Instantiate(_currentSelected.prefab, _activeGhost.transform.position, _activeGhost.transform.rotation);
         obj.transform.SetParent(furnitureContainer);
 
@@ -198,6 +200,15 @@ public class FurnitureManager : MonoBehaviour
         HasFurnitureInInventory = false;
         Destroy(_activeGhost);
         _activeGhost = null;
+
+        TutorialManager tutorialManager = ServiceLocator.Get<TutorialManager>();
+        if (tutorialManager != null)
+        {
+            if (wasMovingExistingFurniture)
+                tutorialManager.NotifyGameEvent("HasMovedFurniture");
+            else
+                tutorialManager.NotifyGameEvent("HasPutFurniture");
+        }
 
         ToggleBuildingMode();
     }
