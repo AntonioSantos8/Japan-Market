@@ -22,25 +22,28 @@ public class ConstructionUI : MonoBehaviour
     {
         bool isBuilding = _manager.IsBuildingMode;
         panelMode.SetActive(isBuilding);
+
         if (isBuilding && _manager.HasFurnitureInInventory)
-        {
             SetText();
-        }
         else
-        {
             textCurrentItem.text = "Nenhum selecionado";
-        }
     }
+
     public void SetText()
     {
-        
         var current = _manager.GetCurrentSelected();
         if (current == null)
         {
             textCurrentItem.text = "Nenhum selecionado";
-            statusIndicator.color = inactiveColor;
+            if (statusIndicator != null) statusIndicator.color = inactiveColor;
             return;
         }
-        textCurrentItem.text = "Item: " + current.furnitureName;
+
+        int count = _manager.InventoryCount;
+        textCurrentItem.text = count > 1
+            ? $"Item: {current.furnitureName} ({count} restantes)"
+            : $"Item: {current.furnitureName}";
+
+        if (statusIndicator != null) statusIndicator.color = activeColor;
     }
 }

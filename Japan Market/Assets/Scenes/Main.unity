@@ -429,9 +429,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5c8bca95f7c947b4db5fb152a0d693d8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: com.cqf.urpvolumetricfog.runtime::VolumetricAdditionalLight
-  anisotropy: -0.085
-  scattering: 3.9
-  radius: 0.383
 --- !u!114 &27485950
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -17996,9 +17993,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5c8bca95f7c947b4db5fb152a0d693d8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: com.cqf.urpvolumetricfog.runtime::VolumetricAdditionalLight
-  anisotropy: -0.204
-  scattering: 2.87
-  radius: 0.06
 --- !u!114 &176571106
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -34465,9 +34459,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5c8bca95f7c947b4db5fb152a0d693d8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: com.cqf.urpvolumetricfog.runtime::VolumetricAdditionalLight
-  anisotropy: -0.204
-  scattering: 2.87
-  radius: 0.06
 --- !u!114 &293167469
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -45350,6 +45341,10 @@ PrefabInstance:
     - target: {fileID: 2146316534762479059, guid: 4276e54a27b623241b6173dfcd35efa5, type: 3}
       propertyPath: m_Name
       value: ConstructionUI(CANVAS)
+      objectReference: {fileID: 0}
+    - target: {fileID: 3802850003202511523, guid: 4276e54a27b623241b6173dfcd35efa5, type: 3}
+      propertyPath: m_SortingOrder
+      value: 5
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -64092,9 +64087,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5c8bca95f7c947b4db5fb152a0d693d8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: com.cqf.urpvolumetricfog.runtime::VolumetricAdditionalLight
-  anisotropy: -0.204
-  scattering: 2.87
-  radius: 0.06
 --- !u!114 &737432423
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -81559,9 +81551,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5c8bca95f7c947b4db5fb152a0d693d8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: com.cqf.urpvolumetricfog.runtime::VolumetricAdditionalLight
-  anisotropy: -0.204
-  scattering: 2.87
-  radius: 0.06
 --- !u!114 &909881426
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -110001,9 +109990,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5c8bca95f7c947b4db5fb152a0d693d8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: com.cqf.urpvolumetricfog.runtime::VolumetricAdditionalLight
-  anisotropy: 0.07
-  scattering: 1
-  radius: 0.2
 --- !u!114 &1107913550
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -154913,9 +154899,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5c8bca95f7c947b4db5fb152a0d693d8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: com.cqf.urpvolumetricfog.runtime::VolumetricAdditionalLight
-  anisotropy: -0.085
-  scattering: 3.02
-  radius: 0.383
 --- !u!114 &1385887533
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -170377,9 +170360,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5c8bca95f7c947b4db5fb152a0d693d8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: com.cqf.urpvolumetricfog.runtime::VolumetricAdditionalLight
-  anisotropy: 0.25
-  scattering: 9.71
-  radius: 0.333
 --- !u!114 &1689110052
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -170960,6 +170940,26 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1334868011}
     m_Modifications:
+    - target: {fileID: 737589157823440639, guid: 3ff15a23b88d41e41a4f99d711feb21b, type: 3}
+      propertyPath: itemVisuals.Array.size
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 737589157823440639, guid: 3ff15a23b88d41e41a4f99d711feb21b, type: 3}
+      propertyPath: itemVisuals.Array.data[2].icon
+      value: 
+      objectReference: {fileID: 21300000, guid: 43b770c577333cf4b964432dfa2d06a0, type: 3}
+    - target: {fileID: 737589157823440639, guid: 3ff15a23b88d41e41a4f99d711feb21b, type: 3}
+      propertyPath: itemVisuals.Array.data[2].type
+      value: 14
+      objectReference: {fileID: 0}
+    - target: {fileID: 737589157823440639, guid: 3ff15a23b88d41e41a4f99d711feb21b, type: 3}
+      propertyPath: itemVisuals.Array.data[3].icon
+      value: 
+      objectReference: {fileID: 21300000, guid: beef30f22984c9549a116a9348e67d1f, type: 3}
+    - target: {fileID: 737589157823440639, guid: 3ff15a23b88d41e41a4f99d711feb21b, type: 3}
+      propertyPath: itemVisuals.Array.data[3].type
+      value: 10
+      objectReference: {fileID: 0}
     - target: {fileID: 1537647924204695574, guid: 3ff15a23b88d41e41a4f99d711feb21b, type: 3}
       propertyPath: m_Name
       value: ItemManager
