@@ -3,12 +3,6 @@ using DG.Tweening;
 using TMPro;
 using UnityEngine;
 
-/// <summary>
-/// Exibe frases do NPC de acordo com o humor atual.
-/// Escuta o evento OnHumorChanged do NpcInstance para reagir imediatamente
-/// quando o humor muda (ex: NPC fica bravo após troco errado).
-/// Também expõe SayPhrase/SayEvent para falas pontuais (loja suja, impaciência, etc).
-/// </summary>
 [RequireComponent(typeof(NpcInstance))]
 public class NpcPhrases : MonoBehaviour
 {
@@ -22,6 +16,7 @@ public class NpcPhrases : MonoBehaviour
 
     private NpcInstance _npcInstance;
     private Coroutine _speakRoutine;
+    private string _pendingPhrase;
 
     private void Awake()
     {
@@ -40,55 +35,47 @@ public class NpcPhrases : MonoBehaviour
 
     private void Start()
     {
-        // Garante que o texto começa invisível
-        if (_phraseText != null)
-            _phraseText.alpha = 0f;
-
+        if (_phraseText != null) _phraseText.alpha = 0f;
         _speakRoutine = StartCoroutine(SpeakRoutine());
     }
 
     private void OnDestroy()
     {
-        // Evita tweens órfãos quando o NPC é destruído no meio de um fade
-        if (_phraseText != null)
-            _phraseText.DOKill();
+        if (_phraseText != null) _phraseText.DOKill();
     }
 
-    // ─── API pública de falas pontuais ────────────────────────────────────────
+    // ─── API pública ──────────────────────────────────────────────────────────
 
-    /// <summary>Interrompe a fala atual e exibe o texto informado.</summary>
+    /// <summary>
+    /// Interrompe qualquer fala em andamento e exibe o texto imediatamente.
+    /// Após exibir, o ciclo normal de falas de humor retoma sozinho.
+    /// </summary>
     public void SayPhrase(string text)
     {
         if (string.IsNullOrEmpty(text)) return;
 
-        if (_speakRoutine != null)
-            StopCoroutine(_speakRoutine);
+        _pendingPhrase = text;
 
-        _speakRoutine = StartCoroutine(ShowPhrase(text));
+        if (_speakRoutine != null) StopCoroutine(_speakRoutine);
+        if (_phraseText != null) { _phraseText.DOKill(); _phraseText.alpha = 0f; }
+
+        _speakRoutine = StartCoroutine(SpeakRoutine());
     }
 
-    /// <summary>Fala uma frase aleatória associada ao evento (se existir no NpcData).</summary>
+    /// <summary>Fala uma frase aleatória associada ao evento (interrompe qualquer fala boa).</summary>
     public void SayEvent(NpcEvent evt)
     {
         if (_npcInstance.data == null) return;
-
         string phrase = _npcInstance.data.GetRandomEventPhrase(evt);
-        if (!string.IsNullOrEmpty(phrase))
-            SayPhrase(phrase);
+        if (!string.IsNullOrEmpty(phrase)) SayPhrase(phrase);
     }
 
-    // ─── Reação imediata a mudança de humor ───────────────────────────────────
+    // ─── Reação a mudança de humor ────────────────────────────────────────────
 
-    /// <summary>
-    /// Quando o humor muda, reinicia o ciclo de fala imediatamente
-    /// para que o NPC diga algo condizente com o novo estado.
-    /// </summary>
     private void OnHumorChanged(NpcHumor newHumor)
     {
-        if (_speakRoutine != null)
-            StopCoroutine(_speakRoutine);
-
-        _speakRoutine = StartCoroutine(SpeakOnce(immediate: true));
+        string phrase = GetPhraseForCurrentHumor();
+        if (!string.IsNullOrEmpty(phrase)) SayPhrase(phrase);
     }
 
     // ─── Ciclo de falas ───────────────────────────────────────────────────────
@@ -96,37 +83,40 @@ public class NpcPhrases : MonoBehaviour
     private IEnumerator SpeakRoutine()
     {
         while (true)
-            yield return StartCoroutine(SpeakOnce(immediate: false));
-    }
-
-    private IEnumerator SpeakOnce(bool immediate)
-    {
-        if (!immediate)
-            yield return new WaitForSeconds(_silenceDuration);
-
-        string phrase = GetPhraseForCurrentHumor();
-        if (string.IsNullOrEmpty(phrase))
         {
-            yield return new WaitForSeconds(_displayDuration);
-            yield break;
-        }
+            // Frase pendente tem prioridade total — exibe imediatamente sem esperar silêncio
+            if (_pendingPhrase != null)
+            {
+                string phrase = _pendingPhrase;
+                _pendingPhrase = null;
+                yield return StartCoroutine(ShowPhrase(phrase));
+            }
+            else
+            {
+                yield return new WaitForSeconds(_silenceDuration);
 
-        yield return StartCoroutine(ShowPhrase(phrase));
+                // Se um evento chegou durante o silêncio, mostra ele antes da fala de humor
+                if (_pendingPhrase != null) continue;
+
+                string phrase = GetPhraseForCurrentHumor();
+                if (!string.IsNullOrEmpty(phrase))
+                    yield return StartCoroutine(ShowPhrase(phrase));
+            }
+        }
     }
 
-    /// <summary>Fade in → exibe → fade out do texto informado.</summary>
     private IEnumerator ShowPhrase(string text)
     {
         if (_phraseText == null) yield break;
 
-        _phraseText.text = text;
         _phraseText.DOKill();
+        _phraseText.alpha = 0f;
+        _phraseText.text = text;
+
         yield return _phraseText.DOFade(1f, _fadeDuration).WaitForCompletion();
-
         yield return new WaitForSeconds(_displayDuration);
-
         yield return _phraseText.DOFade(0f, _fadeDuration)
-            .OnComplete(() => _phraseText.text = "")
+            .OnComplete(() => _phraseText.text = string.Empty)
             .WaitForCompletion();
     }
 
