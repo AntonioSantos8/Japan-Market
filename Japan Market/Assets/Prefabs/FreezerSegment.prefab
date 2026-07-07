@@ -541,6 +541,7 @@ GameObject:
   - component: {fileID: 5064269991103311327}
   - component: {fileID: 7163060545213404967}
   - component: {fileID: 6649237281257939862}
+  - component: {fileID: 4614609975141823983}
   m_Layer: 7
   m_Name: FreezerSegment
   m_TagString: Untagged
@@ -690,7 +691,7 @@ MonoBehaviour:
     - {fileID: 5555338857203084519}
     - {fileID: 2603041066184752232}
     spaces: []
-  - type: 6
+  - type: 7
     allItems:
     - {fileID: 4048031001319568906}
     - {fileID: 6519298343979868850}
@@ -701,7 +702,7 @@ MonoBehaviour:
     - {fileID: 1025295936223053034}
     - {fileID: 7355605202231258833}
     spaces: []
-  - type: 13
+  - type: 14
     allItems:
     - {fileID: 4942965479801025121}
     - {fileID: 8797002220201337149}
@@ -712,7 +713,7 @@ MonoBehaviour:
     - {fileID: 9174587200307867811}
     - {fileID: 851096660392091563}
     spaces: []
-  - type: 15
+  - type: 16
     allItems:
     - {fileID: 4312079467207493415}
     - {fileID: 7182403372846137617}
@@ -723,7 +724,7 @@ MonoBehaviour:
     - {fileID: 4931754754271080109}
     - {fileID: 8321245782960630978}
     spaces: []
-  - type: 14
+  - type: 15
     allItems:
     - {fileID: 1095723589858189701}
     - {fileID: 4545534642115626506}
@@ -789,6 +790,24 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &4614609975141823983
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8080207764577349684}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5fea29bb7c508c244a1f805a5fd3fc4d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Outline
+  outlineMode: 0
+  outlineColor: {r: 1, g: 1, b: 1, a: 1}
+  outlineWidth: 2
+  precomputeOutline: 0
+  bakeKeys: []
+  bakeValues: []
 --- !u!1 &8375868021438055352
 GameObject:
   m_ObjectHideFlags: 0
