@@ -55,6 +55,7 @@ public class NpcTraject : MonoBehaviour
 
     private bool _isLeaving = false;
     private Coroutine _queueWaiter;
+    TutorialManager _tutorialManager;
 
     // ─── Unity ────────────────────────────────────────────────────────────────
 
@@ -63,6 +64,7 @@ public class NpcTraject : MonoBehaviour
         _agent = GetComponent<NavMeshAgent>();
         _npcInstance = GetComponent<NpcInstance>();
         _npcPhrases = GetComponent<NpcPhrases>();
+        _tutorialManager = ServiceLocator.Get<TutorialManager>();
     }
 
     private void Start()
@@ -100,11 +102,12 @@ public class NpcTraject : MonoBehaviour
 
             if (isCurrentCustomer && HasArrivedAtQueueTarget)
             {
+                _tutorialManager?.NotifyGameEvent("NpcAtCashRegister");
+
                 if (!_itemsPlaced)
                     PlaceItemsOnCounter();
 
-                // A paciência começa a contar assim que o NPC chega na frente do caixa,
-                // mesmo antes de terminar de colocar os itens no balcão.
+                
                 timeWaitingAtFront += 0.5f;
 
                 if (timeWaitingAtFront >= nextImpatientAt)
@@ -133,8 +136,7 @@ public class NpcTraject : MonoBehaviour
 
     private IEnumerator UnloadInventoryRoutine()
     {
-        // Snapshot ANTES de qualquer yield — se o NPC desistir no meio do descarregamento,
-        // ainda sabemos exatamente o que ele estava comprando.
+       
         _unloadedItems.Clear();
         _unloadedItems.AddRange(_inventory);
 
@@ -229,8 +231,6 @@ public class NpcTraject : MonoBehaviour
         }
     }
 
-    // ─── Rotina principal de compras ──────────────────────────────────────────
-
     private IEnumerator ShoppingRoutine()
     {
         yield return new WaitForSeconds(Random.Range(2f, 5f));
@@ -273,7 +273,6 @@ public class NpcTraject : MonoBehaviour
 
                 ReactToDirtyStore();
 
-                // Loja suja demais: o NPC desiste do resto das compras e vai embora.
                 if (Clean.ActiveDustCount >= _dirtyLeaveThreshold)
                 {
                     Debug.Log("[NPC] Loja suja demais, indo embora.");
@@ -353,8 +352,7 @@ public class NpcTraject : MonoBehaviour
         Destroy(gameObject);
     }
 
-    // ─── Fila do caixa ────────────────────────────────────────────────────────
-
+   
     public void SetQueueTarget(Transform target, int index)
     {
         _queueIndex = index;
