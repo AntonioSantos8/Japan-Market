@@ -12,18 +12,27 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0ccc49a9a728ba54da2aa144c094814f, type: 3}
   m_Name: NPC
   m_EditorClassIdentifier: Assembly-CSharp::NpcData
-  itemCount: 0
-  npcHumor: 0
+  maxItemsToBuy: 5
   dialogues:
   - humor: 0
     phrases:
-    - Oi (feliz)
-    - tchau (feliz)
-  - humor: 1
-    phrases:
-    - Oi (angry)
-    - tchau (angry)
+    - This is a nice store!
   - humor: 2
     phrases:
-    - Oi (neutro)
-    - tchau (neutro)
+    - That store sucks!
+  eventDialogues:
+  - eventType: 0
+    phrases:
+    - This store are too dirty!!!
+  - eventType: 1
+    phrases:
+    - This store didn't have what I wanted!!!
+  - eventType: 2
+    phrases:
+    - It's taking so long!
+  - eventType: 4
+    phrases:
+    - Out of patience!
+  - eventType: 5
+    phrases:
+    - Those prices are too high!!!

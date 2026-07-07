@@ -17,6 +17,7 @@ public class NpcPhrases : MonoBehaviour
     private NpcInstance _npcInstance;
     private Coroutine _speakRoutine;
     private string _pendingPhrase;
+    private bool _negativeEventFired;
 
     private void Awake()
     {
@@ -62,12 +63,16 @@ public class NpcPhrases : MonoBehaviour
         _speakRoutine = StartCoroutine(SpeakRoutine());
     }
 
-    /// <summary>Fala uma frase aleatória associada ao evento (interrompe qualquer fala boa).</summary>
+    /// <summary>Fala uma frase aleatória associada ao evento (interrompe qualquer fala boa).
+    /// Eventos negativos fazem o NPC mudar para frases angry dali em diante.</summary>
     public void SayEvent(NpcEvent evt)
     {
         if (_npcInstance.data == null) return;
         string phrase = _npcInstance.data.GetRandomEventPhrase(evt);
-        if (!string.IsNullOrEmpty(phrase)) SayPhrase(phrase);
+        if (string.IsNullOrEmpty(phrase)) return;
+
+        if (!_negativeEventFired) _negativeEventFired = true;
+        SayPhrase(phrase);
     }
 
     // ─── Reação a mudança de humor ────────────────────────────────────────────
@@ -125,6 +130,7 @@ public class NpcPhrases : MonoBehaviour
     private string GetPhraseForCurrentHumor()
     {
         if (_npcInstance.data == null) return string.Empty;
-        return _npcInstance.data.GetRandomPhrase(_npcInstance.CurrentHumor);
+        NpcHumor humor = _negativeEventFired ? NpcHumor.Angry : _npcInstance.CurrentHumor;
+        return _npcInstance.data.GetRandomPhrase(humor);
     }
 }

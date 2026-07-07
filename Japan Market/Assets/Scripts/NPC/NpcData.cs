@@ -50,18 +50,44 @@ public class NpcData : ScriptableObject
         return "...";
     }
 
-    /// <summary>Retorna uma frase aleatória para o evento informado (vazio se não houver).</summary>
+    /// <summary>Retorna uma frase aleatória para o evento informado. Usa frases do ScriptableObject
+    /// se configuradas; caso contrário cai nos defaults hardcoded.</summary>
     public string GetRandomEventPhrase(NpcEvent evt)
     {
-        if (eventDialogues == null) return string.Empty;
-
-        foreach (var d in eventDialogues)
+        if (eventDialogues != null)
         {
-            if (d.eventType != evt) continue;
-            if (d.phrases == null || d.phrases.Length == 0) return string.Empty;
-
-            return d.phrases[Random.Range(0, d.phrases.Length)];
+            foreach (var d in eventDialogues)
+            {
+                if (d.eventType != evt) continue;
+                if (d.phrases != null && d.phrases.Length > 0)
+                    return d.phrases[Random.Range(0, d.phrases.Length)];
+            }
         }
-        return string.Empty;
+
+        return GetDefaultEventPhrase(evt);
+    }
+
+    private static readonly string[][] _defaultEventPhrases = new string[][]
+    {
+        // DirtyStore
+        new[] { "Que loja suja!", "Isso aqui é uma pocilga...", "Dá pra limpar isso aqui não?" },
+        // EmptyShelves
+        new[] { "Não tem nada que eu quero aqui.", "Prateleiras vazias de novo?", "Preciso ir em outro lugar." },
+        // CashierTooSlow
+        new[] { "Tô esperando há séculos!", "Isso é um absurdo, vou embora!", "Sem tempo pra isso." },
+        // ReturningItems
+        new[] { "Vou devolver isso aqui.", "Não vou levar mais nada.", "Melhor colocar de volta." },
+        // Impatient
+        new[] { "Alguém me atende?", "Quanto tempo ainda?", "Tô aqui esperando..." },
+        // PriceTooHigh
+        new[] { "Que preço absurdo!", "Tá muito caro isso!", "Nem pensar a esse preço." },
+    };
+
+    private static string GetDefaultEventPhrase(NpcEvent evt)
+    {
+        int index = (int)evt;
+        if (index < 0 || index >= _defaultEventPhrases.Length) return string.Empty;
+        var phrases = _defaultEventPhrases[index];
+        return phrases[Random.Range(0, phrases.Length)];
     }
 }
