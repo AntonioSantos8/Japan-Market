@@ -7,6 +7,7 @@ using UnityEngine;
 /// Exibe frases do NPC de acordo com o humor atual.
 /// Escuta o evento OnHumorChanged do NpcInstance para reagir imediatamente
 /// quando o humor muda (ex: NPC fica bravo após troco errado).
+/// Também expõe SayPhrase/SayEvent para falas pontuais (loja suja, impaciência, etc).
 /// </summary>
 [RequireComponent(typeof(NpcInstance))]
 public class NpcPhrases : MonoBehaviour
@@ -46,6 +47,36 @@ public class NpcPhrases : MonoBehaviour
         _speakRoutine = StartCoroutine(SpeakRoutine());
     }
 
+    private void OnDestroy()
+    {
+        // Evita tweens órfãos quando o NPC é destruído no meio de um fade
+        if (_phraseText != null)
+            _phraseText.DOKill();
+    }
+
+    // ─── API pública de falas pontuais ────────────────────────────────────────
+
+    /// <summary>Interrompe a fala atual e exibe o texto informado.</summary>
+    public void SayPhrase(string text)
+    {
+        if (string.IsNullOrEmpty(text)) return;
+
+        if (_speakRoutine != null)
+            StopCoroutine(_speakRoutine);
+
+        _speakRoutine = StartCoroutine(ShowPhrase(text));
+    }
+
+    /// <summary>Fala uma frase aleatória associada ao evento (se existir no NpcData).</summary>
+    public void SayEvent(NpcEvent evt)
+    {
+        if (_npcInstance.data == null) return;
+
+        string phrase = _npcInstance.data.GetRandomEventPhrase(evt);
+        if (!string.IsNullOrEmpty(phrase))
+            SayPhrase(phrase);
+    }
+
     // ─── Reação imediata a mudança de humor ───────────────────────────────────
 
     /// <summary>
@@ -79,8 +110,16 @@ public class NpcPhrases : MonoBehaviour
             yield return new WaitForSeconds(_displayDuration);
             yield break;
         }
+
+        yield return StartCoroutine(ShowPhrase(phrase));
+    }
+
+    /// <summary>Fade in → exibe → fade out do texto informado.</summary>
+    private IEnumerator ShowPhrase(string text)
+    {
         if (_phraseText == null) yield break;
-        _phraseText.text = phrase;
+
+        _phraseText.text = text;
         _phraseText.DOKill();
         yield return _phraseText.DOFade(1f, _fadeDuration).WaitForCompletion();
 

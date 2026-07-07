@@ -224,7 +224,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &6454177270870419240
 RectTransform:
   m_ObjectHideFlags: 0
@@ -272,7 +272,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: New Text
+  m_text: 
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -418,6 +418,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NpcTraject
   _waitTimeAtShelf: 3
+  _maxInventorySize: 6
+  _itemsPerFurnitureWeights: 010000000100000001000000020000000200000003000000
+  _queuePatienceSeconds: 90
+  _dirtyComplainThreshold: 5
+  _dirtyLeaveThreshold: 12
+  _impatientPhraseInterval: 25
+  _maxAcceptableItemPrice: 500
   _exitDestroyDistance: 1.5
 --- !u!114 &7355339312587925789
 MonoBehaviour:
@@ -431,7 +438,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 37c8c69aab636e54389b22a4684ba07c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NpcPhrases
-  _phraseText: {fileID: 0}
+  _phraseText: {fileID: 168700204537161844}
   _displayDuration: 5
   _fadeDuration: 0.8
   _silenceDuration: 2
@@ -447,7 +454,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e1b9905e4f2293142a474361f63a246d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NpcInstance
-  data: {fileID: 0}
+  data: {fileID: 11400000, guid: 5888b0bd416ca764d86feef5b162ce76, type: 2}
   paymentType: 0
   _humorCoins: 100
   _maxHumorCoins: 100

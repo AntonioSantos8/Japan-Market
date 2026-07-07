@@ -362,6 +362,29 @@ public class CashRegister : InteractableBase
         itemsQueue.Clear();
     }
 
+    /// <summary>
+    /// Limpa o caixa quando um cliente desiste da compra:
+    /// destrói os itens no balcão, zera o total e fecha as UIs de pagamento.
+    /// </summary>
+    public void ClearForCustomerLeave()
+    {
+        foreach (var item in itemsQueue)
+            if (item != null) Destroy(item.gameObject);
+        itemsQueue.Clear();
+
+        totalPrice = 0;
+        totalPriceText.text = "";
+        nameItemText.text = "";
+        priceItemText.text = "";
+
+        creditCard.SetActive(false);
+        money.SetActive(false);
+        cashregisterText.gameObject.SetActive(false);
+
+        paymentMoney?.ClosePaymentMoney();
+        paymentCard?.ClosePaymentCredi();
+    }
+
     public void PaymentTextCash(string message)
     {
         cashregisterText.gameObject.SetActive(true);
