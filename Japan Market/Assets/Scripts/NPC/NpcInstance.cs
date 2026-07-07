@@ -32,9 +32,14 @@ public class NpcInstance : MonoBehaviour
     /// <summary>Disparado sempre que o humor muda de estado.</summary>
     public event Action<NpcHumor> OnHumorChanged;
 
+
     private void Awake()
     {
         paymentType = (UnityEngine.Random.value > 0.5f) ? PaymentType.Card : PaymentType.Cash;
+    }
+    void Start()
+    {
+     
     }
 
     // ─── Humor API ────────────────────────────────────────────────────────────
@@ -71,6 +76,7 @@ public class NpcInstance : MonoBehaviour
             _isRegisteredClient = true;
             ServiceLocator.Get<MarketManager>().RegisterClient(transform);
             ServiceLocator.Get<MarketManager>().Clients++;
+            
             Debug.Log($"[Market] Cliente entrou. Total: {ServiceLocator.Get<MarketManager>().Clients}");
         }
     }
@@ -109,7 +115,7 @@ public class NpcInstance : MonoBehaviour
 
         CurrentHumor = newHumor;
 
-        // Propaga mudança para quem escuta (ex: NpcPhrases, UI de debug, etc.)
+    
         OnHumorChanged?.Invoke(CurrentHumor);
     }
 }
