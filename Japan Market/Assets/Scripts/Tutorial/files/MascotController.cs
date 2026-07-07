@@ -112,22 +112,19 @@ public class MascotController : MonoBehaviour
     }
 
   
-    public void MoveTo(RectTransform mascotTarget, RectTransform textBoxTarget, Vector2 textBoxTargetSize)
+    public void MoveTo(RectTransform mascotTarget, RectTransform textBoxTarget)
     {
         if (_moveRoutine != null) StopCoroutine(_moveRoutine);
-        _moveRoutine = StartCoroutine(MoveRoutine(mascotTarget, textBoxTarget, textBoxTargetSize));
+        _moveRoutine = StartCoroutine(MoveRoutine(mascotTarget, textBoxTarget));
     }
 
-    private IEnumerator MoveRoutine(RectTransform mascotTarget, RectTransform textBoxTarget, Vector2 textBoxTargetSize)
+    private IEnumerator MoveRoutine(RectTransform mascotTarget, RectTransform textBoxTarget)
     {
-        Vector2 startMascotPos = mascotRoot.anchoredPosition;
-        Vector2 endMascotPos = mascotTarget != null ? mascotTarget.anchoredPosition : startMascotPos;
+        Vector3 startMascotPos = mascotRoot.position;
+        Vector3 endMascotPos = mascotTarget != null ? mascotTarget.position : startMascotPos;
 
-        Vector2 startBoxPos = textBoxRect.anchoredPosition;
-        Vector2 endBoxPos = textBoxTarget != null ? textBoxTarget.anchoredPosition : startBoxPos;
-
-        Vector2 startBoxSize = textBoxRect.sizeDelta;
-        Vector2 endBoxSize = textBoxTargetSize;
+        Vector3 startBoxPos = textBoxRect.position;
+        Vector3 endBoxPos = textBoxTarget != null ? textBoxTarget.position : startBoxPos;
 
         float t = 0f;
         while (t < moveDuration)
@@ -135,16 +132,14 @@ public class MascotController : MonoBehaviour
             t += Time.deltaTime;
             float lerp = moveEase.Evaluate(Mathf.Clamp01(t / moveDuration));
 
-            mascotRoot.anchoredPosition = Vector2.LerpUnclamped(startMascotPos, endMascotPos, lerp);
-            textBoxRect.anchoredPosition = Vector2.LerpUnclamped(startBoxPos, endBoxPos, lerp);
-            textBoxRect.sizeDelta = Vector2.LerpUnclamped(startBoxSize, endBoxSize, lerp);
+            mascotRoot.position = Vector3.LerpUnclamped(startMascotPos, endMascotPos, lerp);
+            textBoxRect.position = Vector3.LerpUnclamped(startBoxPos, endBoxPos, lerp);
 
             yield return null;
         }
 
-        mascotRoot.anchoredPosition = endMascotPos;
-        textBoxRect.anchoredPosition = endBoxPos;
-        textBoxRect.sizeDelta = endBoxSize;
+        mascotRoot.position = endMascotPos;
+        textBoxRect.position = endBoxPos;
 
         _moveRoutine = null;
     }

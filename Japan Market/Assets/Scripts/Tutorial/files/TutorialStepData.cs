@@ -25,8 +25,6 @@ public class TutorialStepData
 
     public RectTransform textBoxTargetPosition;
 
-    public Vector2 textBoxTargetSize = new Vector2(500, 160);
-
     public DialogueLine[] dialogueLines;
 
     public float timePerLetterOverride = -1f;

@@ -13,7 +13,7 @@ public class DialogueTutorialState : BaseTutorialState
 
         MascotController mascot = Manager.MascotController;
         mascot.OnDialogueSequenceFinished += HandleDialogueFinished;
-        mascot.MoveTo(Data.mascotTargetPosition, Data.textBoxTargetPosition, Data.textBoxTargetSize);
+        mascot.MoveTo(Data.mascotTargetPosition, Data.textBoxTargetPosition);
         mascot.PlayDialogueSequence(Data.dialogueLines, Data.timePerLetterOverride);
     }
 
