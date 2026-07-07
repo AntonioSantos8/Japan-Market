@@ -7,6 +7,7 @@ public class StoreSign : InteractableBase
     [SerializeField] float moveBack = 0.32f;
     [SerializeField] Ease ease = Ease.OutBack;
     [SerializeField] Transform placaTransform;
+    TutorialManager _tutorialManager;
     bool isRotating = false;
     bool isOpen = false;
     Vector3 originalPos;
@@ -21,6 +22,7 @@ public class StoreSign : InteractableBase
         warnings = ServiceLocator.Get<Warnings>();
         marketManager = ServiceLocator.Get<MarketManager>();
         npcManager = ServiceLocator.Get<NpcManager>();
+        _tutorialManager = ServiceLocator.Get<TutorialManager>();
     }
     public override void Interact()
     {
@@ -39,6 +41,11 @@ public class StoreSign : InteractableBase
         else
         {
             warnings.ShowWarning("Store is Open!", true);
+            if(_tutorialManager)
+            {
+                _tutorialManager.NotifyGameEvent("StoreOpened");
+            }
+
         }
         isRotating = true;
         float targetRotation = isOpen

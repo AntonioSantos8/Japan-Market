@@ -812,8 +812,20 @@ MonoBehaviour:
     mascotTargetPosition: {fileID: 4938137836108460407}
     textBoxTargetPosition: {fileID: 3217876424232810313}
     dialogueLines:
-    - text: "Agora, espere pelo pr\xF3ximo cliente"
+    - text: Agora, se aproxime da placa de abrir e abra a loja.
       extraWaitAfterLine: 2
+    timePerLetterOverride: 0
+    completionMode: 2
+    requiredEventId: StoreOpened
+    delayBeforeNextStep: 1
+  - stepId: StoreOpened
+    mascotTargetPosition: {fileID: 4938137836108460407}
+    textBoxTargetPosition: {fileID: 3217876424232810313}
+    dialogueLines:
+    - text: "Parab\xE9ns, a sua loja est\xE1 aberta."
+      extraWaitAfterLine: 1
+    - text: Espere por clientes
+      extraWaitAfterLine: 1
     timePerLetterOverride: 0
     completionMode: 2
     requiredEventId: ClientCame
