@@ -3,82 +3,180 @@ using TMPro;
 using UnityEngine;
 
 /// <summary>
-/// Attach este script no prefab do pop de moeda.
-/// Chame Setup(amount) logo após Instantiate para personalizar o valor.
-/// Se não chamar Setup, usa o texto já configurado no prefab.
+/// Attach no prefab do pop de moeda. Chame Setup(amount) logo após Instantiate.
+/// Prefab esperado: root vazio com CoinPop.cs + filho com TMP_Text.
+/// Sparkles e echo ring são criados 100% por código — sem prefabs extras.
 /// </summary>
 public class CoinPop : MonoBehaviour
 {
     [SerializeField] private TMP_Text _label;
 
-    [Header("Timing")]
-    [SerializeField] private float _popDuration   = 0.22f;
-    [SerializeField] private float _floatDuration = 1.1f;
-    [SerializeField] private float _floatHeight   = 1.6f;
+    [Header("Movimento")]
+    [SerializeField] private float _floatHeight   = 1.9f;
+    [SerializeField] private float _floatDuration = 1.35f;
 
     [Header("Cores")]
-    [SerializeField] private Color _flashColor  = new Color(1f, 0.95f, 0.3f);   // amarelo flash
-    [SerializeField] private Color _targetColor = new Color(0.25f, 1f, 0.45f);  // verde moeda
+    [SerializeField] private Color _flashWhite  = Color.white;
+    [SerializeField] private Color _coinYellow  = new Color(1.00f, 0.92f, 0.08f);
+    [SerializeField] private Color _coinGreen   = new Color(0.18f, 1.00f, 0.40f);
+
+    [Header("Sparkles")]
+    [SerializeField] private int   _sparkleCount  = 8;
+    [SerializeField] private float _sparkleRadius = 0.70f;
+    [Tooltip("Escala base dos sparkles no espaço de mundo. Ajuste se ficarem grandes demais ou pequenos.")]
+    [SerializeField] private float _sparkleSize   = 0.08f;
 
     private void Awake()
     {
         if (_label == null) _label = GetComponentInChildren<TMP_Text>(true);
     }
 
-    /// <summary>Define o valor exibido no pop antes de Start rodar.</summary>
     public void Setup(float amount) => _label.text = $"+¥{Mathf.FloorToInt(amount)}";
 
     private void Start()
     {
         _label.alpha = 0f;
-        _label.color = _flashColor;
+        _label.color = _flashWhite;
         transform.localScale = Vector3.zero;
 
-        Vector3 startY = transform.position;
+        SpawnEchoRing();
+        SpawnSparkles();
+        PlayMainSequence();
+    }
+
+    // ─── Sequência principal ──────────────────────────────────────────────────
+
+    private void PlayMainSequence()
+    {
+        float floatEndY = transform.position.y + _floatHeight;
 
         Sequence s = DOTween.Sequence().SetAutoKill(true);
 
-        // ── Fase 1: aparição (0 → popDuration) ───────────────────────────────
-        // Escala de 0 a 1.3 com overshoot elástico, depois acomoda em 1.0
-        s.Insert(0f, transform.DOScale(1.3f, _popDuration * 0.55f)
-            .SetEase(Ease.OutBack, 4f));
-        s.Insert(_popDuration * 0.55f, transform.DOScale(1f, _popDuration * 0.45f)
-            .SetEase(Ease.OutSine));
+        // ══ FASE 1 · STAMP (0 → 0.07s) ══════════════════════════════════════
+        // Squash: wide e achatado — impacto de carimbo
+        s.Insert(0.000f, transform.DOScale(new Vector3(2.8f, 0.12f, 1f), 0.070f).SetEase(Ease.OutQuart));
+        s.Insert(0.000f, _label.DOFade(1f, 0.040f));
+        s.Insert(0.000f, _label.DOColor(_flashWhite, 0f));
 
-        // Fade in rápido
-        s.Insert(0f, _label.DOFade(1f, _popDuration * 0.4f));
+        // ══ FASE 2 · STRETCH (0.07 → 0.17s) ═════════════════════════════════
+        // Energia do squash se solta pra cima
+        s.Insert(0.070f, transform.DOScale(new Vector3(0.50f, 2.1f, 1f), 0.100f).SetEase(Ease.OutQuart));
+        s.Insert(0.070f, _label.DOColor(_coinYellow, 0.065f));
 
-        // Flash de cor: amarelo brilhante → verde moeda
-        s.Insert(0f, _label.DOColor(_targetColor, _popDuration * 0.8f)
-            .SetEase(Ease.OutCubic));
+        // ══ FASE 3 · SPRING SETTLE (0.17 → 0.55s) ════════════════════════════
+        // 5 bounces de mola amortecida
+        s.Insert(0.17f, transform.DOScale(new Vector3(1.28f, 0.78f, 1f), 0.100f).SetEase(Ease.OutSine));
+        s.Insert(0.27f, transform.DOScale(new Vector3(0.82f, 1.22f, 1f), 0.090f).SetEase(Ease.OutSine));
+        s.Insert(0.36f, transform.DOScale(new Vector3(1.10f, 0.92f, 1f), 0.075f).SetEase(Ease.OutSine));
+        s.Insert(0.44f, transform.DOScale(new Vector3(0.95f, 1.06f, 1f), 0.060f).SetEase(Ease.OutSine));
+        s.Insert(0.50f, transform.DOScale(Vector3.one,              0.055f).SetEase(Ease.OutSine));
+        // Cor settlea no verde enquanto a mola amortece
+        s.Insert(0.22f, _label.DOColor(_coinGreen, 0.22f).SetEase(Ease.OutCubic));
 
-        // ── Fase 2: punch de alegria logo após o pop ──────────────────────────
-        s.Insert(_popDuration, transform.DOPunchScale(
-            punch: new Vector3(0.3f, -0.15f, 0.3f),
-            duration: 0.3f,
-            vibrato: 4,
-            elasticity: 0.5f));
+        // ══ FASE 4 · FLOAT (0.58s → fim) ═════════════════════════════════════
+        const float fs = 0.58f; // floatStart
+        s.Insert(fs, transform.DOMoveY(floatEndY, _floatDuration).SetEase(Ease.OutCubic));
 
-        // ── Fase 3: flutua pra cima (popDuration → popDuration + floatDuration) ─
-        float floatStart = _popDuration + 0.05f;
-        s.Insert(floatStart, transform.DOMoveY(startY.y + _floatHeight, _floatDuration)
-            .SetEase(Ease.OutCubic));
+        // "PUM!" extra logo que começa a subir
+        s.Insert(fs + 0.06f, transform.DOPunchScale(Vector3.one * 0.20f, 0.28f, 4, 0.5f));
 
-        // Leve rotação de -8 a +8 graus enquanto sobe — dá vida ao pop
-        s.Insert(floatStart, transform.DORotate(new Vector3(0f, 0f, 8f), _floatDuration * 0.35f)
-            .SetEase(Ease.OutSine));
-        s.Insert(floatStart + _floatDuration * 0.35f, transform.DORotate(new Vector3(0f, 0f, -5f), _floatDuration * 0.3f)
-            .SetEase(Ease.InOutSine));
-        s.Insert(floatStart + _floatDuration * 0.65f, transform.DORotate(Vector3.zero, _floatDuration * 0.35f)
-            .SetEase(Ease.InSine));
+        // Balanço de folha no vento
+        s.Insert(fs,                           transform.DORotate(new Vector3(0, 0,  7f), _floatDuration * 0.30f).SetEase(Ease.OutSine));
+        s.Insert(fs + _floatDuration * 0.30f,  transform.DORotate(new Vector3(0, 0, -5f), _floatDuration * 0.38f).SetEase(Ease.InOutSine));
+        s.Insert(fs + _floatDuration * 0.68f,  transform.DORotate(Vector3.zero,           _floatDuration * 0.32f).SetEase(Ease.InSine));
 
-        // ── Fase 4: fade out + encolhe na segunda metade do float ────────────
-        float fadeStart = floatStart + _floatDuration * 0.48f;
-        s.Insert(fadeStart, _label.DOFade(0f, _floatDuration * 0.52f)
-            .SetEase(Ease.InQuad));
-        s.Insert(fadeStart, transform.DOScale(0.65f, _floatDuration * 0.52f)
-            .SetEase(Ease.InSine));
+        // ══ FASE 5 · FADE OUT ════════════════════════════════════════════════
+        float fadeStart = fs + _floatDuration * 0.44f;
+        s.Insert(fadeStart, _label.DOFade(0f, _floatDuration * 0.56f).SetEase(Ease.InQuad));
+        s.Insert(fadeStart, transform.DOScale(0.50f, _floatDuration * 0.56f).SetEase(Ease.InSine));
 
         s.OnComplete(() => Destroy(gameObject));
+    }
+
+    // ─── Echo ring ────────────────────────────────────────────────────────────
+
+    private void SpawnEchoRing()
+    {
+        // Anel fantasma que expande e some — dá sensação de onda de impacto
+        for (int ring = 0; ring < 2; ring++)
+        {
+            float ringDelay = ring * 0.07f;
+            float startAlpha = ring == 0 ? 0.65f : 0.35f;
+
+            var go = CreateTmpInWorld("Ring_" + ring, "◯", 5f, new Color(1f, 0.95f, 0.1f, startAlpha));
+            go.transform.localScale = Vector3.one * 0.01f;
+
+            Sequence rs = DOTween.Sequence().SetDelay(ringDelay).SetAutoKill(true);
+            rs.Insert(0f, go.transform.DOScale(ring == 0 ? 1.6f : 2.2f, 0.42f).SetEase(Ease.OutCubic));
+            rs.Insert(0f, go.GetComponent<TextMeshPro>().DOFade(0f, 0.42f).SetEase(Ease.OutQuad));
+            rs.OnComplete(() => Destroy(go));
+        }
+    }
+
+    // ─── Sparkles ─────────────────────────────────────────────────────────────
+
+    private void SpawnSparkles()
+    {
+        string[] symbols = { "✦", "★", "◆", "✧", "•", "✶" };
+        Color[]  colors  =
+        {
+            new Color(1.00f, 0.95f, 0.10f), // amarelo
+            new Color(1.00f, 0.60f, 0.05f), // laranja
+            new Color(0.20f, 1.00f, 0.45f), // verde moeda
+            new Color(1.00f, 1.00f, 1.00f), // branco
+            new Color(1.00f, 0.85f, 0.00f), // ouro
+            new Color(0.50f, 1.00f, 0.70f), // verde claro
+        };
+
+        for (int i = 0; i < _sparkleCount; i++)
+        {
+            // Distribui em arco para que saiam uniformemente em todas as direções
+            float angle  = i * (360f / _sparkleCount) + Random.Range(-22f, 22f);
+            float dist   = Random.Range(0.28f, _sparkleRadius);
+            float delay  = Random.Range(0.00f, 0.065f);
+            float dur    = Random.Range(0.40f, 0.68f);
+            float scale  = _sparkleSize * Random.Range(0.75f, 1.4f);
+
+            string sym   = symbols[Random.Range(0, symbols.Length)];
+            Color  col   = colors [Random.Range(0, colors.Length)];
+
+            var go = CreateTmpInWorld($"Spark{i}", sym, 36f, col);
+            go.transform.localScale = Vector3.zero;
+
+            float rad   = angle * Mathf.Deg2Rad;
+            Vector3 dir = new Vector3(Mathf.Cos(rad), Mathf.Sin(rad), 0f);
+            Vector3 end = transform.position + dir * dist;
+            float rotZ  = Random.Range(-280f, 280f);
+
+            Sequence ss = DOTween.Sequence().SetDelay(delay).SetAutoKill(true);
+            // Aparece com pop
+            ss.Insert(0f, go.GetComponent<TextMeshPro>().DOFade(1f, 0.055f));
+            ss.Insert(0f, go.transform.DOScale(scale, 0.09f).SetEase(Ease.OutBack, 2.5f));
+            // Voa para fora
+            ss.Insert(0f, go.transform.DOMove(end, dur).SetEase(Ease.OutCubic));
+            ss.Insert(0f, go.transform.DORotate(new Vector3(0, 0, rotZ), dur, RotateMode.FastBeyond360));
+            // Some
+            ss.Insert(dur * 0.22f, go.GetComponent<TextMeshPro>().DOFade(0f, dur * 0.78f).SetEase(Ease.InQuad));
+            ss.Insert(dur * 0.45f, go.transform.DOScale(0f, dur * 0.55f).SetEase(Ease.InBack));
+            ss.OnComplete(() => Destroy(go));
+        }
+    }
+
+    // ─── Helper ───────────────────────────────────────────────────────────────
+
+    private GameObject CreateTmpInWorld(string goName, string text, float fontSize, Color color)
+    {
+        var go = new GameObject(goName);
+        go.transform.position = transform.position;
+        // Billboard: sempre de frente pra câmera
+        go.transform.rotation = Camera.main != null ? Camera.main.transform.rotation : Quaternion.identity;
+
+        var tmp = go.AddComponent<TextMeshPro>();
+        tmp.text              = text;
+        tmp.fontSize          = fontSize;
+        tmp.color             = color;
+        tmp.alignment         = TextAlignmentOptions.Center;
+        tmp.sortingOrder      = 100;
+        return go;
     }
 }
