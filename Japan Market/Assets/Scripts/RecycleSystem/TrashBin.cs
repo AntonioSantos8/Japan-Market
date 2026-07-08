@@ -44,7 +44,9 @@ public class TrashBin : MonoBehaviour
         if (_coinPopPrefab != null)
         {
             GameObject pop = Instantiate(_coinPopPrefab, transform.position + Vector3.up * 1.5f, Quaternion.identity);
-            Destroy(pop, 3f);
+            if (pop.TryGetComponent(out CoinPop coinPop))
+                coinPop.Setup(_coinReward);
+            Destroy(pop, 4f);
         }
     }
 
