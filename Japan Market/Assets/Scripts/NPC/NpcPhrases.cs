@@ -18,6 +18,9 @@ public class NpcPhrases : MonoBehaviour
     private Coroutine _speakRoutine;
     private string _pendingPhrase;
     private bool _negativeEventFired;
+    // Garante que a frase de humor é dita apenas UMA vez por estado.
+    // Reseta quando o humor muda (OnHumorChanged) para dizer mais uma.
+    private bool _humorPhraseSaid;
 
     private void Awake()
     {
@@ -79,6 +82,8 @@ public class NpcPhrases : MonoBehaviour
 
     private void OnHumorChanged(NpcHumor newHumor)
     {
+        // Permite dizer UMA frase para o novo humor
+        _humorPhraseSaid = false;
         string phrase = GetPhraseForCurrentHumor();
         if (!string.IsNullOrEmpty(phrase)) SayPhrase(phrase);
     }
@@ -89,23 +94,29 @@ public class NpcPhrases : MonoBehaviour
     {
         while (true)
         {
-            // Frase pendente tem prioridade total — exibe imediatamente sem esperar silêncio
             if (_pendingPhrase != null)
             {
+                // Evento/mudança de humor: prioridade total, exibe imediatamente
                 string phrase = _pendingPhrase;
                 _pendingPhrase = null;
                 yield return StartCoroutine(ShowPhrase(phrase));
             }
-            else
+            else if (!_humorPhraseSaid)
             {
+                // Diz UMA frase de humor (happy ou angry) e silencia
                 yield return new WaitForSeconds(_silenceDuration);
 
-                // Se um evento chegou durante o silêncio, mostra ele antes da fala de humor
-                if (_pendingPhrase != null) continue;
+                if (_pendingPhrase != null) continue; // evento chegou durante espera
 
+                _humorPhraseSaid = true;
                 string phrase = GetPhraseForCurrentHumor();
                 if (!string.IsNullOrEmpty(phrase))
                     yield return StartCoroutine(ShowPhrase(phrase));
+            }
+            else
+            {
+                // Silêncio — aguarda apenas por eventos externos
+                yield return new WaitForSeconds(0.5f);
             }
         }
     }

@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using DG.Tweening;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -39,6 +40,12 @@ public class NpcTraject : MonoBehaviour
     [Tooltip("Distância do Exit em que o NPC é destruído (resolve bug de aglomeração na saída).")]
     [SerializeField] private float _exitDestroyDistance = 1.5f;
 
+    [Header("Fidget (fila)")]
+    [Tooltip("Ângulo máximo em graus que o NPC olha para os lados enquanto aguarda na fila.")]
+    [SerializeField] private float _fidgetRotationMax = 38f;
+    [Tooltip("Intervalo médio em segundos entre cada giro de fidget.")]
+    [SerializeField] private float _fidgetInterval = 2.8f;
+
     private Transform _exitPoint;
     private readonly List<ShoppingItem> _inventory = new List<ShoppingItem>();
 
@@ -55,6 +62,9 @@ public class NpcTraject : MonoBehaviour
 
     private bool _isLeaving = false;
     private Coroutine _queueWaiter;
+    private Coroutine _fidgetRoutine;
+    private Tween _fidgetBobTween;
+    private Tween _fidgetRotTween;
     TutorialManager _tutorialManager;
 
     // ─── Unity ────────────────────────────────────────────────────────────────
@@ -170,6 +180,7 @@ public class NpcTraject : MonoBehaviour
     {
         if (_isLeaving) yield break;
 
+        StopFidget();
         _cashRegister.LeaveQueue(this);
         _cashRegister.ClearForCustomerLeave();
         _npcPhrases?.SayEvent(NpcEvent.CashierTooSlow);
@@ -316,6 +327,7 @@ public class NpcTraject : MonoBehaviour
         if (_isLeaving) return;
         _isLeaving = true;
 
+        StopFidget();
         _currentOccupancy?.Release(_reservedSlotPosition);
         _currentOccupancy = null;
 
@@ -358,6 +370,8 @@ public class NpcTraject : MonoBehaviour
         _queueIndex = index;
         Debug.Log($"[NPC:{name}] Nova posição na fila: {_queueIndex}");
 
+        StopFidget(); // para o fidget antes de andar para nova posição
+
         if (_queueWaiter != null)
             StopCoroutine(_queueWaiter);
 
@@ -388,8 +402,58 @@ public class NpcTraject : MonoBehaviour
         _agent.isStopped = true;
         HasArrivedAtQueueTarget = true;
         _queueWaiter = null;
+
+        StartFidget();
     }
     public void SetTarget(Transform target, int index) => SetQueueTarget(target, index);
+
+    // ─── Fidget (animação de espera na fila) ──────────────────────────────────
+
+    private void StartFidget()
+    {
+        StopFidget();
+
+        // Bob sutil de peso (cima e baixo) — simula respiração/nervosismo
+        float baseY = transform.position.y;
+        _fidgetBobTween = transform.DOMoveY(baseY + 0.035f, Random.Range(0.9f, 1.3f))
+            .SetEase(Ease.InOutSine)
+            .SetLoops(-1, LoopType.Yoyo);
+
+        _fidgetRoutine = StartCoroutine(FidgetRoutine());
+    }
+
+    private void StopFidget()
+    {
+        if (_fidgetRoutine != null) { StopCoroutine(_fidgetRoutine); _fidgetRoutine = null; }
+        _fidgetBobTween?.Kill();
+        _fidgetRotTween?.Kill();
+    }
+
+    private IEnumerator FidgetRoutine()
+    {
+        Quaternion baseRot = transform.rotation;
+
+        while (true)
+        {
+            // Espera aleatória antes de olhar para o lado
+            yield return new WaitForSeconds(Random.Range(_fidgetInterval * 0.55f, _fidgetInterval * 1.45f));
+
+            float yAngle = Random.Range(-_fidgetRotationMax, _fidgetRotationMax);
+            float lookTime = Random.Range(0.45f, 0.85f);
+            _fidgetRotTween = transform.DORotateQuaternion(baseRot * Quaternion.Euler(0f, yAngle, 0f), lookTime)
+                .SetEase(Ease.InOutSine);
+            yield return _fidgetRotTween.WaitForCompletion();
+
+            // Fica olhando por um momento
+            yield return new WaitForSeconds(Random.Range(0.5f, 1.6f));
+
+            // Volta para a direção base
+            float returnTime = Random.Range(0.35f, 0.65f);
+            _fidgetRotTween = transform.DORotateQuaternion(baseRot, returnTime)
+                .SetEase(Ease.InOutSine);
+            yield return _fidgetRotTween.WaitForCompletion();
+        }
+    }
 
     // ─── Movimento genérico ───────────────────────────────────────────────────
 

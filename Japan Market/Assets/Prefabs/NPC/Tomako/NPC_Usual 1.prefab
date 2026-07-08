@@ -3665,6 +3665,7 @@ GameObject:
   - component: {fileID: 6013700793619636848}
   - component: {fileID: 5705189301676631067}
   - component: {fileID: 3188336135163554214}
+  - component: {fileID: 8289243552976388695}
   m_Layer: 13
   m_Name: NPC_Usual 1
   m_TagString: NPC
@@ -3726,12 +3727,14 @@ MonoBehaviour:
   _waitTimeAtShelf: 3
   _maxInventorySize: 6
   _itemsPerFurnitureWeights: 010000000100000001000000020000000200000003000000
-  _queuePatienceSeconds: 90
+  _queuePatienceSeconds: 45
   _dirtyComplainThreshold: 5
   _dirtyLeaveThreshold: 12
   _impatientPhraseInterval: 25
   _maxAcceptableItemPrice: 500
   _exitDestroyDistance: 1.5
+  _fidgetRotationMax: 38
+  _fidgetInterval: 2.8
 --- !u!114 &7355339312587925789
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3827,6 +3830,26 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 2, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &8289243552976388695
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5342482067624042977}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e3fdca004f2d45fe8abbed571a8abd5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.AI.Navigation::Unity.AI.Navigation.NavMeshModifier
+  m_SerializedVersion: 0
+  m_OverrideArea: 0
+  m_Area: 0
+  m_OverrideGenerateLinks: 0
+  m_GenerateLinks: 0
+  m_IgnoreFromBuild: 1
+  m_ApplyToChildren: 1
+  m_AffectedAgents: ffffffff
 --- !u!1 &5450887958772950442
 GameObject:
   m_ObjectHideFlags: 0
