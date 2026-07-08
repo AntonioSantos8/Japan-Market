@@ -7,6 +7,9 @@ using UnityEngine.UI;
 
 public class CashRegister : InteractableBase
 {
+    private const string EnteredCashRegisterEventId = "EnteredCashRegister";
+    private const string PassedAllProductsEventId = "PassedAllProducts";
+
     [Header("References")]
     [SerializeField] List<AllIThingsData> allItem;
     [SerializeField] PlayerMotor playerMotor;
@@ -122,6 +125,10 @@ public class CashRegister : InteractableBase
     private void EnterCashMode()
     {
         cashMode = true;
+
+        TutorialManager tutorialManager = ServiceLocator.Get<TutorialManager>();
+        if (tutorialManager != null)
+            tutorialManager.NotifyGameEvent(EnteredCashRegisterEventId);
 
         playerLook.ResetLook();
         playerMotor.SetCanMove(false);
@@ -300,6 +307,10 @@ public class CashRegister : InteractableBase
     private void OnLastItemScanned()
     {
         Invoke(nameof(ShowTotal), 0.34f);
+
+        TutorialManager tutorialManager = ServiceLocator.Get<TutorialManager>();
+        if (tutorialManager != null)
+            tutorialManager.NotifyGameEvent(PassedAllProductsEventId);
 
         creditCard.SetActive(false);
         money.SetActive(false);

@@ -802,6 +802,9 @@ MonoBehaviour:
       extraWaitAfterLine: 2
     - text: Agora, caminhe entre na loja para prosseguir
       extraWaitAfterLine: 2
+    onMascotStartTalking:
+      m_PersistentCalls:
+        m_Calls: []
     timePerLetterOverride: 0
     completionMode: 2
     requiredEventId: EnteredStore
@@ -816,6 +819,9 @@ MonoBehaviour:
       extraWaitAfterLine: 2
     - text: e use
       extraWaitAfterLine: 2
+    onMascotStartTalking:
+      m_PersistentCalls:
+        m_Calls: []
     timePerLetterOverride: 0
     completionMode: 2
     requiredEventId: EnteredComputer
@@ -829,6 +835,9 @@ MonoBehaviour:
     - text: "use o dinheiro que voc\xEA tem para comprar uma prateleira e um produto
         para vender."
       extraWaitAfterLine: 3
+    onMascotStartTalking:
+      m_PersistentCalls:
+        m_Calls: []
     timePerLetterOverride: 0
     completionMode: 2
     requiredEventId: BoughtFurnitureAndFood
@@ -842,6 +851,9 @@ MonoBehaviour:
     - text: Agora pegue a caixa com icone de prateleira e coloque no interior da
         loja
       extraWaitAfterLine: 3
+    onMascotStartTalking:
+      m_PersistentCalls:
+        m_Calls: []
     timePerLetterOverride: 0
     completionMode: 2
     requiredEventId: HasPutFurniture
@@ -854,6 +866,9 @@ MonoBehaviour:
         pressione B para entrar no modo de constru\xE7\xE3o e segure o bot\xE3o direito
         do mouse na prateleira para muda-la de posi\xE7\xE3o."
       extraWaitAfterLine: 3
+    onMascotStartTalking:
+      m_PersistentCalls:
+        m_Calls: []
     timePerLetterOverride: 0
     completionMode: 2
     requiredEventId: HasMovedFurniture
@@ -865,6 +880,9 @@ MonoBehaviour:
     - text: "J\xE1 que moveu a furniture, agora, pegue a caixa e coloque na prateleira,
         no segmento que desejar"
       extraWaitAfterLine: 3
+    onMascotStartTalking:
+      m_PersistentCalls:
+        m_Calls: []
     timePerLetterOverride: 0
     completionMode: 2
     requiredEventId: HasPutFood
@@ -880,6 +898,9 @@ MonoBehaviour:
       extraWaitAfterLine: 2
     - text: "mas cuidado, se estiver muito caro os clientes poder\xE3o n\xE3o gostar."
       extraWaitAfterLine: 2
+    onMascotStartTalking:
+      m_PersistentCalls:
+        m_Calls: []
     timePerLetterOverride: 0
     completionMode: 2
     requiredEventId: HasPutPrice
@@ -890,6 +911,9 @@ MonoBehaviour:
     dialogueLines:
     - text: Agora, se aproxime da placa de abrir e abra a loja.
       extraWaitAfterLine: 2
+    onMascotStartTalking:
+      m_PersistentCalls:
+        m_Calls: []
     timePerLetterOverride: 0
     completionMode: 2
     requiredEventId: StoreOpened
@@ -902,6 +926,9 @@ MonoBehaviour:
       extraWaitAfterLine: 1
     - text: Espere por clientes
       extraWaitAfterLine: 1
+    onMascotStartTalking:
+      m_PersistentCalls:
+        m_Calls: []
     timePerLetterOverride: 0
     completionMode: 2
     requiredEventId: ClientCame
@@ -914,20 +941,79 @@ MonoBehaviour:
       extraWaitAfterLine: 2
     - text: Espere ele escolher os produtos q ele quer
       extraWaitAfterLine: 2
+    onMascotStartTalking:
+      m_PersistentCalls:
+        m_Calls: []
     timePerLetterOverride: 0
     completionMode: 2
-    requiredEventId: 
+    requiredEventId: ClientOnCashRegister
     delayBeforeNextStep: 1
-  - stepId: 
+  - stepId: ClientOnCashRegister
     mascotTargetPosition: {fileID: 4938137836108460407}
     textBoxTargetPosition: {fileID: 3217876424232810313}
     dialogueLines:
-    - text: "Olhe, um cliente est\xE1 vindo"
+    - text: Cliente chegou na caixa registradore
       extraWaitAfterLine: 2
-    - text: Espere ele escolher os produtos q ele quer
+    - text: Interaja com a bancada
       extraWaitAfterLine: 2
+    onMascotStartTalking:
+      m_PersistentCalls:
+        m_Calls: []
     timePerLetterOverride: 0
     completionMode: 2
+    requiredEventId: EnteredCashRegister
+    delayBeforeNextStep: 1
+  - stepId: EnteredCashRegister
+    mascotTargetPosition: {fileID: 4938137836108460407}
+    textBoxTargetPosition: {fileID: 3217876424232810313}
+    dialogueLines:
+    - text: Entrou na caixa registradora, clique para passar os produtor
+      extraWaitAfterLine: 2
+    onMascotStartTalking:
+      m_PersistentCalls:
+        m_Calls: []
+    timePerLetterOverride: 0
+    completionMode: 2
+    requiredEventId: PassedAllProducts
+    delayBeforeNextStep: 1
+  - stepId: PassedAllProducts
+    mascotTargetPosition: {fileID: 4938137836108460407}
+    textBoxTargetPosition: {fileID: 3217876424232810313}
+    dialogueLines:
+    - text: Clique para escolher a forma de pagamento
+      extraWaitAfterLine: 2
+    onMascotStartTalking:
+      m_PersistentCalls:
+        m_Calls: []
+    timePerLetterOverride: 0
+    completionMode: 2
+    requiredEventId: ChoosedPaymentType
+    delayBeforeNextStep: 1
+  - stepId: ChoosedPaymentType
+    mascotTargetPosition: {fileID: 4938137836108460407}
+    textBoxTargetPosition: {fileID: 3217876424232810313}
+    dialogueLines:
+    - text: Conclua a compra dando o troco ou inserido o valor que o cliente deve
+        receber de troco
+      extraWaitAfterLine: 2
+    onMascotStartTalking:
+      m_PersistentCalls:
+        m_Calls: []
+    timePerLetterOverride: 0
+    completionMode: 2
+    requiredEventId: FinishedTutorial
+    delayBeforeNextStep: 1
+  - stepId: FinishedTutorial
+    mascotTargetPosition: {fileID: 4938137836108460407}
+    textBoxTargetPosition: {fileID: 3217876424232810313}
+    dialogueLines:
+    - text: temino tutoria
+      extraWaitAfterLine: 2
+    onMascotStartTalking:
+      m_PersistentCalls:
+        m_Calls: []
+    timePerLetterOverride: 0
+    completionMode: 0
     requiredEventId: 
     delayBeforeNextStep: 1
   startAutomatically: 1

@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.Events;
 public enum TutorialCompletionMode
 {
     AutoAfterDialogue,
@@ -26,6 +27,8 @@ public class TutorialStepData
     public RectTransform textBoxTargetPosition;
 
     public DialogueLine[] dialogueLines;
+
+    public UnityEvent onMascotStartTalking;
 
     public float timePerLetterOverride = -1f;
 

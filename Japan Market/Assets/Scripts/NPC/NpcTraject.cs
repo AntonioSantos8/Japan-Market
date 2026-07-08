@@ -113,6 +113,7 @@ public class NpcTraject : MonoBehaviour
             if (isCurrentCustomer && HasArrivedAtQueueTarget)
             {
                 _tutorialManager?.NotifyGameEvent("NpcAtCashRegister");
+                _tutorialManager?.NotifyGameEvent("ClientOnCashRegister");
 
                 if (!_itemsPlaced)
                     PlaceItemsOnCounter();

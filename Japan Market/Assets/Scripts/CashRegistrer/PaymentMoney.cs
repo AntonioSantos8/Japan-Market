@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using DG.Tweening;
 public class PaymentMoney : InteractableBase
 {
+    private const string ChoosedPaymentTypeEventId = "ChoosedPaymentType";
+
     [SerializeField] GameObject imagePayment;
     [SerializeField] TextMeshPro receivedText;
     [SerializeField] TextMeshPro changeText;
@@ -55,6 +57,10 @@ public class PaymentMoney : InteractableBase
     public void OpenPayment()
     {
         isPaymentOpen = true;
+
+        TutorialManager tutorialManager = ServiceLocator.Get<TutorialManager>();
+        if (tutorialManager != null)
+            tutorialManager.NotifyGameEvent(ChoosedPaymentTypeEventId);
 
         imagePayment.SetActive(true);
         imagePayment.transform.localScale = originalScale;

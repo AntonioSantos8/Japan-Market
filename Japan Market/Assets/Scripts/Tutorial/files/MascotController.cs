@@ -223,4 +223,13 @@ public class MascotController : MonoBehaviour
         if (_moveRoutine != null) { StopCoroutine(_moveRoutine); _moveRoutine = null; }
         StopDialogueSequence();
     }
+
+    public void SetTutorialVisible(bool visible)
+    {
+        if (mascotRoot != null)
+            mascotRoot.gameObject.SetActive(visible);
+
+        if (textBoxRect != null)
+            textBoxRect.gameObject.SetActive(visible);
+    }
 }

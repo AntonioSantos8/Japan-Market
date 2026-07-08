@@ -3,6 +3,8 @@ using TMPro;
 using DG.Tweening;
 public class PaymentCard : InteractableBase
 {
+    private const string ChoosedPaymentTypeEventId = "ChoosedPaymentType";
+
     [SerializeField] GameObject imagepayment;
     [SerializeField] TextMeshProUGUI valueText;
     [SerializeField] CashRegister cashRegister;
@@ -49,6 +51,10 @@ public class PaymentCard : InteractableBase
     void OpenPayment()
     {
         isPaymentOpen = true;
+
+        TutorialManager tutorialManager = ServiceLocator.Get<TutorialManager>();
+        if (tutorialManager != null)
+            tutorialManager.NotifyGameEvent(ChoosedPaymentTypeEventId);
 
         imagepayment.SetActive(true);
         imagepayment.transform.localScale = originalScale;

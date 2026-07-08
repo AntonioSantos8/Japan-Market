@@ -3,6 +3,8 @@ using System.Collections;
 using UnityEngine;
 public class TutorialManager : MonoBehaviour
 {
+    private const string FinishedTutorialEventId = "FinishedTutorial";
+
     [SerializeField] private MascotController mascotController;
 
     [SerializeField] private TutorialStepData[] steps;
@@ -11,6 +13,7 @@ public class TutorialManager : MonoBehaviour
 
     private int _currentStepIndex = -1;
     private ITutorialState _currentState;
+    private bool _tutorialFinished;
 
     public MascotController MascotController => mascotController;
     public TutorialStepData CurrentStepData =>
@@ -47,19 +50,21 @@ public class TutorialManager : MonoBehaviour
 
     public void StartTutorial()
     {
+        _tutorialFinished = false;
+        mascotController?.SetTutorialVisible(true);
         _currentStepIndex = -1;
         GoToNextStep();
     }
 
     public void GoToNextStep()
     {
+        if (_tutorialFinished) return;
+
         _currentStepIndex++;
 
         if (_currentStepIndex >= steps.Length)
         {
-            _currentState?.Exit();
-            _currentState = null;
-            OnTutorialCompleted?.Invoke();
+            FinishTutorialInternal();
             return;
         }
 
@@ -94,10 +99,18 @@ public class TutorialManager : MonoBehaviour
     }
     public void NotifyGameEvent(string eventId)
     {
+        if (_tutorialFinished) return;
+
         TutorialStepData data = CurrentStepData;
         if (data == null) return;
         if (data.completionMode != TutorialCompletionMode.WaitForGameEvent) return;
         if (data.requiredEventId != eventId) return;
+
+        if (eventId == FinishedTutorialEventId)
+        {
+            FinishTutorialInternal();
+            return;
+        }
 
         CompleteCurrentState();
     }
@@ -112,9 +125,18 @@ public class TutorialManager : MonoBehaviour
     }
     public void SkipTutorial()
     {
+        FinishTutorialInternal();
+    }
+
+    private void FinishTutorialInternal()
+    {
+        if (_tutorialFinished) return;
+
+        _tutorialFinished = true;
         _currentState?.Exit();
         _currentState = null;
         _currentStepIndex = steps.Length;
+        mascotController?.SetTutorialVisible(false);
         OnTutorialCompleted?.Invoke();
     }
 }
