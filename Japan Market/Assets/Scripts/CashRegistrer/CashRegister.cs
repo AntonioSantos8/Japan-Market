@@ -9,6 +9,7 @@ public class CashRegister : InteractableBase
 {
     private const string EnteredCashRegisterEventId = "EnteredCashRegister";
     private const string PassedAllProductsEventId = "PassedAllProducts";
+    private const string FinishTutorialEventId = "FinishTutorial";
 
     [Header("References")]
     [SerializeField] List<AllIThingsData> allItem;
@@ -48,6 +49,7 @@ public class CashRegister : InteractableBase
     private bool cashMode;
     private Queue<Item> itemsQueue = new Queue<Item>();
     private List<NpcTraject> queue = new List<NpcTraject>();
+    private bool _hasNotifiedFirstFinishedPurchase;
 
     public override void Awake()
     {
@@ -421,6 +423,14 @@ public class CashRegister : InteractableBase
     {
         FinishCustomer();
         FinishPayment();
+
+        if (!_hasNotifiedFirstFinishedPurchase)
+        {
+            _hasNotifiedFirstFinishedPurchase = true;
+            TutorialManager tutorialManager = ServiceLocator.Get<TutorialManager>();
+            if (tutorialManager != null)
+                tutorialManager.NotifyGameEvent(FinishTutorialEventId);
+        }
     }
 
     // -------------------------

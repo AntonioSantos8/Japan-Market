@@ -3,6 +3,7 @@ using System.Collections;
 using UnityEngine;
 public class TutorialManager : MonoBehaviour
 {
+    private const string FinishTutorialEventId = "FinishTutorial";
     private const string FinishedTutorialEventId = "FinishedTutorial";
 
     [SerializeField] private MascotController mascotController;
@@ -104,9 +105,16 @@ public class TutorialManager : MonoBehaviour
         TutorialStepData data = CurrentStepData;
         if (data == null) return;
         if (data.completionMode != TutorialCompletionMode.WaitForGameEvent) return;
-        if (data.requiredEventId != eventId) return;
 
-        if (eventId == FinishedTutorialEventId)
+        bool isFinishEventAlias = eventId == FinishTutorialEventId || eventId == FinishedTutorialEventId;
+        bool stepExpectsFinishEvent = data.requiredEventId == FinishTutorialEventId || data.requiredEventId == FinishedTutorialEventId;
+
+        if (!isFinishEventAlias || !stepExpectsFinishEvent)
+        {
+            if (data.requiredEventId != eventId) return;
+        }
+
+        if (isFinishEventAlias)
         {
             FinishTutorialInternal();
             return;

@@ -20,7 +20,7 @@ public class DialogueLine
 [Serializable]
 public class TutorialStepData
 {
-   
+   [Space(10)]
     public string stepId;
     public RectTransform mascotTargetPosition;
 
