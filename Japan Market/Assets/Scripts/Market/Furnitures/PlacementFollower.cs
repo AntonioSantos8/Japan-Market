@@ -13,7 +13,8 @@ public class PlacementFollower : MonoBehaviour
     [SerializeField] private float maxViewDistance = 10f;
 
     private FurnitureManager _manager;
-    private Bounds storeBounds => storeArea.bounds;
+
+    private Bounds StoreBounds => storeArea.bounds;
 
     private void Start()
     {
@@ -22,13 +23,13 @@ public class PlacementFollower : MonoBehaviour
 
     private void Update()
     {
-        if (!_manager.IsBuildingMode) return;
+        if (_manager == null || !_manager.IsBuildingMode) return;
 
         GameObject ghost = _manager.GetActiveGhost();
         if (ghost == null) return;
 
         HandleScrollInput();
-        UpdateGhostPosition(ghost.transform);
+        FollowAnchor(ghost.transform);
     }
 
     private void HandleScrollInput()
@@ -36,21 +37,34 @@ public class PlacementFollower : MonoBehaviour
         float scroll = Input.mouseScrollDelta.y;
         if (Mathf.Approximately(scroll, 0f)) return;
 
-        viewDistance += scroll * scrollSpeed * Time.deltaTime;
-        viewDistance = Mathf.Clamp(viewDistance, minViewDistance, maxViewDistance);
+        viewDistance = Mathf.Clamp(
+            viewDistance + scroll * scrollSpeed * Time.deltaTime,
+            minViewDistance,
+            maxViewDistance);
     }
 
-    private void UpdateGhostPosition(Transform ghostTransform)
+    private void FollowAnchor(Transform ghostTransform)
     {
         FurnitureData currentSelected = _manager.GetCurrentSelected();
-        Vector3 targetPoint = anchor.position + anchor.forward * viewDistance;
+        if (currentSelected == null || anchor == null || storeArea == null) return;
 
-        targetPoint.x = Mathf.Clamp(targetPoint.x, storeBounds.min.x, storeBounds.max.x);
-        targetPoint.z = Mathf.Clamp(targetPoint.z, storeBounds.min.z, storeBounds.max.z);
+        Vector3 target = ComputeTargetPosition(currentSelected.floorDistance);
+        ghostTransform.position = Vector3.Lerp(ghostTransform.position, target, Time.deltaTime * 18f);
+    }
 
-        float snappedX = Mathf.Round(targetPoint.x / gridSize) * gridSize;
-        float snappedZ = Mathf.Round(targetPoint.z / gridSize) * gridSize;
+    private Vector3 ComputeTargetPosition(float floorDistance)
+    {
+        Bounds bounds = StoreBounds;
+        Vector3 point = anchor.position + anchor.forward * viewDistance;
 
-        ghostTransform.position = new Vector3(snappedX, currentSelected.floorDistance, snappedZ);
+        point.x = Mathf.Clamp(point.x, bounds.min.x, bounds.max.x);
+        point.z = Mathf.Clamp(point.z, bounds.min.z, bounds.max.z);
+
+        float grid = Mathf.Max(0.01f, gridSize);
+        float snappedX = Mathf.Round(point.x / grid) * grid;
+        float snappedZ = Mathf.Round(point.z / grid) * grid;
+        float hoverY = Mathf.Sin(Time.time * 2.2f) * 0.025f;
+
+        return new Vector3(snappedX, floorDistance + hoverY, snappedZ);
     }
 }

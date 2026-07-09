@@ -11,32 +11,41 @@ public class FurnitureManager : MonoBehaviour
     [SerializeField] private FurniturePlacementValidator ghostValidator;
     [SerializeField] private LayerMask furnitureLayer;
 
-    private Dictionary<FurnitureType, FurnitureData> _furnitureLibrary;
-    private FurnitureData _currentSelected;
-    private GameObject _activeGhost;
-
     [SerializeField] private List<FurnitureInstance> _placedFurnitures = new List<FurnitureInstance>();
-
-    private readonly List<InventoryItem> _inventory = new List<InventoryItem>();
-    private int _currentIndex = 0;
-
-    public int InventoryCount => _inventory.Count;
-    public int CurrentInventoryIndex => _currentIndex;
-    public bool HasFurnitureInInventory => _inventory.Count > 0;
-    public bool IsBuildingMode { get; private set; }
 
     [SerializeField] private Image circle;
     [SerializeField] private TMP_Text furnitureSlotName;
 
     [SerializeField] private Color greenSegment, redSegment, transparentSegment, greenOutline, redOutline;
+
     public Color GreenSegment => greenSegment;
     public Color RedSegment => redSegment;
     public Color TransparentSegment => transparentSegment;
     public Color GreenOutline => greenOutline;
     public Color RedOutline => redOutline;
 
+    public int InventoryCount => _inventory.Count;
+    public int CurrentInventoryIndex => _currentIndex;
+    public bool HasFurnitureInInventory => _inventory.Count > 0;
+    public bool IsBuildingMode { get; private set; }
+
+    private const float GhostSpawnHeight = 0.25f;
+
+    private Dictionary<FurnitureType, FurnitureData> _furnitureLibrary;
+    private FurnitureData _currentSelected;
+    private GameObject _activeGhost;
+
+    private readonly List<InventoryItem> _inventory = new List<InventoryItem>();
+    private int _currentIndex;
+
     private bool _hasShownBuildModeHint;
     private Tween _holdTween;
+    private Tween _rotateTween;
+    private Tween _cameraFovTween;
+    private Sequence _spawnSequence;
+    private float _baseCameraFov;
+    private bool _hasBaseCameraFov;
+    private readonly RaycastHit[] _pickupHitBuffer = new RaycastHit[16];
 
     private struct InventoryItem
     {
@@ -56,11 +65,28 @@ public class FurnitureManager : MonoBehaviour
         InitializeLibrary();
     }
 
+    private void Start()
+    {
+        CacheBaseCameraFov();
+    }
+
+    private void OnDestroy()
+    {
+        KillGhostTweens();
+        _holdTween?.Kill();
+        _holdTween = null;
+        _cameraFovTween?.Kill();
+        _cameraFovTween = null;
+    }
+
     private void InitializeLibrary()
     {
         _furnitureLibrary = new Dictionary<FurnitureType, FurnitureData>();
-        foreach (var data in availableFurniture)
+        foreach (FurnitureData data in availableFurniture)
+        {
+            if (data == null || _furnitureLibrary.ContainsKey(data.type)) continue;
             _furnitureLibrary.Add(data.type, data);
+        }
     }
 
     private void Update()
@@ -80,11 +106,13 @@ public class FurnitureManager : MonoBehaviour
 
     private void UpdateInventoryDisplay()
     {
+        if (furnitureSlotName == null) return;
+
         if (!HasFurnitureInInventory)
         {
             furnitureSlotName.text = IsBuildingMode
-                ? "Inventário: vazio — segure RMB para pegar furniture"
-                : "Inventário: vazio";
+                ? "Inventory: empty — hold RMB to pick up furniture"
+                : "Inventory: empty";
             return;
         }
 
@@ -92,11 +120,9 @@ public class FurnitureManager : MonoBehaviour
         string itemName = _inventory[safeIndex].Data.furnitureName;
 
         furnitureSlotName.text = _inventory.Count > 1
-            ? $"Inventário: {itemName} ({safeIndex + 1}/{_inventory.Count}) — Q/E para navegar"
-            : $"Inventário: {itemName} — pressione B";
+            ? $"Inventory: {itemName} ({safeIndex + 1}/{_inventory.Count}) — Q/E to navigate"
+            : $"Inventory: {itemName} — press B";
     }
-
-    // ─── Build Mode ───────────────────────────────────────────────────────────
 
     public void ToggleBuildingMode()
     {
@@ -110,13 +136,12 @@ public class FurnitureManager : MonoBehaviour
     {
         if (!ServiceLocator.Get<PlayerMotor>().PlayerIsInMarket)
         {
-            ServiceLocator.Get<Warnings>().ShowWarning("O modo de construção só funciona dentro da loja!", false);
+            ServiceLocator.Get<Warnings>().ShowWarning("The build mode only works inside the store!", false);
             return;
         }
 
         IsBuildingMode = true;
 
-        // Mesmo sem inventário entra no modo — permite pegar furnitures colocadas
         if (HasFurnitureInInventory)
             LoadCurrentFromInventory();
     }
@@ -124,19 +149,16 @@ public class FurnitureManager : MonoBehaviour
     private void ExitBuildMode()
     {
         IsBuildingMode = false;
-        if (_activeGhost != null)
-        {
-            Destroy(_activeGhost);
-            _activeGhost = null;
-        }
         _currentSelected = null;
+        CancelPickupHold();
+        DismissGhostAnimated();
     }
 
     private void LoadCurrentFromInventory(Vector3? spawnPos = null, Quaternion? spawnRot = null)
     {
         if (_inventory.Count == 0)
         {
-            if (_activeGhost != null) { Destroy(_activeGhost); _activeGhost = null; }
+            DestroyGhostImmediate();
             _currentSelected = null;
             return;
         }
@@ -147,10 +169,104 @@ public class FurnitureManager : MonoBehaviour
         Vector3 pos = spawnPos ?? GetDefaultGhostPosition();
         Quaternion rot = spawnRot ?? Quaternion.identity;
 
-        if (_activeGhost != null) Destroy(_activeGhost);
-        _activeGhost = Instantiate(_currentSelected.ghostPrefab, pos, rot);
+        SpawnGhost(pos, rot);
+    }
+
+    private void SpawnGhost(Vector3 position, Quaternion rotation)
+    {
+        DestroyGhostImmediate();
+
+        if (_currentSelected == null || _currentSelected.ghostPrefab == null) return;
+
+        _activeGhost = Instantiate(_currentSelected.ghostPrefab, position + Vector3.up * GhostSpawnHeight, rotation);
         _activeGhost.SetActive(true);
         ghostValidator = _activeGhost.GetComponent<FurniturePlacementValidator>();
+
+        Transform ghostTransform = _activeGhost.transform;
+        Vector3 originalScale = ghostTransform.localScale;
+        ghostTransform.localScale = Vector3.zero;
+
+        Collider[] ghostColliders = _activeGhost.GetComponentsInChildren<Collider>(true);
+        SetCollidersEnabled(ghostColliders, false);
+
+        _spawnSequence = DOTween.Sequence()
+            .Append(ghostTransform.DOScale(originalScale * 1.2f, 0.15f).SetEase(Ease.OutCubic))
+            .Append(ghostTransform.DOScale(originalScale * 0.88f, 0.1f).SetEase(Ease.OutQuad))
+            .Append(ghostTransform.DOScale(originalScale * 1.08f, 0.07f).SetEase(Ease.OutQuad))
+            .Append(ghostTransform.DOScale(originalScale, 0.05f).SetEase(Ease.OutQuad))
+            .SetLink(_activeGhost)
+            .OnComplete(() =>
+            {
+                _spawnSequence = null;
+                SetCollidersEnabled(ghostColliders, true);
+            });
+
+        PlayCameraKick(5f, 0.1f, 0.22f, Ease.OutQuad);
+    }
+
+    private GameObject DetachGhost()
+    {
+        KillGhostTweens();
+
+        GameObject ghost = _activeGhost;
+        _activeGhost = null;
+
+        FurniturePlacementValidator validator = ghostValidator;
+        ghostValidator = null;
+
+        if (ghost != null)
+        {
+            if (validator == null) validator = ghost.GetComponent<FurniturePlacementValidator>();
+            if (validator != null) validator.Suspend();
+        }
+
+        return ghost;
+    }
+
+    private void DestroyGhostImmediate()
+    {
+        GameObject ghost = DetachGhost();
+        if (ghost == null) return;
+
+        ghost.transform.DOKill(false);
+        Destroy(ghost);
+    }
+
+    private void DismissGhostAnimated()
+    {
+        GameObject ghost = DetachGhost();
+        if (ghost == null) return;
+
+        ghost.transform.DOKill(false);
+        SetCollidersEnabled(ghost.GetComponentsInChildren<Collider>(true), false);
+
+        ghost.transform.DOScale(Vector3.zero, 0.2f)
+            .SetEase(Ease.InBack)
+            .SetLink(ghost)
+            .OnComplete(() => Destroy(ghost));
+    }
+
+    private void KillGhostTweens()
+    {
+        _rotateTween?.Kill();
+        _rotateTween = null;
+        _spawnSequence?.Kill();
+        _spawnSequence = null;
+    }
+
+    private void SettleGhostTransform()
+    {
+        if (_activeGhost == null) return;
+
+        _rotateTween?.Kill(true);
+        _rotateTween = null;
+        _activeGhost.transform.DOKill(true);
+    }
+
+    private static void SetCollidersEnabled(Collider[] colliders, bool enabled)
+    {
+        foreach (Collider col in colliders)
+            if (col != null) col.enabled = enabled;
     }
 
     private Vector3 GetDefaultGhostPosition()
@@ -160,8 +276,6 @@ public class FurnitureManager : MonoBehaviour
         return cam.transform.position + cam.transform.forward * 4f;
     }
 
-    // ─── Inventário ───────────────────────────────────────────────────────────
-
     public void AddToInventory(FurnitureData data)
     {
         _inventory.Add(new InventoryItem(data));
@@ -169,25 +283,20 @@ public class FurnitureManager : MonoBehaviour
         if (!_hasShownBuildModeHint)
         {
             _hasShownBuildModeHint = true;
-            ServiceLocator.Get<Warnings>().ShowWarning("Pressione B para entrar no modo de construção!", true);
+            ServiceLocator.Get<Warnings>().ShowWarning("Press B to enter build mode!", true);
         }
     }
 
-    // ─── Input do Build Mode ──────────────────────────────────────────────────
-
     private void HandleBuildInput()
     {
-        if (_activeGhost != null)
-        {
-            bool canPlace = ghostValidator != null && ghostValidator.IsValid;
-            if (Input.GetMouseButtonDown(0) && canPlace)
-                PlaceFurniture();
+        if (_activeGhost != null && Input.GetMouseButtonDown(0) && CanPlaceGhost())
+            PlaceFurniture();
 
-            if (Input.GetKeyDown(KeyCode.R))
-                _activeGhost.transform.Rotate(0, 90, 0);
-        }
+        if (!IsBuildingMode) return;
 
-        // Q/E navegam pelo inventário quando há mais de 1 item
+        if (_activeGhost != null && Input.GetKeyDown(KeyCode.R))
+            RotateGhost();
+
         if (_inventory.Count > 1)
         {
             if (Input.GetKeyDown(KeyCode.Q)) CycleInventory(-1);
@@ -197,14 +306,32 @@ public class FurnitureManager : MonoBehaviour
         HandlePickupHold();
     }
 
+    private bool CanPlaceGhost()
+    {
+        return ghostValidator != null && ghostValidator.IsValid && _spawnSequence == null;
+    }
+
+    private void RotateGhost()
+    {
+        _rotateTween?.Kill(true);
+        _rotateTween = null;
+        _activeGhost.transform.DOKill(true);
+
+        _rotateTween = _activeGhost.transform
+            .DORotate(Vector3.up * 90f, 0.18f, RotateMode.LocalAxisAdd)
+            .SetEase(Ease.OutBack)
+            .SetLink(_activeGhost);
+    }
+
     private void CycleInventory(int direction)
     {
         _currentIndex = (_currentIndex + direction + _inventory.Count) % _inventory.Count;
 
         if (_activeGhost != null)
         {
-            var t = _activeGhost.transform;
-            LoadCurrentFromInventory(t.position, t.rotation);
+            SettleGhostTransform();
+            _activeGhost.transform.GetPositionAndRotation(out Vector3 pos, out Quaternion rot);
+            LoadCurrentFromInventory(pos, rot);
         }
         else
         {
@@ -217,85 +344,132 @@ public class FurnitureManager : MonoBehaviour
         if (circle == null) return;
 
         if (Input.GetMouseButtonDown(1))
-        {
-            _holdTween = circle.DOFillAmount(1f, 1f).OnComplete(() =>
-            {
-                TryPickUpFurniture();
-                circle.DOFillAmount(0f, 0.2f);
-            });
-        }
+            BeginPickupHold();
 
         if (Input.GetMouseButtonUp(1))
-        {
-            _holdTween?.Kill();
-            circle.DOFillAmount(0f, 0.2f);
-        }
+            CancelPickupHold();
     }
 
-    // ─── Pegar Furniture Colocada ─────────────────────────────────────────────
+    private void BeginPickupHold()
+    {
+        _holdTween?.Kill();
+        circle.DOKill(false);
+        circle.fillAmount = 0f;
+
+        _holdTween = circle.DOFillAmount(1f, 1f)
+            .SetEase(Ease.Linear)
+            .OnComplete(() =>
+            {
+                _holdTween = null;
+                TryPickUpFurniture();
+                circle.DOFillAmount(0f, 0.2f).SetEase(Ease.OutQuad);
+            });
+    }
+
+    private void CancelPickupHold()
+    {
+        _holdTween?.Kill();
+        _holdTween = null;
+
+        if (circle == null) return;
+        circle.DOKill(false);
+        circle.DOFillAmount(0f, 0.2f).SetEase(Ease.OutQuad);
+    }
 
     private void TryPickUpFurniture()
     {
-        Ray ray = Camera.main.ScreenPointToRay(new Vector3(Screen.width / 2f, Screen.height / 2f));
-        if (!Physics.Raycast(ray, out RaycastHit hit, 5f, furnitureLayer)) return;
+        Camera cam = Camera.main;
+        if (cam == null) return;
 
-        FurnitureInstance instance = hit.collider.GetComponentInParent<FurnitureInstance>();
+        Ray ray = cam.ScreenPointToRay(new Vector3(Screen.width / 2f, Screen.height / 2f));
+        int hitCount = Physics.RaycastNonAlloc(ray, _pickupHitBuffer, 5f);
+
+        FurnitureInstance instance = null;
+        float closest = float.MaxValue;
+        for (int i = 0; i < hitCount; i++)
+        {
+            var fi = _pickupHitBuffer[i].collider.GetComponentInParent<FurnitureInstance>();
+            if (fi != null && _pickupHitBuffer[i].distance < closest)
+            {
+                instance = fi;
+                closest = _pickupHitBuffer[i].distance;
+            }
+        }
+
         if (instance == null) return;
 
-        if (!_furnitureLibrary.ContainsKey(instance.Data.type))
+        if (instance.Data == null || !_furnitureLibrary.ContainsKey(instance.Data.type))
         {
-            ServiceLocator.Get<Warnings>().ShowWarning("Esta furniture não pode ser removida.", false);
+            ServiceLocator.Get<Warnings>().ShowWarning("That furniture cannot be removed.", false);
             return;
         }
 
         _placedFurnitures.Remove(instance);
         _inventory.Add(new InventoryItem(instance.Data, instance.SaveData));
-        Destroy(instance.gameObject);
 
-        // Se inventário estava vazio (sem ghost), carrega o item recém-pego
+        AnimatePickedUpFurniture(instance.gameObject);
+
         if (_activeGhost == null)
         {
             _currentIndex = _inventory.Count - 1;
             LoadCurrentFromInventory();
         }
 
-        ServiceLocator.Get<ConstructionUI>().SetText();
+        ConstructionUI constructionUI = ServiceLocator.Get<ConstructionUI>();
+        if (constructionUI != null) constructionUI.SetText();
+
+        PlayCameraKick(6f, 0.06f, 0.2f, Ease.OutQuad);
     }
 
-    // ─── Colocar Furniture ────────────────────────────────────────────────────
+    private void AnimatePickedUpFurniture(GameObject target)
+    {
+        SetCollidersEnabled(target.GetComponentsInChildren<Collider>(true), false);
+
+        Transform targetTransform = target.transform;
+        targetTransform.DOKill(false);
+        Vector3 originalScale = targetTransform.localScale;
+
+        DOTween.Sequence()
+            .Append(targetTransform.DOScale(originalScale * 1.2f, 0.08f).SetEase(Ease.OutQuad))
+            .Append(targetTransform.DOScale(Vector3.zero, 0.25f).SetEase(Ease.InBack))
+            .Join(targetTransform.DORotate(Vector3.up * 180f, 0.33f, RotateMode.LocalAxisAdd).SetEase(Ease.InQuad))
+            .SetLink(target)
+            .OnComplete(() => Destroy(target));
+    }
 
     private void PlaceFurniture()
     {
         if (!ServiceLocator.Get<PlayerMotor>().PlayerIsInMarket)
         {
-            ServiceLocator.Get<Warnings>().ShowWarning("Só é possível colocar furniture dentro da loja!", false);
+            ServiceLocator.Get<Warnings>().ShowWarning("You can only place furniture inside the store!", false);
             return;
         }
 
-        var inventoryItem = _inventory[_currentIndex];
+        if (_activeGhost == null || _inventory.Count == 0) return;
+
+        _currentIndex = Mathf.Clamp(_currentIndex, 0, _inventory.Count - 1);
+        InventoryItem inventoryItem = _inventory[_currentIndex];
         bool wasMovingExistingFurniture = inventoryItem.SaveData != null;
+        FurnitureData selectedData = _currentSelected;
 
-        // Salva posição/rotação do ghost antes de destruí-lo
+        SettleGhostTransform();
         _activeGhost.transform.GetPositionAndRotation(out Vector3 lastPos, out Quaternion lastRot);
+        lastPos.y = selectedData.floorDistance;
+        DestroyGhostImmediate();
 
-        GameObject obj = Instantiate(_currentSelected.prefab, lastPos, lastRot);
+        GameObject obj = Instantiate(selectedData.prefab, lastPos, lastRot);
         obj.transform.SetParent(furnitureContainer);
-
-        // Animação satisfatória: punch na escala correta do prefab (sem risco de escala errada)
-        obj.transform.DOPunchScale(Vector3.one * 0.2f, 0.4f, 5, 0.5f);
+        AnimatePlacedFurniture(obj.transform);
 
         if (obj.TryGetComponent(out FurnitureInstance instance))
         {
-            instance.Data = _currentSelected;
+            instance.Data = selectedData;
             if (inventoryItem.SaveData != null)
                 instance.SaveData = inventoryItem.SaveData;
             _placedFurnitures.Add(instance);
         }
 
         _inventory.RemoveAt(_currentIndex);
-        Destroy(_activeGhost);
-        _activeGhost = null;
-        _currentSelected = null;
 
         TutorialManager tutorialManager = ServiceLocator.Get<TutorialManager>();
         if (tutorialManager != null)
@@ -308,18 +482,66 @@ public class FurnitureManager : MonoBehaviour
         }
         else
         {
+            IsBuildingMode = false;
+            _currentSelected = null;
             _currentIndex = 0;
-            // Mantém build mode ativo para poder pegar furnitures colocadas
+            CancelPickupHold();
         }
+
+        PlayCameraKick(-7f, 0.06f, 0.3f, Ease.OutElastic);
     }
 
-    // ─── API pública ──────────────────────────────────────────────────────────
+    private void AnimatePlacedFurniture(Transform target)
+    {
+        Vector3 finalScale = target.localScale;
+        target.localScale = Vector3.zero;
+
+        Collider[] colliders = target.GetComponentsInChildren<Collider>(true);
+        SetCollidersEnabled(colliders, false);
+
+        DOTween.Sequence()
+            .Append(target.DOScale(finalScale * 1.3f, 0.12f).SetEase(Ease.OutCubic))
+            .Append(target.DOScale(finalScale * 0.85f, 0.09f).SetEase(Ease.OutQuad))
+            .Append(target.DOScale(finalScale * 1.08f, 0.07f).SetEase(Ease.OutQuad))
+            .Append(target.DOScale(finalScale * 0.96f, 0.05f).SetEase(Ease.OutQuad))
+            .Append(target.DOScale(finalScale, 0.04f).SetEase(Ease.OutQuad))
+            .SetLink(target.gameObject)
+            .OnComplete(() => SetCollidersEnabled(colliders, true));
+    }
+
+    private void CacheBaseCameraFov()
+    {
+        if (_hasBaseCameraFov) return;
+
+        Camera cam = Camera.main;
+        if (cam == null) return;
+
+        _baseCameraFov = cam.fieldOfView;
+        _hasBaseCameraFov = true;
+    }
+
+    private void PlayCameraKick(float fovDelta, float inDuration, float returnDuration, Ease returnEase)
+    {
+        Camera cam = Camera.main;
+        if (cam == null) return;
+
+        if (!_hasBaseCameraFov)
+        {
+            _baseCameraFov = cam.fieldOfView;
+            _hasBaseCameraFov = true;
+        }
+
+        _cameraFovTween?.Kill(false);
+        _cameraFovTween = DOTween.Sequence()
+            .Append(cam.DOFieldOfView(_baseCameraFov + fovDelta, inDuration).SetEase(Ease.OutQuad))
+            .Append(cam.DOFieldOfView(_baseCameraFov, returnDuration).SetEase(returnEase));
+    }
 
     public void SelectFurniture(FurnitureType type)
     {
         if (!_furnitureLibrary.TryGetValue(type, out FurnitureData data))
         {
-            Debug.LogError($"[FurnitureManager] Tipo '{type}' não encontrado na library.");
+            Debug.LogError($"[FurnitureManager] Type '{type}' not found in the library.");
             return;
         }
         AddToInventory(data);
