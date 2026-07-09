@@ -790,8 +790,9 @@ MonoBehaviour:
     mascotTargetPosition: {fileID: 4938137836108460407}
     textBoxTargetPosition: {fileID: 3217876424232810313}
     dialogueLines:
-    - text: "Essa etapa \xE9 no come\xE7o do jogo e \xE9 quando o jogador deve entrar
-        na loja para prosseguir para o proximo passo"
+    - text: Welcome to your very own Japanese market!
+      extraWaitAfterLine: 2
+    - text: Let's get things ready. Head inside the store to begin!
       extraWaitAfterLine: 2
     onMascotStartTalking:
       m_PersistentCalls:
@@ -804,9 +805,9 @@ MonoBehaviour:
     mascotTargetPosition: {fileID: 6583276306721906135}
     textBoxTargetPosition: {fileID: 3052205687286627385}
     dialogueLines:
-    - text: Jogador acanou de entrar na loja
+    - text: You're in! Great start.
       extraWaitAfterLine: 1
-    - text: Deve ir para o computador para iniciar o proximo passo
+    - text: Now head over to the computer to place your first order.
       extraWaitAfterLine: 2
     onMascotStartTalking:
       m_PersistentCalls:
@@ -819,12 +820,11 @@ MonoBehaviour:
     mascotTargetPosition: {fileID: 4938137836108460407}
     textBoxTargetPosition: {fileID: 3217876424232810313}
     dialogueLines:
-    - text: Agora que entrou no pc, use [A] e [D] para navegar e [ENTER] para selecionar.
+    - text: "Use [A] and [D] to browse the catalog, then [ENTER] to confirm."
       extraWaitAfterLine: 3
-    - text: "use o dinheiro que voc\xEA tem para comprar uma prateleira e um produto
-        para vender."
+    - text: Buy a shelf and at least one product with your starting budget.
       extraWaitAfterLine: 3
-    - text: Deve comprar uma prateleira e uma comida para ir para o proximo passo
+    - text: Come back once you've bought both!
       extraWaitAfterLine: 3
     onMascotStartTalking:
       m_PersistentCalls:
@@ -837,9 +837,9 @@ MonoBehaviour:
     mascotTargetPosition: {fileID: 4938137836108460407}
     textBoxTargetPosition: {fileID: 3217876424232810313}
     dialogueLines:
-    - text: Comprou a prateleira e item
+    - text: Nice shopping! Time to set up the store.
       extraWaitAfterLine: 2
-    - text: Deve colocar a prateleira que comprou no chao
+    - text: "Press [B] to enter build mode, then place your shelf on the floor."
       extraWaitAfterLine: 3
     onMascotStartTalking:
       m_PersistentCalls:
@@ -852,7 +852,9 @@ MonoBehaviour:
     mascotTargetPosition: {fileID: 4938137836108460407}
     textBoxTargetPosition: {fileID: 3217876424232810313}
     dialogueLines:
-    - text: Colocou a prateleira no chao, deve mudar ela de lugar
+    - text: Shelf placed! Now try picking it up and moving it somewhere else.
+      extraWaitAfterLine: 2
+    - text: Hold [RMB] on any placed furniture to pick it back up.
       extraWaitAfterLine: 3
     onMascotStartTalking:
       m_PersistentCalls:
@@ -865,7 +867,7 @@ MonoBehaviour:
     mascotTargetPosition: {fileID: 4938137836108460407}
     textBoxTargetPosition: {fileID: 3217876424232810313}
     dialogueLines:
-    - text: moveu a prateleira, deve colocar o item na prateleira
+    - text: Great repositioning! Now stock the shelf with the product you bought.
       extraWaitAfterLine: 3
     onMascotStartTalking:
       m_PersistentCalls:
@@ -878,7 +880,9 @@ MonoBehaviour:
     mascotTargetPosition: {fileID: 4938137836108460407}
     textBoxTargetPosition: {fileID: 3217876424232810313}
     dialogueLines:
-    - text: colocou o item na prateleira, deve colocar um preco no item
+    - text: Product stocked! But customers won't buy without a price tag.
+      extraWaitAfterLine: 2
+    - text: Interact with the shelf to set a price for your product.
       extraWaitAfterLine: 2
     onMascotStartTalking:
       m_PersistentCalls:
@@ -891,7 +895,9 @@ MonoBehaviour:
     mascotTargetPosition: {fileID: 4938137836108460407}
     textBoxTargetPosition: {fileID: 3217876424232810313}
     dialogueLines:
-    - text: mudou o preco do item, deve abrir a loja
+    - text: Price is set! The store is almost ready.
+      extraWaitAfterLine: 2
+    - text: Find the store switch and flip it to OPEN to let customers in!
       extraWaitAfterLine: 2
     onMascotStartTalking:
       m_PersistentCalls:
@@ -904,7 +910,7 @@ MonoBehaviour:
     mascotTargetPosition: {fileID: 4938137836108460407}
     textBoxTargetPosition: {fileID: 3217876424232810313}
     dialogueLines:
-    - text: abriu a loja, deve esperar ate uqe um cliente spawnwa
+    - text: The store is open! Customers will arrive soon — hang tight!
       extraWaitAfterLine: 2
     onMascotStartTalking:
       m_PersistentCalls:
@@ -917,9 +923,9 @@ MonoBehaviour:
     mascotTargetPosition: {fileID: 4938137836108460407}
     textBoxTargetPosition: {fileID: 3217876424232810313}
     dialogueLines:
-    - text: Cliente spawnou
+    - text: A customer just walked in!
       extraWaitAfterLine: 2
-    - text: esera cliente ir ate a caixa registradora para prosseguir
+    - text: Let them browse and wait until they reach the register.
       extraWaitAfterLine: 2
     onMascotStartTalking:
       m_PersistentCalls:
@@ -932,9 +938,9 @@ MonoBehaviour:
     mascotTargetPosition: {fileID: 4938137836108460407}
     textBoxTargetPosition: {fileID: 3217876424232810313}
     dialogueLines:
-    - text: Cliente chegou na caixa registradore
+    - text: The customer is at the register!
       extraWaitAfterLine: 2
-    - text: interagir com a bancada
+    - text: Walk up and interact with the counter to start checkout.
       extraWaitAfterLine: 2
     onMascotStartTalking:
       m_PersistentCalls:
@@ -947,7 +953,7 @@ MonoBehaviour:
     mascotTargetPosition: {fileID: 4938137836108460407}
     textBoxTargetPosition: {fileID: 3217876424232810313}
     dialogueLines:
-    - text: interagiu com a bancada, passe os itens do cliente para prossseguir
+    - text: You're behind the register! Scan all the customer's items to proceed.
       extraWaitAfterLine: 2
     onMascotStartTalking:
       m_PersistentCalls:
@@ -960,7 +966,7 @@ MonoBehaviour:
     mascotTargetPosition: {fileID: 4938137836108460407}
     textBoxTargetPosition: {fileID: 3217876424232810313}
     dialogueLines:
-    - text: passou os items dos clientes, Clique para escolher a forma de pagamento
+    - text: All items scanned! Click to choose a payment method.
       extraWaitAfterLine: 2
     onMascotStartTalking:
       m_PersistentCalls:
@@ -973,8 +979,9 @@ MonoBehaviour:
     mascotTargetPosition: {fileID: 4938137836108460407}
     textBoxTargetPosition: {fileID: 3217876424232810313}
     dialogueLines:
-    - text: Escolheu a forma do pagamento, realize o pagamneto e obrigado por fazer
-        o tutorial.
+    - text: Almost there! Complete the payment to finish the sale.
+      extraWaitAfterLine: 2
+    - text: Thanks for completing the tutorial — good luck with your market!
       extraWaitAfterLine: 2
     onMascotStartTalking:
       m_PersistentCalls:
@@ -987,14 +994,16 @@ MonoBehaviour:
     mascotTargetPosition: {fileID: 4938137836108460407}
     textBoxTargetPosition: {fileID: 3217876424232810313}
     dialogueLines:
-    - text: temino tutoria
+    - text: "Tutorial complete! You're officially open for business."
+      extraWaitAfterLine: 2
+    - text: May your shelves stay stocked and your customers happy!
       extraWaitAfterLine: 2
     onMascotStartTalking:
       m_PersistentCalls:
         m_Calls: []
     timePerLetterOverride: 0
     completionMode: 2
-    requiredEventId: 
+    requiredEventId:
     delayBeforeNextStep: 1
   startAutomatically: 1
 --- !u!1 &7487521083022541104
