@@ -15,14 +15,24 @@ public class TrashBin : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
+        var controller = ServiceLocator.Get<ItemRaycastController>();
+
+        if (other.TryGetComponent(out Box _))
+        {
+            var itemBox = other.GetComponentInChildren<ItemBox>();
+            if (itemBox != null && !itemBox.IsEmpty())
+            {
+                if (controller.HeldItem != null) controller.DropItem();
+                ServiceLocator.Get<Warnings>().ShowWarning("That's not trash!", false);
+                return;
+            }
+        }
+
         if (!other.TryGetComponent(out TrashInstance trash)) return;
         if (trash.TrashData == null) return;
 
-        var controller = ServiceLocator.Get<ItemRaycastController>();
-
         if (trash.TrashData.type == acceptedType)
         {
-            // Solta da mão do player antes de destruir
             if (controller.HeldItem != null)
                 controller.DropItem();
 
