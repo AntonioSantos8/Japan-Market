@@ -42,6 +42,12 @@ public class CashRegister : InteractableBase
     [Tooltip("Raio de tolerância do SphereCast usado para detectar o item clicado.")]
     [SerializeField] float clickRadius = 0.05f;
 
+    [Header("Coin Pop")]
+    [Tooltip("Mesmo prefab CoinPop usado no TrashBin.")]
+    [SerializeField] private GameObject _coinPopPrefab;
+    [Tooltip("Empty GameObject onde o popup vai aparecer (posicione acima do balcão).")]
+    [SerializeField] private Transform _popupSpawnPoint;
+
     // State
     private Camera mainCamera;
     private float zoomOri;
@@ -421,8 +427,12 @@ public class CashRegister : InteractableBase
 
     public void FinalizeTransaction()
     {
+        float earned = totalPrice;
+
         FinishCustomer();
         FinishPayment();
+
+        SpawnCoinPop(earned);
 
         if (!_hasNotifiedFirstFinishedPurchase)
         {
@@ -431,6 +441,20 @@ public class CashRegister : InteractableBase
             if (tutorialManager != null)
                 tutorialManager.NotifyGameEvent(FinishTutorialEventId);
         }
+    }
+    [ContextMenu("Finish Customer")]
+    public void FinishCustomerContextMenu()
+    {
+        SpawnCoinPop(500);
+    }
+    private void SpawnCoinPop(float amount)
+    {
+        if (_coinPopPrefab == null || _popupSpawnPoint == null) return;
+
+        GameObject pop = Instantiate(_coinPopPrefab, _popupSpawnPoint.position, _popupSpawnPoint.rotation);
+        if (pop.TryGetComponent(out CoinPop coinPop))
+            coinPop.Setup(amount);
+        Destroy(pop, 4f);
     }
 
     // -------------------------

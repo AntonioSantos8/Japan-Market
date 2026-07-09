@@ -33,8 +33,12 @@ public class CoinPop : MonoBehaviour
 
     public void Setup(float amount) => _label.text = $"+¥{Mathf.FloorToInt(amount)}";
 
+    private Vector3 _baseEuler;
+
     private void Start()
     {
+        _baseEuler = transform.eulerAngles;
+
         _label.alpha = 0f;
         _label.color = _flashWhite;
         transform.localScale = Vector3.zero;
@@ -80,10 +84,10 @@ public class CoinPop : MonoBehaviour
         // "PUM!" extra logo que começa a subir
         s.Insert(fs + 0.06f, transform.DOPunchScale(Vector3.one * 0.20f, 0.28f, 4, 0.5f));
 
-        // Balanço de folha no vento
-        s.Insert(fs,                           transform.DORotate(new Vector3(0, 0,  7f), _floatDuration * 0.30f).SetEase(Ease.OutSine));
-        s.Insert(fs + _floatDuration * 0.30f,  transform.DORotate(new Vector3(0, 0, -5f), _floatDuration * 0.38f).SetEase(Ease.InOutSine));
-        s.Insert(fs + _floatDuration * 0.68f,  transform.DORotate(Vector3.zero,           _floatDuration * 0.32f).SetEase(Ease.InSine));
+        // Balanço de folha no vento — offsets relativos à rotação inicial
+        s.Insert(fs,                           transform.DORotate(_baseEuler + new Vector3(0, 0,  7f), _floatDuration * 0.30f).SetEase(Ease.OutSine));
+        s.Insert(fs + _floatDuration * 0.30f,  transform.DORotate(_baseEuler + new Vector3(0, 0, -5f), _floatDuration * 0.38f).SetEase(Ease.InOutSine));
+        s.Insert(fs + _floatDuration * 0.68f,  transform.DORotate(_baseEuler,                          _floatDuration * 0.32f).SetEase(Ease.InSine));
 
         // ══ FASE 5 · FADE OUT ════════════════════════════════════════════════
         float fadeStart = fs + _floatDuration * 0.44f;

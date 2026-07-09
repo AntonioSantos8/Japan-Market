@@ -54,6 +54,14 @@ public class Warnings : MonoBehaviour
 
         warningTmp.DOFade(1f, 0.35f).SetEase(Ease.OutCubic);
         warningTmp.transform.DOPunchScale(Vector3.one * 0.11f, 0.35f, 5, 0.5f);
+
+        ConstructionUI ui = ServiceLocator.Get<ConstructionUI>();
+        if (ui != null)
+        {
+            if (goodWarning) ui.FlashGood();
+            else             ui.FlashBad();
+        }
+
         yield return new WaitForSeconds(warningDuration);
         HideWarning();
     }

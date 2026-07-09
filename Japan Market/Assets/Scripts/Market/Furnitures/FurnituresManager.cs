@@ -132,11 +132,14 @@ public class FurnitureManager : MonoBehaviour
             ExitBuildMode();
     }
 
+    private void TriggerWarning(string msg, bool isGood) =>
+        ServiceLocator.Get<Warnings>().ShowWarning(msg, isGood);
+
     private void TryEnterBuildMode()
     {
         if (!ServiceLocator.Get<PlayerMotor>().PlayerIsInMarket)
         {
-            ServiceLocator.Get<Warnings>().ShowWarning("The build mode only works inside the store!", false);
+            TriggerWarning("The build mode only works inside the store!", false);
             return;
         }
 
@@ -352,6 +355,8 @@ public class FurnitureManager : MonoBehaviour
 
     private void BeginPickupHold()
     {
+        if (!IsFurnitureUnderCrosshair()) return;
+
         _holdTween?.Kill();
         circle.DOKill(false);
         circle.fillAmount = 0f;
@@ -364,6 +369,22 @@ public class FurnitureManager : MonoBehaviour
                 TryPickUpFurniture();
                 circle.DOFillAmount(0f, 0.2f).SetEase(Ease.OutQuad);
             });
+    }
+
+    private bool IsFurnitureUnderCrosshair()
+    {
+        Camera cam = Camera.main;
+        if (cam == null) return false;
+
+        Ray ray = cam.ScreenPointToRay(new Vector3(Screen.width / 2f, Screen.height / 2f));
+        int hitCount = Physics.RaycastNonAlloc(ray, _pickupHitBuffer, 5f);
+
+        for (int i = 0; i < hitCount; i++)
+        {
+            if (_pickupHitBuffer[i].collider.GetComponentInParent<FurnitureInstance>() != null)
+                return true;
+        }
+        return false;
     }
 
     private void CancelPickupHold()
@@ -400,7 +421,7 @@ public class FurnitureManager : MonoBehaviour
 
         if (instance.Data == null || !_furnitureLibrary.ContainsKey(instance.Data.type))
         {
-            ServiceLocator.Get<Warnings>().ShowWarning("That furniture cannot be removed.", false);
+            TriggerWarning("That furniture cannot be removed.", false);
             return;
         }
 
@@ -441,7 +462,7 @@ public class FurnitureManager : MonoBehaviour
     {
         if (!ServiceLocator.Get<PlayerMotor>().PlayerIsInMarket)
         {
-            ServiceLocator.Get<Warnings>().ShowWarning("You can only place furniture inside the store!", false);
+            TriggerWarning("You can only place furniture inside the store!", false);
             return;
         }
 
