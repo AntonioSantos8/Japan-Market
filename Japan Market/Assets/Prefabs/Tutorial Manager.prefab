@@ -232,8 +232,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: Eu sou quem eu realmente sou ser
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 54cd830e437ed5e4faa7d0a9018445a7, type: 2}
+  m_sharedMaterial: {fileID: -7113716118141388381, guid: 54cd830e437ed5e4faa7d0a9018445a7, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -295,7 +295,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: 20, y: 20, z: 20, w: 20}
+  m_margin: {x: 20, y: 20, z: 9.472229, w: 20}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
@@ -444,7 +444,7 @@ MonoBehaviour:
       m_Calls: []
   m_text: Eu sou quem eu realmente sou ser
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 54cd830e437ed5e4faa7d0a9018445a7, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
@@ -510,7 +510,7 @@ MonoBehaviour:
   m_margin: {x: 20, y: 20, z: 20, w: 20}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_hasFontAssetChanged: 0
+  m_hasFontAssetChanged: 1
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
 --- !u!1 &3879981969478896962
@@ -820,7 +820,7 @@ MonoBehaviour:
     mascotTargetPosition: {fileID: 4938137836108460407}
     textBoxTargetPosition: {fileID: 3217876424232810313}
     dialogueLines:
-    - text: "Use [A] and [D] to browse the catalog, then [ENTER] to confirm."
+    - text: Use [A] and [D] to browse the catalog, then [ENTER] to confirm.
       extraWaitAfterLine: 3
     - text: Buy a shelf and at least one product with your starting budget.
       extraWaitAfterLine: 3
@@ -839,7 +839,7 @@ MonoBehaviour:
     dialogueLines:
     - text: Nice shopping! Time to set up the store.
       extraWaitAfterLine: 2
-    - text: "Press [B] to enter build mode, then place your shelf on the floor."
+    - text: Press [B] to enter build mode, then place your shelf on the floor.
       extraWaitAfterLine: 3
     onMascotStartTalking:
       m_PersistentCalls:
@@ -910,7 +910,7 @@ MonoBehaviour:
     mascotTargetPosition: {fileID: 4938137836108460407}
     textBoxTargetPosition: {fileID: 3217876424232810313}
     dialogueLines:
-    - text: The store is open! Customers will arrive soon — hang tight!
+    - text: "The store is open! Customers will arrive soon \u2014 hang tight!"
       extraWaitAfterLine: 2
     onMascotStartTalking:
       m_PersistentCalls:
@@ -981,7 +981,7 @@ MonoBehaviour:
     dialogueLines:
     - text: Almost there! Complete the payment to finish the sale.
       extraWaitAfterLine: 2
-    - text: Thanks for completing the tutorial — good luck with your market!
+    - text: "Thanks for completing the tutorial \u2014 good luck with your market!"
       extraWaitAfterLine: 2
     onMascotStartTalking:
       m_PersistentCalls:
@@ -994,7 +994,7 @@ MonoBehaviour:
     mascotTargetPosition: {fileID: 4938137836108460407}
     textBoxTargetPosition: {fileID: 3217876424232810313}
     dialogueLines:
-    - text: "Tutorial complete! You're officially open for business."
+    - text: Tutorial complete! You're officially open for business.
       extraWaitAfterLine: 2
     - text: May your shelves stay stocked and your customers happy!
       extraWaitAfterLine: 2
@@ -1003,7 +1003,7 @@ MonoBehaviour:
         m_Calls: []
     timePerLetterOverride: 0
     completionMode: 2
-    requiredEventId:
+    requiredEventId: 
     delayBeforeNextStep: 1
   startAutomatically: 1
 --- !u!1 &7487521083022541104
