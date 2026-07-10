@@ -11,7 +11,7 @@ public class Warnings : MonoBehaviour
 
     public bool IsWarningActive { get => isWarningActive; set => isWarningActive = value; }
 
-    private void Start()
+    private void Awake()
     {
         ServiceLocator.Register(this);
     }
