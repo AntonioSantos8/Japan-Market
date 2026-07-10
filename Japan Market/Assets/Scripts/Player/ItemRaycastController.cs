@@ -8,6 +8,7 @@ public class ItemRaycastController : MonoBehaviour
 {
     [Header("Settings")]
     [SerializeField] float distance = 3f;
+    [SerializeField] float interactRadius = 0.35f;
     [SerializeField] LayerMask interactLayer;
     [SerializeField] Transform boxHandPivot;
     [SerializeField] Transform normalPivot;
@@ -27,7 +28,7 @@ public class ItemRaycastController : MonoBehaviour
 
     Tween normalReticleScleTween;
 
-    public bool isWithBox; 
+    public bool isWithBox;
     bool canInteract = true;
     public Items currentItemType = Items.None;
 
@@ -43,7 +44,7 @@ public class ItemRaycastController : MonoBehaviour
     [SerializeField] Ease easeReticleScale;
     bool generalCanInteract = true;
     bool isReticleFocused;
-    public void SetGeneralCanInteract(bool to){ generalCanInteract = to;}
+    public void SetGeneralCanInteract(bool to) { generalCanInteract = to; }
 
     float currentHoldTime;
     InteractableBase currentHoldingInteractable;
@@ -53,9 +54,9 @@ public class ItemRaycastController : MonoBehaviour
 
     public ItemBox LastBox() => lastBoxHeld;
     public Transform HeldItem => heldItem;
-    public void SetCanInteract(bool value){ canInteract = value;}
+    public void SetCanInteract(bool value) { canInteract = value; }
 
-    void Awake() 
+    void Awake()
     {
         ServiceLocator.Register(this);
         normalScale = normalReticle.transform.localScale;
@@ -72,60 +73,64 @@ public class ItemRaycastController : MonoBehaviour
         HandleHeldItemInput();
         FollowHand();
 
-        if(Input.GetKeyDown(KeyCode.Keypad9)) 
-            Time.timeScale = Time.timeScale /2;
+        if (Input.GetKeyDown(KeyCode.Keypad9))
+            Time.timeScale = Time.timeScale / 2;
     }
     public void ReRaycast()
     {
-           Ray ray = cam.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0)); 
-         if (Physics.Raycast(ray, out RaycastHit hit, distance, interactLayer))
+        if (TryGetInteractableHit(out RaycastHit hit))
         {
             if (hit.collider.TryGetComponent(out InteractableBase interactable))
             {
-                
-                    lastLookedInteractable?.OnLookAway();
-                    lastLookedInteractable = interactable;
-                    bool canLookAt = lastLookedInteractable.OnLookAt();
-                    canInteract = canLookAt;
-                    if(canLookAt)
-                    {
-                        ChangeNormalReticleState(true);
-                    }
-                
+                lastLookedInteractable?.OnLookAway();
+                lastLookedInteractable = interactable;
+                bool canLookAt = lastLookedInteractable.OnLookAt();
+                canInteract = canLookAt;
+                if (canLookAt)
+                    ChangeNormalReticleState(true);
             }
         }
     }
+
+    // Raycast preciso primeiro; SphereCast como fallback para bordas/objetos pequenos.
+    // SphereCast falha quando a esfera já sobrepõe o collider (centro de slots finos).
+    private bool TryGetInteractableHit(out RaycastHit hit)
+    {
+        Ray ray = cam.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
+        float dist = distance * 2f;
+        if (Physics.Raycast(ray, out hit, dist, interactLayer))
+            return true;
+        return Physics.SphereCast(ray, interactRadius, out hit, dist, interactLayer);
+    }
     public void ChangeNormalReticleState(bool to)
-    {   
+    {
         if (isReticleFocused == to)
             return;
 
         isReticleFocused = to;
         normalReticleScleTween?.Kill();
 
-        if(to)
+        if (to)
             normalReticleScleTween = normalReticle.transform.DOScale(lookAtScale, reticleTweenTime).SetEase(easeReticleScale);
         else
             normalReticleScleTween = normalReticle.transform.DOScale(normalScale, reticleTweenTime).SetEase(easeReticleScale);
     }
     public void ReLook(InteractableBase inte)
     {
-                    bool canLookAt = inte.OnLookAt();
-                    canInteract = canLookAt;
-                    if(canLookAt)
-                    {
-                        ChangeNormalReticleState(true);
-                    }
+        bool canLookAt = inte.OnLookAt();
+        canInteract = canLookAt;
+        if (canLookAt)
+        {
+            ChangeNormalReticleState(true);
+        }
 
 
 
-        
+
     }
     private void PerformInteractionRaycast()
     {
-        Ray ray = cam.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0)); 
-
-        if (Physics.Raycast(ray, out RaycastHit hit, distance, interactLayer))
+        if (TryGetInteractableHit(out RaycastHit hit))
         {
             if (hit.collider.TryGetComponent(out InteractableBase interactable))
             {
@@ -232,7 +237,7 @@ public class ItemRaycastController : MonoBehaviour
 
     public bool PickItem(Rigidbody itemRb, bool useRotationFollow = false)
     {
-        if(heldItem != null) return false;
+        if (heldItem != null) return false;
 
         useItemRotation = useRotationFollow;
 
@@ -249,11 +254,11 @@ public class ItemRaycastController : MonoBehaviour
         else
         {
             var phys2 = heldItemRb.GetComponentInChildren<HoldableItem>();
-            if(phys2 != null)
+            if (phys2 != null)
                 phys2.StartHolding(normalPivot);
         }
 
-        if (heldInteractable.gameObject.GetComponent<Box>()) 
+        if (heldInteractable.gameObject.GetComponent<Box>())
         {
             lastBoxHeld = heldItem.GetComponentInChildren<ItemBox>();
             isWithBox = true;
@@ -282,13 +287,13 @@ public class ItemRaycastController : MonoBehaviour
         else
         {
             var phys2 = heldItemRb.GetComponentInChildren<HoldableItem>();
-            if(phys2 != null)
+            if (phys2 != null)
                 phys2.StopHolding();
         }
 
         heldItem.gameObject.layer = LayerMask.NameToLayer("Interactive");
 
-        if (Physics.Raycast(transform.position, transform.forward, out RaycastHit hit, .8f, interactLayer)) 
+        if (Physics.Raycast(transform.position, transform.forward, out RaycastHit hit, .8f, interactLayer))
         {
             heldItem.position = hit.point - transform.forward * 0.2f;
         }
@@ -299,7 +304,7 @@ public class ItemRaycastController : MonoBehaviour
         heldInteractable.OnDropEvent?.Invoke();
         heldInteractable.SetCanInteract(true);
 
-        isWithBox = false; 
+        isWithBox = false;
         lastBoxHeld = null;
         heldItemRb = null;
         heldItem = null;
@@ -309,6 +314,6 @@ public class ItemRaycastController : MonoBehaviour
 
     public void OnDrawGizmos()
     {
-        Debug.DrawRay(transform.position, transform.forward, Color.red );
+        Debug.DrawRay(transform.position, transform.forward, Color.red);
     }
 }
