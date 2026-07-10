@@ -15,14 +15,14 @@ public class MarketManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI moneyText;
 
     public float Money { get => money; set => money = value; }
-    public bool Open   { get => open;  set => open  = value; }
+    public bool Open { get => open; set => open = value; }
     public float Clients { get => clients; set => clients = value; }
 
     private List<Transform> clientTransforms = new List<Transform>();
     public IReadOnlyList<Transform> ClientTransforms => clientTransforms;
 
     private Vector3 _baseScale;
-    private Canvas  _rootCanvas;
+    private Canvas _rootCanvas;
 
     // ── Lifecycle ─────────────────────────────────────────────────────────────
 
@@ -35,10 +35,11 @@ public class MarketManager : MonoBehaviour
     void Start()
     {
         ServiceLocator.Register(this);
+        Earn_Money(8000);
         if (moneyText != null)
         {
-            _baseScale   = moneyText.transform.localScale;
-            _rootCanvas  = moneyText.GetComponentInParent<Canvas>()?.rootCanvas;
+            _baseScale = moneyText.transform.localScale;
+            _rootCanvas = moneyText.GetComponentInParent<Canvas>()?.rootCanvas;
         }
         LoadMoney();
     }
@@ -94,23 +95,23 @@ public class MarketManager : MonoBehaviour
     {
         if (_rootCanvas == null) return;
 
-        var go   = new GameObject("EarnFlash");
+        var go = new GameObject("EarnFlash");
         var rect = go.AddComponent<RectTransform>();
         go.transform.SetParent(_rootCanvas.transform, false);
-        rect.anchorMin  = Vector2.zero;
-        rect.anchorMax  = Vector2.one;
-        rect.offsetMin  = Vector2.zero;
-        rect.offsetMax  = Vector2.zero;
+        rect.anchorMin = Vector2.zero;
+        rect.anchorMax = Vector2.one;
+        rect.offsetMin = Vector2.zero;
+        rect.offsetMax = Vector2.zero;
         // Vai para o fundo — não bloqueia cliques
         go.transform.SetAsFirstSibling();
 
         var img = go.AddComponent<Image>();
-        img.color         = new Color(1f, 0.90f, 0.04f, 0f);
+        img.color = new Color(1f, 0.90f, 0.04f, 0f);
         img.raycastTarget = false;
 
         DOTween.Sequence()
             .Append(img.DOFade(0.28f, 0.05f))
-            .Append(img.DOFade(0f,    0.40f).SetEase(Ease.OutQuad))
+            .Append(img.DOFade(0f, 0.40f).SetEase(Ease.OutQuad))
             .OnComplete(() => Destroy(go));
     }
 
@@ -120,7 +121,7 @@ public class MarketManager : MonoBehaviour
     {
         if (_rootCanvas == null || moneyText == null) return;
 
-        var go  = new GameObject("DeltaYen");
+        var go = new GameObject("DeltaYen");
         var tmp = go.AddComponent<TextMeshProUGUI>(); // auto-adiciona RectTransform
         go.transform.SetParent(_rootCanvas.transform, false);
         go.transform.position = moneyText.transform.position;
@@ -128,14 +129,14 @@ public class MarketManager : MonoBehaviour
         var rect = go.GetComponent<RectTransform>();
         rect.sizeDelta = new Vector2(500f, 100f);
 
-        tmp.font          = moneyText.font;
-        tmp.fontSize      = moneyText.fontSize * 1.6f;
-        tmp.fontStyle     = FontStyles.Bold;
-        tmp.text          = $"+{FormatMoney(amount)}";
-        tmp.alignment     = TextAlignmentOptions.Center;
+        tmp.font = moneyText.font;
+        tmp.fontSize = moneyText.fontSize * 1.6f;
+        tmp.fontStyle = FontStyles.Bold;
+        tmp.text = $"+{FormatMoney(amount)}";
+        tmp.alignment = TextAlignmentOptions.Center;
         tmp.raycastTarget = false;
-        tmp.alpha         = 0f;
-        tmp.color         = new Color(1f, 0.95f, 0.08f, 0f);
+        tmp.alpha = 0f;
+        tmp.color = new Color(1f, 0.95f, 0.08f, 0f);
 
         go.transform.localScale = Vector3.zero;
 
@@ -151,7 +152,7 @@ public class MarketManager : MonoBehaviour
             .Insert(0.16f, go.transform.DOScale(new Vector3(1.22f, 0.80f, 1f), 0.09f).SetEase(Ease.OutSine))
             .Insert(0.25f, go.transform.DOScale(new Vector3(0.88f, 1.18f, 1f), 0.08f).SetEase(Ease.OutSine))
             .Insert(0.33f, go.transform.DOScale(new Vector3(1.08f, 0.94f, 1f), 0.07f).SetEase(Ease.OutSine))
-            .Insert(0.40f, go.transform.DOScale(Vector3.one,                   0.06f).SetEase(Ease.OutSine))
+            .Insert(0.40f, go.transform.DOScale(Vector3.one, 0.06f).SetEase(Ease.OutSine))
             // ── SOBE E SOME ──
             .Insert(0.52f, go.transform.DOMoveY(startY + 90f, 1.00f).SetEase(Ease.OutCubic))
             .Insert(0.80f, tmp.DOFade(0f, 0.55f).SetEase(Ease.InQuad))
@@ -164,8 +165,8 @@ public class MarketManager : MonoBehaviour
     {
         if (_rootCanvas == null || moneyText == null) return;
 
-        string[] syms   = { "¥", "★", "✦", "◆", "¥", "★" };
-        Color[]  colors =
+        string[] syms = { "¥", "★", "✦", "◆", "¥", "★" };
+        Color[] colors =
         {
             new Color(1.00f, 0.95f, 0.05f),
             new Color(1.00f, 0.75f, 0.00f),
@@ -174,18 +175,18 @@ public class MarketManager : MonoBehaviour
         };
 
         Vector3 origin = moneyText.transform.position;
-        float   scale  = Screen.height / 1080f;
+        float scale = Screen.height / 1080f;
 
         for (int i = 0; i < 12; i++)
         {
             float angle = i * 30f + Random.Range(-18f, 18f);
-            float rad   = angle * Mathf.Deg2Rad;
-            float dist  = Random.Range(55f, 135f) * scale;
-            float dur   = Random.Range(0.45f, 0.75f);
+            float rad = angle * Mathf.Deg2Rad;
+            float dist = Random.Range(55f, 135f) * scale;
+            float dur = Random.Range(0.45f, 0.75f);
             float delay = Random.Range(0.00f, 0.06f);
-            float size  = Random.Range(18f, 32f);
+            float size = Random.Range(18f, 32f);
 
-            var go  = new GameObject($"Spark{i}");
+            var go = new GameObject($"Spark{i}");
             var tmp = go.AddComponent<TextMeshProUGUI>(); // auto-adiciona RectTransform
             go.transform.SetParent(_rootCanvas.transform, false);
             go.transform.position = origin;
@@ -194,11 +195,11 @@ public class MarketManager : MonoBehaviour
             rect.sizeDelta = new Vector2(60f, 60f);
 
             Color col = colors[Random.Range(0, colors.Length)];
-            tmp.font          = moneyText.font;
-            tmp.fontSize      = size;
-            tmp.text          = syms[Random.Range(0, syms.Length)];
-            tmp.color         = new Color(col.r, col.g, col.b, 0f);
-            tmp.alignment     = TextAlignmentOptions.Center;
+            tmp.font = moneyText.font;
+            tmp.fontSize = size;
+            tmp.text = syms[Random.Range(0, syms.Length)];
+            tmp.color = new Color(col.r, col.g, col.b, 0f);
+            tmp.alignment = TextAlignmentOptions.Center;
             tmp.raycastTarget = false;
 
             Vector3 endPos = origin + new Vector3(Mathf.Cos(rad), Mathf.Sin(rad), 0f) * dist;
@@ -237,8 +238,8 @@ public class MarketManager : MonoBehaviour
     private string FormatMoney(float value)
     {
         if (value >= 1_000_000_000f) return $"¥{value / 1_000_000_000f:0.##}b";
-        if (value >= 1_000_000f)     return $"¥{value / 1_000_000f:0.##}m";
-        if (value >= 1_000f)         return $"¥{value / 1_000f:0.##}k";
+        if (value >= 1_000_000f) return $"¥{value / 1_000_000f:0.##}m";
+        if (value >= 1_000f) return $"¥{value / 1_000f:0.##}k";
         return "¥" + Mathf.FloorToInt(value);
     }
 }
