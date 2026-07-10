@@ -13,6 +13,11 @@ public class TrashBin : MonoBehaviour
     [Tooltip("Prefab do pop '+50 ¥' que aparece acima da lixeira ao reciclar corretamente.")]
     [SerializeField] private GameObject _coinPopPrefab;
 
+    [Header("Penalidade")]
+    [SerializeField] private float _moneyPenalty = 100f;
+    [Tooltip("Prefab do pop '-¥' vermelho que aparece ao errar o lixo.")]
+    [SerializeField] private GameObject _moneyLosePopPrefab;
+
     private void OnTriggerEnter(Collider other)
     {
         var controller = ServiceLocator.Get<ItemRaycastController>();
@@ -23,6 +28,9 @@ public class TrashBin : MonoBehaviour
             if (itemBox != null && !itemBox.IsEmpty())
             {
                 if (controller.HeldItem != null) controller.DropItem();
+                Destroy(other.gameObject);
+                SpawnLosePop();
+                ServiceLocator.Get<MarketManager>().Lose_Money(_moneyPenalty);
                 ServiceLocator.Get<Warnings>().ShowWarning("That's not trash!", false);
                 return;
             }
@@ -62,19 +70,21 @@ public class TrashBin : MonoBehaviour
 
     private void RejectTrash(GameObject trashObj, ItemRaycastController controller)
     {
-        // Solta da mão — DropItem já zera a velocidade do Rigidbody
         if (controller.HeldItem != null)
             controller.DropItem();
 
-        // Impulso: sai voando para longe da lixeira com arco pra cima
-        if (trashObj.TryGetComponent(out Rigidbody rb))
-        {
-            Vector3 dir = (trashObj.transform.position - transform.position).normalized;
-            dir.y = 0.5f;
-            rb.linearVelocity = Vector3.zero;
-            rb.AddForce(dir.normalized * _rejectForce, ForceMode.Impulse);
-        }
-
+        Destroy(trashObj);
+        SpawnLosePop();
+        ServiceLocator.Get<MarketManager>().Lose_Money(_moneyPenalty);
         ServiceLocator.Get<Warnings>().ShowWarning("Lixo errado!", false);
+    }
+
+    private void SpawnLosePop()
+    {
+        if (_moneyLosePopPrefab == null) return;
+        GameObject pop = Instantiate(_moneyLosePopPrefab, transform.position + Vector3.up * 1.5f, Quaternion.identity);
+        if (pop.TryGetComponent(out MoneyLosePop losePop))
+            losePop.Setup(_moneyPenalty);
+        Destroy(pop, 4f);
     }
 }
