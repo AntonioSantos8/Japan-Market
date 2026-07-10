@@ -23177,6 +23177,11 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 3587188065289658224, guid: 135e59a5d1c1e1843a11b9b9f92c81a7, type: 3}
   m_PrefabInstance: {fileID: 951311745}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &238652676 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1193935844452092154, guid: 02d648acc1933234ab853670b63c3d0b, type: 3}
+  m_PrefabInstance: {fileID: 4031430654195775150}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &238880636
 GameObject:
   m_ObjectHideFlags: 0
@@ -39050,6 +39055,10 @@ PrefabInstance:
       propertyPath: _coinPopPrefab
       value: 
       objectReference: {fileID: 1738477932452666599, guid: b60dd4fda3879a1479ccbc6f33fe2070, type: 3}
+    - target: {fileID: 4810945267222112663, guid: 3a1da9ef84c2f824d9d99159dd865708, type: 3}
+      propertyPath: _moneyLosePopPrefab
+      value: 
+      objectReference: {fileID: 1738477932452666599, guid: b3ceab08b3c117f4780ad7d929d3649c, type: 3}
     - target: {fileID: 5809888134628278069, guid: 3a1da9ef84c2f824d9d99159dd865708, type: 3}
       propertyPath: m_Name
       value: TrashManager
@@ -39058,14 +39067,26 @@ PrefabInstance:
       propertyPath: _coinPopPrefab
       value: 
       objectReference: {fileID: 1738477932452666599, guid: b60dd4fda3879a1479ccbc6f33fe2070, type: 3}
+    - target: {fileID: 6110697234995703827, guid: 3a1da9ef84c2f824d9d99159dd865708, type: 3}
+      propertyPath: _moneyLosePopPrefab
+      value: 
+      objectReference: {fileID: 1738477932452666599, guid: b3ceab08b3c117f4780ad7d929d3649c, type: 3}
     - target: {fileID: 6759442298337848165, guid: 3a1da9ef84c2f824d9d99159dd865708, type: 3}
       propertyPath: _coinPopPrefab
       value: 
       objectReference: {fileID: 1738477932452666599, guid: b60dd4fda3879a1479ccbc6f33fe2070, type: 3}
+    - target: {fileID: 6759442298337848165, guid: 3a1da9ef84c2f824d9d99159dd865708, type: 3}
+      propertyPath: _moneyLosePopPrefab
+      value: 
+      objectReference: {fileID: 1738477932452666599, guid: b3ceab08b3c117f4780ad7d929d3649c, type: 3}
     - target: {fileID: 7745478920139097228, guid: 3a1da9ef84c2f824d9d99159dd865708, type: 3}
       propertyPath: _coinPopPrefab
       value: 
       objectReference: {fileID: 1738477932452666599, guid: b60dd4fda3879a1479ccbc6f33fe2070, type: 3}
+    - target: {fileID: 7745478920139097228, guid: 3a1da9ef84c2f824d9d99159dd865708, type: 3}
+      propertyPath: _moneyLosePopPrefab
+      value: 
+      objectReference: {fileID: 1738477932452666599, guid: b3ceab08b3c117f4780ad7d929d3649c, type: 3}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -96341,6 +96362,17 @@ Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 5de0f67337b3e984c8cf11dec33157c4, type: 3}
   m_PrefabInstance: {fileID: 1048209318}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1057554297 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2453673743545182623, guid: 02d648acc1933234ab853670b63c3d0b, type: 3}
+  m_PrefabInstance: {fileID: 4031430654195775150}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9541d86e2fd84c1d9990edf0852d74ab, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshPro
 --- !u!1 &1063587465
 GameObject:
   m_ObjectHideFlags: 0
@@ -129824,6 +129856,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Canvas
       objectReference: {fileID: 0}
+    - target: {fileID: 6391394476492403520, guid: 5df9d8899da27c64b8990775a7329157, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 6550529029661712010, guid: 5df9d8899da27c64b8990775a7329157, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
@@ -150674,6 +150710,11 @@ Transform:
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 2bf5fe082a4b19b40af1be790e580290, type: 3}
   m_PrefabInstance: {fileID: 1426550599}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &1340731914 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5607219393645214632, guid: 02d648acc1933234ab853670b63c3d0b, type: 3}
+  m_PrefabInstance: {fileID: 4031430654195775150}
   m_PrefabAsset: {fileID: 0}
 --- !u!4 &1340990952 stripped
 Transform:
@@ -208774,10 +208815,22 @@ PrefabInstance:
       propertyPath: imagePayment
       value: 
       objectReference: {fileID: 1288071033}
+    - target: {fileID: 3703612243642475755, guid: 02d648acc1933234ab853670b63c3d0b, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -0.357
+      objectReference: {fileID: 0}
+    - target: {fileID: 8090058782373903962, guid: 02d648acc1933234ab853670b63c3d0b, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -0.357
+      objectReference: {fileID: 0}
     - target: {fileID: 8889339185813725887, guid: 02d648acc1933234ab853670b63c3d0b, type: 3}
       propertyPath: cam
       value: 
       objectReference: {fileID: 154932476}
+    - target: {fileID: 8889339185813725887, guid: 02d648acc1933234ab853670b63c3d0b, type: 3}
+      propertyPath: moneyGO
+      value: 
+      objectReference: {fileID: 1340731914}
     - target: {fileID: 8889339185813725887, guid: 02d648acc1933234ab853670b63c3d0b, type: 3}
       propertyPath: reticle
       value: 
@@ -208795,6 +208848,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 1883092913}
     - target: {fileID: 8889339185813725887, guid: 02d648acc1933234ab853670b63c3d0b, type: 3}
+      propertyPath: creditCardGO
+      value: 
+      objectReference: {fileID: 238652676}
+    - target: {fileID: 8889339185813725887, guid: 02d648acc1933234ab853670b63c3d0b, type: 3}
       propertyPath: _coinPopPrefab
       value: 
       objectReference: {fileID: 1738477932452666599, guid: b60dd4fda3879a1479ccbc6f33fe2070, type: 3}
@@ -208802,6 +208859,10 @@ PrefabInstance:
       propertyPath: _popupSpawnPoint
       value: 
       objectReference: {fileID: 141292356}
+    - target: {fileID: 8889339185813725887, guid: 02d648acc1933234ab853670b63c3d0b, type: 3}
+      propertyPath: cashRegisterText
+      value: 
+      objectReference: {fileID: 1057554297}
     - target: {fileID: 9065567402328966228, guid: 02d648acc1933234ab853670b63c3d0b, type: 3}
       propertyPath: m_LocalPosition.x
       value: 27.72
@@ -209500,7 +209561,7 @@ MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 3167698170439170794, guid: 02d648acc1933234ab853670b63c3d0b, type: 3}
   m_PrefabInstance: {fileID: 4031430654195775150}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
+  m_GameObject: {fileID: 1340731914}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 42755bad5c6837c4d8631461fa37b76b, type: 3}
@@ -210626,7 +210687,7 @@ MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 1181095710189391917, guid: 02d648acc1933234ab853670b63c3d0b, type: 3}
   m_PrefabInstance: {fileID: 4031430654195775150}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
+  m_GameObject: {fileID: 238652676}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ee4848507e1fb2d4d9d59256f8e6e44b, type: 3}

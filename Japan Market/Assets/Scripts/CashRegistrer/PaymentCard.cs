@@ -1,152 +1,125 @@
 using UnityEngine;
 using TMPro;
 using DG.Tweening;
-public class PaymentCard : InteractableBase
+
+/// <summary>
+/// Handles card payment flow. CashRegister calls Open/Close; this class
+/// manages the number input, UI updates and payment confirmation.
+/// </summary>
+public class PaymentCard : MonoBehaviour
 {
-    private const string ChoosedPaymentTypeEventId = "ChoosedPaymentType";
+    // ── Inspector ─────────────────────────────────────────────────────────────
+    [SerializeField] private GameObject      imagepayment;
+    [SerializeField] private TextMeshProUGUI valueText;
+    [SerializeField] private CashRegister    cashRegister;
 
-    [SerializeField] GameObject imagepayment;
-    [SerializeField] TextMeshProUGUI valueText;
-    [SerializeField] CashRegister cashRegister;
-    [SerializeField] float clickRadius = 0.2f;
-    private Camera mainCamera;
-    private bool isPaymentOpen;
-    string currentValue = "";
-    float totalPrice;
-  //  Vector3 originalScale;
-    void Start()
+    // ── State ─────────────────────────────────────────────────────────────────
+    public bool IsOpen { get; private set; }
+
+    private float   totalPrice;
+    private string  currentValue = "";
+    private Vector3 _imageOriginalScale;
+    private Canvas  _canvas;
+
+    // ── Lifecycle ─────────────────────────────────────────────────────────────
+
+    private void Awake()
     {
-        mainCamera = Camera.main;
+        _imageOriginalScale = imagepayment.transform.localScale;
+        _canvas = imagepayment.GetComponentInChildren<Canvas>(true);
+        if (_canvas == null) _canvas = imagepayment.GetComponentInParent<Canvas>();
         imagepayment.SetActive(false);
-        originalScale = imagepayment.transform.localScale;
-    }
-    public override void Interact()
-    {
-        var controller = ServiceLocator.Get<ItemRaycastController>();
-        controller.PickItem(rb, true);
     }
 
-    // Substitui OnMouseDown (raycast interno da Unity, que para no primeiro
-    // collider que encontra) por um SphereCastAll, igual ao usado pro clique
-    // nos itens: assim o trigger do balcão na frente não bloqueia o clique.
-    void Update()
+    // ── Public API ────────────────────────────────────────────────────────────
+
+    public void Open(float price)
     {
-        if (!isPaymentOpen && Input.GetMouseButtonDown(0) && IsClickedByMouse())
-            OpenPayment();
-    }
+        if (IsOpen) return;
 
-    private bool IsClickedByMouse()
-    {
-        Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
-        RaycastHit[] hits = Physics.SphereCastAll(ray, clickRadius);
+        IsOpen     = true;
+        totalPrice = price;
 
-        foreach (var hit in hits)
-        {
-            if (hit.collider.gameObject == gameObject)
-                return true;
-        }
-
-        return false;
-    }
-    void OpenPayment()
-    {
-        isPaymentOpen = true;
-
-        TutorialManager tutorialManager = ServiceLocator.Get<TutorialManager>();
-        if (tutorialManager != null)
-            tutorialManager.NotifyGameEvent(ChoosedPaymentTypeEventId);
-
-        imagepayment.SetActive(true);
-        imagepayment.transform.localScale = originalScale;
-        cashRegister.PaymentTextCash("Card Checkout");
-        totalPrice = cashRegister.GetTotalPrice();
+        ServiceLocator.Get<TutorialManager>()?.NotifyGameEvent("ChoosedPaymentType");
 
         currentValue = "";
-        valueText.text = "¥ 0";
+        imagepayment.SetActive(true);
+        imagepayment.transform.localScale = _imageOriginalScale;
+
+        if (_canvas != null) { _canvas.enabled = false; _canvas.enabled = true; }
+        Canvas.ForceUpdateCanvases();
+
+        cashRegister.PaymentTextCash("Card Checkout");
+        RefreshUI();
     }
+
+    public void Close()
+    {
+        IsOpen = false;
+        imagepayment.SetActive(false);
+    }
+
+    // ── Number Input (called by UI buttons) ───────────────────────────────────
+
     public void AddNumber(string number)
     {
         if (currentValue.Length >= 6) return;
-
         currentValue += number;
-        UpdateText();
-
+        RefreshUI();
         valueText.transform.DOPunchScale(Vector3.one * 0.1f, 0.21f, 2, 0.12f);
     }
-    public void AddPoint()
-    {
-        // Iene não tem subunidade decimal — preço é sempre número inteiro,
-        // então essa tecla fica desativada (mantida só pra não quebrar o botão na UI).
-    }
-    public void Delete()    
+
+    public void Delete()
     {
         if (currentValue.Length == 0) return;
-
         currentValue = currentValue.Remove(currentValue.Length - 1);
-        UpdateText();
+        RefreshUI();
     }
-    void UpdateText()
-    {
-        if (currentValue == "")
-            valueText.text = "¥ 0";
-        else
-            valueText.text = "¥ " + currentValue;
-    }
+
+    public void AddPoint() { /* Yen has no decimal subunit — button kept for UI completeness */ }
+
     public void Confirm()
     {
-        float typedValue;
+        if (!float.TryParse(currentValue, out float typed)) return;
 
-        if (!float.TryParse(currentValue, out typedValue))
-            return;
-
-        Debug.Log($"[PaymentCard] digitado={typedValue:F4} | totalPrice={totalPrice:F4}");
-
-        // Tolerância de meio iene (em vez de 0.01) porque os valores agora são
-        // sempre inteiros — 0.01 era resquício de comparação em centavos.
-        if (Mathf.Abs(typedValue - totalPrice) < 0.5f)
-        {
-            PaymentSuccess();
-        }
-        else
-        {
-            PaymentError();
-        }
+        bool correct = Mathf.Abs(typed - totalPrice) < 0.5f;
+        if (correct) OnPaymentSuccess();
+        else         OnPaymentError();
     }
-    void PaymentSuccess()
+
+    // ── Private ───────────────────────────────────────────────────────────────
+
+    private void RefreshUI()
     {
-        Sequence seq = DOTween.Sequence();
-        ServiceLocator.Get<MarketManager>().Earn_Money(totalPrice);
-        seq.Append(valueText.DOColor(Color.darkGreen, 0.2f));
-        seq.AppendInterval(0.2f);
-        seq.Append(valueText.DOColor(Color.white, 0.2f));
-        seq.Append(imagepayment.transform.DOScale(0f, 0.26f).SetEase(Ease.InOutSine));
-
-        seq.OnComplete(() =>
-        {
-            isPaymentOpen = false;
-
-            imagepayment.SetActive(false);
-
-            cashRegister.FinalizeTransaction();
-        });
+        valueText.text = currentValue.Length == 0 ? "¥ 0" : "¥ " + currentValue;
     }
 
-    void PaymentError()
+    private void OnPaymentSuccess()
+    {
+        ServiceLocator.Get<MarketManager>().Earn_Money(totalPrice);
+
+        DOTween.Sequence()
+            .Append(valueText.DOColor(Color.green, 0.2f))
+            .AppendInterval(0.2f)
+            .Append(valueText.DOColor(Color.white, 0.2f))
+            .Append(imagepayment.transform.DOScale(0f, 0.26f).SetEase(Ease.InOutSine))
+            .OnComplete(() =>
+            {
+                IsOpen = false;
+                imagepayment.SetActive(false);
+                cashRegister.FinalizeTransaction();
+            });
+    }
+
+    private void OnPaymentError()
     {
         currentValue = "";
-        UpdateText();
-        
-        Sequence seq = DOTween.Sequence();
-
-        seq.Append(valueText.DOColor(Color.red, 0.2f));
-        seq.Join(valueText.transform.DOShakePosition(0.3f, 5.3f, 20));
-        seq.Append(valueText.DOColor(Color.white, 0.2f));
-
+        RefreshUI();
         cashRegister.ApplyPenalty();
-    }
-    public void ClosePaymentCredi()
-    {
-        isPaymentOpen = false;
-        imagepayment.SetActive(false);
+
+        DOTween.Sequence()
+            .Append(valueText.DOColor(Color.red, 0.2f))
+            .Join(valueText.transform.DOShakePosition(0.3f, 5.3f, 20))
+            .Append(valueText.DOColor(Color.white, 0.2f));
     }
 }
