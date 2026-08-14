@@ -118,7 +118,7 @@ public class NpcTraject : MonoBehaviour
                 if (!_itemsPlaced)
                     PlaceItemsOnCounter();
 
-                
+
                 timeWaitingAtFront += 0.5f;
 
                 if (timeWaitingAtFront >= nextImpatientAt)
@@ -147,7 +147,7 @@ public class NpcTraject : MonoBehaviour
 
     private IEnumerator UnloadInventoryRoutine()
     {
-       
+
         _unloadedItems.Clear();
         _unloadedItems.AddRange(_inventory);
 
@@ -170,10 +170,10 @@ public class NpcTraject : MonoBehaviour
     {
         switch (_npcInstance.CurrentHumor)
         {
-            case NpcHumor.Happy:   return 1.3f;
+            case NpcHumor.Happy: return 1.3f;
             case NpcHumor.Neutral: return 1.0f;
-            case NpcHumor.Angry:   return 0.65f;
-            default:               return 1.0f;
+            case NpcHumor.Angry: return 0.65f;
+            default: return 1.0f;
         }
     }
 
@@ -186,21 +186,18 @@ public class NpcTraject : MonoBehaviour
         _cashRegister.ClearForCustomerLeave();
         _npcPhrases?.SayEvent(NpcEvent.CashierTooSlow);
 
-        // O agente foi parado ao chegar na fila — libera para voltar a andar.
         _agent.isStopped = false;
 
         yield return new WaitForSeconds(1.5f);
 
-        // Se ainda não descarregou tudo, o inventário continua sendo a fonte da verdade;
-        // caso contrário, usa o snapshot dos itens que foram para o balcão.
         var source = _itemsFullyUnloaded || _inventory.Count == 0 ? _unloadedItems : _inventory;
         var items = new List<ShoppingItem>(source);
 
         var frozenItems = items.Where(i => GetFurnitureTypeForItem(i.Type) == FurnitureType.Freezer).ToList();
-        var shelfItems  = items.Where(i => GetFurnitureTypeForItem(i.Type) != FurnitureType.Freezer).ToList();
+        var shelfItems = items.Where(i => GetFurnitureTypeForItem(i.Type) != FurnitureType.Freezer).ToList();
 
         yield return StartCoroutine(ReturnGroupToFurniture(frozenItems, FurnitureType.Freezer));
-        yield return StartCoroutine(ReturnGroupToFurniture(shelfItems,  FurnitureType.Shelf));
+        yield return StartCoroutine(ReturnGroupToFurniture(shelfItems, FurnitureType.Shelf));
 
         _inventory.Clear();
         _unloadedItems.Clear();
@@ -316,7 +313,6 @@ public class NpcTraject : MonoBehaviour
 
         _npcPhrases?.SayEvent(NpcEvent.DirtyStore);
 
-        // Quanto mais sujeira, maior a penalidade de humor.
         int penalty = Mathf.FloorToInt(dustCount / (float)_dirtyComplainThreshold) * 5;
         _npcInstance.ReceiveWrongChange(penalty);
     }
@@ -365,13 +361,13 @@ public class NpcTraject : MonoBehaviour
         Destroy(gameObject);
     }
 
-   
+
     public void SetQueueTarget(Transform target, int index)
     {
         _queueIndex = index;
         Debug.Log($"[NPC:{name}] Nova posição na fila: {_queueIndex}");
 
-        StopFidget(); // para o fidget antes de andar para nova posição
+        StopFidget();
 
         if (_queueWaiter != null)
             StopCoroutine(_queueWaiter);
@@ -414,7 +410,6 @@ public class NpcTraject : MonoBehaviour
     {
         StopFidget();
 
-        // Bob sutil de peso (cima e baixo) — simula respiração/nervosismo
         float baseY = transform.position.y;
         _fidgetBobTween = transform.DOMoveY(baseY + 0.035f, Random.Range(0.9f, 1.3f))
             .SetEase(Ease.InOutSine)
@@ -436,7 +431,6 @@ public class NpcTraject : MonoBehaviour
 
         while (true)
         {
-            // Espera aleatória antes de olhar para o lado
             yield return new WaitForSeconds(Random.Range(_fidgetInterval * 0.55f, _fidgetInterval * 1.45f));
 
             float yAngle = Random.Range(-_fidgetRotationMax, _fidgetRotationMax);
@@ -445,10 +439,8 @@ public class NpcTraject : MonoBehaviour
                 .SetEase(Ease.InOutSine);
             yield return _fidgetRotTween.WaitForCompletion();
 
-            // Fica olhando por um momento
             yield return new WaitForSeconds(Random.Range(0.5f, 1.6f));
 
-            // Volta para a direção base
             float returnTime = Random.Range(0.35f, 0.65f);
             _fidgetRotTween = transform.DORotateQuaternion(baseRot, returnTime)
                 .SetEase(Ease.InOutSine);
@@ -495,7 +487,6 @@ public class NpcTraject : MonoBehaviour
 
         for (int i = 0; i < quantity && _inventory.Count < _maxInventorySize; i++)
         {
-            // Espia o tipo do item SEM remover da prateleira
             Items peekedType = shelf.PeekRandomItemType();
             if (peekedType == Items.None) break;
 
@@ -503,13 +494,11 @@ public class NpcTraject : MonoBehaviour
 
             if (price > _maxAcceptableItemPrice)
             {
-                // Preço alto demais: reclama e para de olhar essa prateleira — item FICA no lugar
                 _npcPhrases?.SayEvent(NpcEvent.PriceTooHigh);
                 _npcInstance.ReceiveWrongChange(8);
                 break;
             }
 
-            // Preço OK: agora remove o item da prateleira
             Items taken = shelf.TakeItemOfType(peekedType);
             if (taken == Items.None) break;
 
