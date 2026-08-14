@@ -77,15 +77,18 @@ public class PaymentMoney : MonoBehaviour
         imagePayment.SetActive(false);
     }
 
-    // ── Money Input (called by UI buttons) ────────────────────────────────────
-
+    
+    [ContextMenu("Add ¥1")]
+    public void AddOne() => AddMoney(1f);
+    Tweener addOneTween;
     public void AddMoney(float value)
     {
         moneyStack.Add(value);
         giving += value;
         RefreshUI();
-        givingText.transform.DOKill();
-        givingText.transform.DOPunchScale(Vector3.one * 0.011f, 0.21f, 2, 0.12f);
+        if(!addOneTween.IsPlaying())
+       addOneTween= givingText.transform.DOPunchScale(Vector3.one * 0.011f, 0.21f, 2, 0.12f);
+
     }
 
     public void Undo()
