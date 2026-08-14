@@ -69,13 +69,17 @@ public class CashRegister : InteractableBase
 
     [SerializeField] Transform coinsPosition;
     [SerializeField] Transform billPositions;
+    [SerializeField] float yAmmountPerCoin;
+    [SerializeField] float yAmmountPerBill;
+    int coinCount = 0;
+    int billCount = 0;
 
     public Vector3 GetMoneyPosition(MoneyType moneyType)
     {
         if (moneyType == MoneyType.Coin)
-            return coinsPosition.position;
+            return coinsPosition.position + new Vector3(0, yAmmountPerCoin * coinCount++, 0);
         else
-            return billPositions.position;
+            return billPositions.position + new Vector3(0, yAmmountPerBill * billCount++, 0);
     }
 
     public override void Awake()
