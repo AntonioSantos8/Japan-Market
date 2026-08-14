@@ -67,7 +67,16 @@ public class CashRegister : InteractableBase
     private List<NpcTraject> npcQueue   = new();
     private bool             _tutorialFinished;
 
-    // ─────────────────────────────────────────────────────────────────────────
+    [SerializeField] Transform coinsPosition;
+    [SerializeField] Transform billPositions;
+
+    public Vector3 GetMoneyPosition(MoneyType moneyType)
+    {
+        if (moneyType == MoneyType.Coin)
+            return coinsPosition.position;
+        else
+            return billPositions.position;
+    }
 
     public override void Awake()
     {
