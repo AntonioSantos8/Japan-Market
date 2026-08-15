@@ -83,12 +83,22 @@ public class PaymentMoney : MonoBehaviour
     Tweener addOneTween;
     public void AddMoney(float value)
     {
+        if (value <= 0f) return;
+
         moneyStack.Add(value);
         giving += value;
         RefreshUI();
         if(!addOneTween.IsPlaying())
        addOneTween= givingText.transform.DOPunchScale(Vector3.one * 0.011f, 0.21f, 2, 0.12f);
 
+    }
+
+    public void RemoveMoney(float value)
+    {
+        if (value <= 0f || !moneyStack.Remove(value)) return;
+
+        giving = Mathf.Max(0f, giving - value);
+        RefreshUI();
     }
 
     public void Undo()

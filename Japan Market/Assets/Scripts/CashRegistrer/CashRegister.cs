@@ -47,7 +47,16 @@ public class CashRegister : InteractableBase
 
     [Header("Camera")]
     [SerializeField] private CinemachineCamera cam;
+    [SerializeField] private int              activeCameraPriority = 10;
+    [SerializeField] private float            cameraBlendDuration = 0.6f;
+    [SerializeField] private float            cameraLookSensitivity = 2f;
     [SerializeField] private float             zoom = 25f;
+
+    [Header("Cash Register Camera Limits")]
+    [SerializeField] private float minimumCameraXRotation = -35f;
+    [SerializeField] private float maximumCameraXRotation = 35f;
+    [SerializeField] private float minimumCameraYRotation = 240f;
+    [SerializeField] private float maximumCameraYRotation = 304f;
 
     [Header("Item Scan")]
     [Tooltip("SphereCast radius for item click detection.")]
@@ -59,6 +68,10 @@ public class CashRegister : InteractableBase
 
     // ── Runtime ───────────────────────────────────────────────────────────────
     private Camera           mainCamera;
+    private CinemachineBrain cameraBrain;
+    private CinemachinePanTilt cameraPanTilt;
+    private CinemachineBlendDefinition originalBlend;
+    private bool             isCameraBlendOverridden;
     private float            zoomOri;
     private float            totalPrice;
     private int              _totalExpected;  // items the NPC brought
@@ -91,6 +104,12 @@ public class CashRegister : InteractableBase
     private void Start()
     {
         mainCamera = Camera.main;
+        cameraBrain = mainCamera.GetComponent<CinemachineBrain>();
+        cameraPanTilt = cam.GetComponent<CinemachinePanTilt>();
+        if (cameraPanTilt == null)
+            cameraPanTilt = cam.gameObject.AddComponent<CinemachinePanTilt>();
+
+        ConfigureCashCameraLook();
         HidePaymentObjects();
         cashregisterText.gameObject.SetActive(false);
         ClearTexts();
@@ -103,6 +122,7 @@ public class CashRegister : InteractableBase
         if (_state == State.Idle) return;
 
         if (Input.GetKeyDown(KeyCode.Escape)) { ExitCashMode(); return; }
+        UpdateCashCameraLook();
         if (!Input.GetMouseButtonDown(0))     return;
 
         switch (_state)
@@ -148,20 +168,17 @@ public class CashRegister : InteractableBase
         _state = State.Scanning;
         NotifyTutorial(EnteredCashRegisterEventId);
 
-        playerLook.ResetLook();
         playerMotor.SetCanMove(false);
-        playerMotor.ResetCameraEffects();
-        playerLook.CanLook = false;
-        ServiceLocator.Get<ItemRaycastController>().SetGeneralCanInteract(false);
+        SetCashCameraBlend();
+        cam.Priority = activeCameraPriority;
 
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible   = true;
-        reticle.SetActive(false);
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible   = false;
+        reticle.SetActive(true);
         quitButton.SetActive(false);
 
         DOTween.Sequence()
-            .Append(playerMotor.transform.DOMove(cashPosition.position, 0.6f).SetEase(Ease.OutQuart))
-            .Join(FOVTween(zoom - 3f, 0.55f, Ease.InQuart))
+            .Append(FOVTween(zoom - 3f, 0.55f, Ease.InQuart))
             .Append(FOVTween(zoom, 0.25f, Ease.OutSine))
             .AppendCallback(AnimateQuitButtonIn);
     }
@@ -171,11 +188,12 @@ public class CashRegister : InteractableBase
         _state = State.Idle;
 
         playerMotor.SetCanMove(true);
-        playerLook.CanLook = true;
+        SetCashCameraBlend();
+        cam.Priority = 0;
+        DOVirtual.DelayedCall(cameraBlendDuration, RestoreCameraBlend);
         Cursor.lockState   = CursorLockMode.Locked;
         Cursor.visible     = false;
 
-        ServiceLocator.Get<ItemRaycastController>().SetGeneralCanInteract(true);
         if (paymentMoney != null) paymentMoney.Close();
         if (paymentCard  != null) paymentCard.Close();
         totalPrice = 0;
@@ -348,6 +366,27 @@ public class CashRegister : InteractableBase
 
     public float GetTotalPrice() => totalPrice;
 
+    /// <summary>
+    /// Registers a physical note/coin placed on the counter as change.
+    /// </summary>
+    public bool AddMoney(float value)
+    {
+        if (paymentMoney == null || !paymentMoney.IsOpen || value <= 0f) return false;
+
+        paymentMoney.AddMoney(value);
+        return true;
+    }
+
+    /// <summary>
+    /// Removes a physical note/coin from the change currently being given.
+    /// </summary>
+    public void RemoveMoney(float value)
+    {
+        if (paymentMoney == null || !paymentMoney.IsOpen) return;
+
+        paymentMoney.RemoveMoney(value);
+    }
+
     public void PaymentTextCash(string message)
     {
         cashregisterText.gameObject.SetActive(true);
@@ -436,6 +475,66 @@ public class CashRegister : InteractableBase
     private Tween FOVTween(float target, float duration, Ease ease)
         => DOTween.To(() => cam.Lens.FieldOfView, x => cam.Lens.FieldOfView = x, target, duration)
                   .SetEase(ease);
+
+    private void ConfigureCashCameraLook()
+    {
+        cameraPanTilt.ReferenceFrame = CinemachinePanTilt.ReferenceFrames.World;
+
+        var panAxis = cameraPanTilt.PanAxis;
+        panAxis.Range = new Vector2(minimumCameraYRotation, maximumCameraYRotation);
+        panAxis.Wrap = false;
+        panAxis.Value = Mathf.Clamp(cam.transform.eulerAngles.y, panAxis.Range.x, panAxis.Range.y);
+        cameraPanTilt.PanAxis = panAxis;
+
+        var tiltAxis = cameraPanTilt.TiltAxis;
+        tiltAxis.Range = new Vector2(minimumCameraXRotation, maximumCameraXRotation);
+        tiltAxis.Wrap = false;
+        tiltAxis.Value = Mathf.Clamp(NormalizeAngle(cam.transform.eulerAngles.x), tiltAxis.Range.x, tiltAxis.Range.y);
+        cameraPanTilt.TiltAxis = tiltAxis;
+    }
+
+    private void UpdateCashCameraLook()
+    {
+        var panAxis = cameraPanTilt.PanAxis;
+        panAxis.Value = Mathf.Clamp(
+            panAxis.Value + Input.GetAxisRaw("Mouse X") * cameraLookSensitivity,
+            panAxis.Range.x,
+            panAxis.Range.y);
+        cameraPanTilt.PanAxis = panAxis;
+
+        var tiltAxis = cameraPanTilt.TiltAxis;
+        tiltAxis.Value = Mathf.Clamp(
+            tiltAxis.Value - Input.GetAxisRaw("Mouse Y") * cameraLookSensitivity,
+            tiltAxis.Range.x,
+            tiltAxis.Range.y);
+        cameraPanTilt.TiltAxis = tiltAxis;
+    }
+
+    private void SetCashCameraBlend()
+    {
+        if (cameraBrain == null) return;
+
+        if (!isCameraBlendOverridden)
+        {
+            originalBlend = cameraBrain.DefaultBlend;
+            isCameraBlendOverridden = true;
+        }
+
+        cameraBrain.DefaultBlend = new CinemachineBlendDefinition(
+            CinemachineBlendDefinition.Styles.EaseInOut,
+            cameraBlendDuration);
+    }
+
+    private void RestoreCameraBlend()
+    {
+        if (cameraBrain == null || !isCameraBlendOverridden) return;
+
+        cameraBrain.DefaultBlend = originalBlend;
+        isCameraBlendOverridden = false;
+    }
+
+    private static float NormalizeAngle(float angle)
+        => angle > 180f ? angle - 360f : angle;
 
     private void AnimateQuitButtonIn()
     {
