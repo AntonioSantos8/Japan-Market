@@ -72,12 +72,15 @@ public class CashRegister : InteractableBase
     private CinemachinePanTilt cameraPanTilt;
     private CinemachineBlendDefinition originalBlend;
     private bool             isCameraBlendOverridden;
+    private bool             _inCardMachineMode;
+    private CinemachineCamera _activeMachineCamera;
     private float            zoomOri;
     private float            totalPrice;
     private int              _totalExpected;  // items the NPC brought
     private int              _scannedCount;   // items successfully scanned
     private Queue<Item>      itemsQueue = new();
     private List<NpcTraject> npcQueue   = new();
+    private List<MoneyInstance> spawnedMoney = new();
     private bool             _tutorialFinished;
 
     [SerializeField] Transform coinsPosition;
@@ -121,9 +124,23 @@ public class CashRegister : InteractableBase
     {
         if (_state == State.Idle) return;
 
-        if (Input.GetKeyDown(KeyCode.Escape)) { ExitCashMode(); return; }
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            if (_inCardMachineMode) ExitCardMachineMode();
+            else                    ExitCashMode();
+            return;
+        }
+
         UpdateCashCameraLook();
-        if (!Input.GetMouseButtonDown(0))     return;
+
+        if (_state == State.WaitingPayment && paymentMoney != null && paymentMoney.IsOpen
+            && Input.GetKeyDown(KeyCode.Space))
+        {
+            paymentMoney.Confirm();
+            return;
+        }
+
+        if (!Input.GetMouseButtonDown(0)) return;
 
         switch (_state)
         {
@@ -160,6 +177,25 @@ public class CashRegister : InteractableBase
     }
 
     public NpcTraject GetCurrentCustomer() => npcQueue.Count > 0 ? npcQueue[0] : null;
+
+    public PaymentType GetCurrentPaymentType()
+    {
+        var customer = GetCurrentCustomer();
+        if (customer == null || !customer.TryGetComponent(out NpcInstance instance))
+            return PaymentType.Cash;
+
+        return instance.paymentType;
+    }
+
+    public bool IsCardPayment()
+    {
+        return GetCurrentPaymentType() == PaymentType.Card;
+    }
+
+    public bool IsCashPayment()
+    {
+        return GetCurrentPaymentType() == PaymentType.Cash;
+    }
 
     // ── Cash Mode ─────────────────────────────────────────────────────────────
 
@@ -204,6 +240,36 @@ public class CashRegister : InteractableBase
             .Append(FOVTween(zoomOri + 8f, 0.15f, Ease.OutQuart))
             .Append(FOVTween(zoomOri, 0.40f, Ease.OutSine))
             .AppendCallback(() => reticle.SetActive(true));
+    }
+
+    // ── Card Machine Mode ─────────────────────────────────────────────────────
+
+    public void EnterCardMachineMode(CinemachineCamera machineCamera, int priority)
+    {
+        if (_state != State.WaitingPayment || _inCardMachineMode || machineCamera == null) return;
+        if (!IsCardPayment()) return;
+
+        if (paymentCard != null && !paymentCard.IsOpen) paymentCard.Open(totalPrice);
+
+        _inCardMachineMode   = true;
+        _activeMachineCamera = machineCamera;
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+        SetCashCameraBlend();
+        machineCamera.Priority = priority;
+    }
+
+    public void ExitCardMachineMode()
+    {
+        if (!_inCardMachineMode) return;
+
+        _inCardMachineMode = false;
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+        SetCashCameraBlend();
+        if (_activeMachineCamera != null) _activeMachineCamera.Priority = 0;
+        _activeMachineCamera = null;
+        DOVirtual.DelayedCall(cameraBlendDuration, RestoreCameraBlend);
     }
 
     // ── Scanning ──────────────────────────────────────────────────────────────
@@ -293,9 +359,12 @@ public class CashRegister : InteractableBase
         var customer = GetCurrentCustomer();
         if (customer == null) return;
 
-        bool card = customer.GetComponent<NpcInstance>().paymentType == PaymentType.Card;
-        creditCard.SetActive(card);
-        money.SetActive(!card);
+        var paymentType = customer.GetComponent<NpcInstance>().paymentType;
+        Debug.Log($"[CashRegister] Cliente quer pagar em: {paymentType}");
+
+        bool card = paymentType == PaymentType.Card;
+        if (creditCard) creditCard.SetActive(card);
+        if (money)      money.SetActive(!card);
     }
 
     // ── Payment Selection ─────────────────────────────────────────────────────
@@ -306,23 +375,22 @@ public class CashRegister : InteractableBase
     private void TryOpenPayment()
     {
         Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
-        // SphereCastAll: same detection used for items — more forgiving than RaycastAll
-        // with thin colliders and objects partially behind the counter trigger.
         RaycastHit[] hits = Physics.SphereCastAll(ray, clickRadius);
         System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
 
+        var paymentType = GetCurrentPaymentType();
+
         foreach (var hit in hits)
         {
-            // Find handler directly from hit — avoids crash if serialized refs are null.
             var pm = hit.collider.GetComponentInParent<PaymentMoney>();
-            if (pm != null && !pm.IsOpen)
+            if (pm != null && paymentType == PaymentType.Cash && !pm.IsOpen)
             {
                 pm.Open(totalPrice);
                 return;
             }
 
             var pc = hit.collider.GetComponentInParent<PaymentCard>();
-            if (pc != null && !pc.IsOpen)
+            if (pc != null && paymentType == PaymentType.Card && !pc.IsOpen)
             {
                 pc.Open(totalPrice);
                 return;
@@ -366,12 +434,33 @@ public class CashRegister : InteractableBase
 
     public float GetTotalPrice() => totalPrice;
 
+    public void RegisterMoneyInstance(MoneyInstance money)
+    {
+        if (money == null || spawnedMoney.Contains(money)) return;
+        spawnedMoney.Add(money);
+    }
+
+    public void UnregisterMoneyInstance(MoneyInstance money)
+    {
+        if (money == null) return;
+        spawnedMoney.Remove(money);
+    }
+
     /// <summary>
     /// Registers a physical note/coin placed on the counter as change.
     /// </summary>
     public bool AddMoney(float value)
     {
-        if (paymentMoney == null || !paymentMoney.IsOpen || value <= 0f) return false;
+        if (paymentMoney == null || value <= 0f) return false;
+
+        if (GetCurrentPaymentType() != PaymentType.Cash)
+        {
+            Debug.LogWarning($"[CashRegister] Bloqueado: dinheiro foi usado enquanto o cliente paga com {GetCurrentPaymentType()}.");
+            return false;
+        }
+
+        if (!paymentMoney.IsOpen)
+            paymentMoney.Open(totalPrice);
 
         paymentMoney.AddMoney(value);
         return true;
@@ -404,7 +493,9 @@ public class CashRegister : InteractableBase
     public void FinalizeTransaction()
     {
         float earned = totalPrice;
+        if (_inCardMachineMode) ExitCardMachineMode();
         FinishCurrentCustomer();
+        ResetMoneyPlacementState();
         ResetForNextCustomer();
         SpawnCoinPop(earned);
 
@@ -420,6 +511,7 @@ public class CashRegister : InteractableBase
         foreach (var item in itemsQueue)
             if (item != null) Destroy(item.gameObject);
 
+        ResetMoneyPlacementState();
         paymentMoney?.Close();
         paymentCard?.Close();
         ResetForNextCustomer();
@@ -449,6 +541,20 @@ public class CashRegister : InteractableBase
 
         if (_state == State.WaitingPayment)
             _state = State.Scanning;
+    }
+
+    public void ResetMoneyPlacementState()
+    {
+        coinCount = 0;
+        billCount = 0;
+
+        for (int i = spawnedMoney.Count - 1; i >= 0; i--)
+        {
+            var money = spawnedMoney[i];
+            if (money != null)
+                Destroy(money.gameObject);
+            spawnedMoney.RemoveAt(i);
+        }
     }
 
     private void HidePaymentObjects()

@@ -3,33 +3,20 @@ using TMPro;
 using DG.Tweening;
 
 /// <summary>
-/// Handles card payment flow. CashRegister calls Open/Close; this class
-/// manages the number input, UI updates and payment confirmation.
+/// Handles card payment flow. CashRegister/CardMachine call Open/Close; this
+/// class manages the number input, UI updates and payment confirmation.
 /// </summary>
 public class PaymentCard : MonoBehaviour
 {
     // ── Inspector ─────────────────────────────────────────────────────────────
-    [SerializeField] private GameObject      imagepayment;
     [SerializeField] private TextMeshProUGUI valueText;
     [SerializeField] private CashRegister    cashRegister;
 
     // ── State ─────────────────────────────────────────────────────────────────
     public bool IsOpen { get; private set; }
 
-    private float   totalPrice;
-    private string  currentValue = "";
-    private Vector3 _imageOriginalScale;
-    private Canvas  _canvas;
-
-    // ── Lifecycle ─────────────────────────────────────────────────────────────
-
-    private void Awake()
-    {
-        _imageOriginalScale = imagepayment.transform.localScale;
-        _canvas = imagepayment.GetComponentInChildren<Canvas>(true);
-        if (_canvas == null) _canvas = imagepayment.GetComponentInParent<Canvas>();
-        imagepayment.SetActive(false);
-    }
+    private float  totalPrice;
+    private string currentValue = "" ;
 
     // ── Public API ────────────────────────────────────────────────────────────
 
@@ -39,16 +26,9 @@ public class PaymentCard : MonoBehaviour
 
         IsOpen     = true;
         totalPrice = price;
+        currentValue = "";
 
         ServiceLocator.Get<TutorialManager>()?.NotifyGameEvent("ChoosedPaymentType");
-
-        currentValue = "";
-        imagepayment.SetActive(true);
-        imagepayment.transform.localScale = _imageOriginalScale;
-
-        if (_canvas != null) { _canvas.enabled = false; _canvas.enabled = true; }
-        Canvas.ForceUpdateCanvases();
-
         cashRegister.PaymentTextCash("Card Checkout");
         RefreshUI();
     }
@@ -56,13 +36,28 @@ public class PaymentCard : MonoBehaviour
     public void Close()
     {
         IsOpen = false;
-        imagepayment.SetActive(false);
     }
 
     // ── Number Input (called by UI buttons) ───────────────────────────────────
 
+    private bool CanUseCardPayment()
+    {
+        if (cashRegister == null)
+        {
+            Debug.LogWarning("[PaymentCard] Bloqueado: CashRegister não foi atribuído.");
+            return false;
+        }
+
+        bool canUse = cashRegister.GetCurrentPaymentType() == PaymentType.Card;
+        if (!canUse)
+            Debug.LogWarning($"[PaymentCard] Bloqueado: cliente paga com {cashRegister.GetCurrentPaymentType()}, não com cartão.");
+
+        return canUse;
+    }
+
     public void AddNumber(string number)
     {
+        if (!CanUseCardPayment()) return;
         if (currentValue.Length >= 6) return;
         currentValue += number;
         RefreshUI();
@@ -71,6 +66,7 @@ public class PaymentCard : MonoBehaviour
 
     public void Delete()
     {
+        if (!CanUseCardPayment()) return;
         if (currentValue.Length == 0) return;
         currentValue = currentValue.Remove(currentValue.Length - 1);
         RefreshUI();
@@ -80,6 +76,7 @@ public class PaymentCard : MonoBehaviour
 
     public void Confirm()
     {
+        if (!CanUseCardPayment()) return;
         if (!float.TryParse(currentValue, out float typed)) return;
 
         bool correct = Mathf.Abs(typed - totalPrice) < 0.5f;
@@ -101,12 +98,10 @@ public class PaymentCard : MonoBehaviour
         DOTween.Sequence()
             .Append(valueText.DOColor(Color.green, 0.2f))
             .AppendInterval(0.2f)
-            .Append(valueText.DOColor(Color.white, 0.2f))
-            .Append(imagepayment.transform.DOScale(0f, 0.26f).SetEase(Ease.InOutSine))
+            .Append(valueText.DOColor(Color.black, 0.2f))
             .OnComplete(() =>
             {
                 IsOpen = false;
-                imagepayment.SetActive(false);
                 cashRegister.FinalizeTransaction();
             });
     }
@@ -120,6 +115,6 @@ public class PaymentCard : MonoBehaviour
         DOTween.Sequence()
             .Append(valueText.DOColor(Color.red, 0.2f))
             .Join(valueText.transform.DOShakePosition(0.3f, 5.3f, 20))
-            .Append(valueText.DOColor(Color.white, 0.2f));
+            .Append(valueText.DOColor(Color.black, 0.2f));
     }
 }

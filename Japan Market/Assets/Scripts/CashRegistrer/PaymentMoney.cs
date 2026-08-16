@@ -54,18 +54,14 @@ public class PaymentMoney : MonoBehaviour
         moneyStack.Clear();
         giving = 0f;
 
-        imagePayment.SetActive(true);
-        imagePayment.transform.localScale = _imageOriginalScale;
+        // O pagamento em dinheiro agora é físico: a nota/moeda entra na mesa,
+        // não há mais UI de abrir um painel para adicionar dinheiro.
+        if (imagePayment != null)
+            imagePayment.SetActive(false);
 
-        // Unity sometimes skips the first Canvas render after SetActive(true).
-        // Toggling enabled forces the rendering system to re-register the panel,
-        // and ForceUpdateCanvases handles any pending dirty-layout rebuilds.
-        if (_canvas != null) { _canvas.enabled = false; _canvas.enabled = true; }
-        Canvas.ForceUpdateCanvases();
-
-        receivedText.gameObject.SetActive(true);
-        changeText.gameObject.SetActive(true);
-        givingText.gameObject.SetActive(true);
+        if (receivedText != null) receivedText.gameObject.SetActive(true);
+        if (changeText != null) changeText.gameObject.SetActive(true);
+        if (givingText != null) givingText.gameObject.SetActive(true);
 
         cashRegister.PaymentTextCash("Cash Checkout");
         RefreshUI();
@@ -74,27 +70,45 @@ public class PaymentMoney : MonoBehaviour
     public void Close()
     {
         IsOpen = false;
-        imagePayment.SetActive(false);
+        if (imagePayment != null)
+            imagePayment.SetActive(false);
     }
 
     
     [ContextMenu("Add ¥1")]
     public void AddOne() => AddMoney(1f);
     Tweener addOneTween;
+    private bool CanUseCashPayment()
+    {
+        if (cashRegister == null)
+        {
+            Debug.LogWarning("[PaymentMoney] Bloqueado: CashRegister não foi atribuído.");
+            return false;
+        }
+
+        bool canUse = cashRegister.GetCurrentPaymentType() == PaymentType.Cash;
+        if (!canUse)
+            Debug.LogWarning($"[PaymentMoney] Bloqueado: cliente paga com {cashRegister.GetCurrentPaymentType()}, não com dinheiro.");
+
+        return canUse;
+    }
+
     public void AddMoney(float value)
     {
+        if (!CanUseCashPayment()) return;
         if (value <= 0f) return;
 
         moneyStack.Add(value);
         giving += value;
         RefreshUI();
-        if(!addOneTween.IsPlaying())
+        if(addOneTween != null && !addOneTween.IsPlaying())
        addOneTween= givingText.transform.DOPunchScale(Vector3.one * 0.011f, 0.21f, 2, 0.12f);
 
     }
 
     public void RemoveMoney(float value)
     {
+        if (!CanUseCashPayment()) return;
         if (value <= 0f || !moneyStack.Remove(value)) return;
 
         giving = Mathf.Max(0f, giving - value);
@@ -103,6 +117,7 @@ public class PaymentMoney : MonoBehaviour
 
     public void Undo()
     {
+        if (!CanUseCashPayment()) return;
         if (moneyStack.Count == 0) return;
         float last = moneyStack[moneyStack.Count - 1];
         moneyStack.RemoveAt(moneyStack.Count - 1);
@@ -112,6 +127,7 @@ public class PaymentMoney : MonoBehaviour
 
     public void ClearAll()
     {
+        if (!CanUseCashPayment()) return;
         moneyStack.Clear();
         giving = 0f;
         RefreshUI();
@@ -119,6 +135,7 @@ public class PaymentMoney : MonoBehaviour
 
     public void Confirm()
     {
+        if (!CanUseCashPayment()) return;
         float correctChange = customerPaid - totalPrice;
         bool correct = Mathf.Abs(giving - correctChange) < 0.5f;
         if (correct) OnPaymentSuccess();
@@ -155,14 +172,13 @@ public class PaymentMoney : MonoBehaviour
             .Append(givingText.DOColor(Color.green, 0.2f))
             .AppendInterval(0.2f)
             .Append(givingText.DOColor(Color.white, 0.2f))
-            .Append(imagePayment.transform.DOScale(0f, 0.25f).SetEase(Ease.InOutSine))
             .OnComplete(() =>
             {
                 IsOpen = false;
-                imagePayment.SetActive(false);
-                receivedText.gameObject.SetActive(false);
-                changeText.gameObject.SetActive(false);
-                givingText.gameObject.SetActive(false);
+                if (imagePayment != null) imagePayment.SetActive(false);
+                if (receivedText != null) receivedText.gameObject.SetActive(false);
+                if (changeText != null) changeText.gameObject.SetActive(false);
+                if (givingText != null) givingText.gameObject.SetActive(false);
                 cashRegister.FinalizeTransaction();
             });
     }
@@ -170,6 +186,7 @@ public class PaymentMoney : MonoBehaviour
     private void OnPaymentError()
     {
         cashRegister.ApplyPenalty();
+        cashRegister.PaymentTextCash("Troco incorreto!");
 
         DOTween.Sequence()
             .Append(givingText.DOColor(Color.red, 0.2f))

@@ -32,6 +32,7 @@ public class MoneyInstance : InteractableBase
         if(!canInteract) return;
         canInteract = false;
         cashRegister?.RemoveMoney(value);
+        cashRegister?.UnregisterMoneyInstance(this);
         transform.DOJump(originalPosition, moveDuration, jumpPower, moveDuration).SetEase(Ease.InOutSine).OnComplete(() =>
         {
             Destroy(gameObject);
