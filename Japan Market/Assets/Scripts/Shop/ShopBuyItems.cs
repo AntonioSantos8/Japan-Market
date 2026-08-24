@@ -88,7 +88,10 @@ public class ShopBuyItems : MonoBehaviour
         market.Lose_Money(price);
         if(_tutorialManager)
             _tutorialManager.BoughtItem(_sellingItemType);
-        Instantiate(currentItemBox, boxesSpawnPoint.position, Quaternion.identity);
+
+        GameObject boxObj = Instantiate(currentItemBox, boxesSpawnPoint.position, Quaternion.identity);
+        ItemBox itemBox = boxObj.GetComponentInChildren<ItemBox>();
+        itemBox.Populate(currentObj.Data);
     }
 
     void Update()
