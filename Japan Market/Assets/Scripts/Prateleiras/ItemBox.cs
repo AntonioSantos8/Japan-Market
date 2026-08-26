@@ -9,59 +9,23 @@ public class ItemBox : MonoBehaviour
 
     [SerializeField] Transform itemsParent;
     [SerializeField] float delayBetweenItems = 0.08f;
-
+   
     float visualDelay;
     public bool isAnimating;
-    int activeTweens;
+    int activeTweens;	
 
-    Vector3[] slotLocalPositions = new Vector3[0];
-    List<Transform> slotOccupants = new List<Transform>();
-
+    public SegmentTypeGroup[] groups;
     public FurnitureType AllowedFurniture => allowedFurniture;
     [SerializeField] private Image itemIconImage;
     public Transform GetItemsParent() => itemsParent;
 
     void Start()
     {
-        if (boxType != Items.None && slotOccupants.Count == 0)
-        {
-            AllIThingsData data = ServiceLocator.Get<ItemManager>().GetItemData(boxType);
-            if (data != null) Populate(data);
-        }
+        for (int i = 0; i < groups.Length; i++)
+            groups[i].InitWithType(boxType);
 
         UpdateVisual();
     }
-
-    public void Populate(AllIThingsData data)
-    {
-        boxType = data.itemType;
-
-        slotLocalPositions = data.boxGrid.GenerateLocalPositions();
-        slotOccupants = new List<Transform>(new Transform[slotLocalPositions.Length]);
-
-        for (int i = 0; i < slotLocalPositions.Length; i++)
-        {
-            Transform spawned = Instantiate(data.itemPrefab, itemsParent).transform;
-            spawned.localPosition = slotLocalPositions[i];
-            spawned.localRotation = Quaternion.Euler(data.boxGrid.itemRotationEuler);
-            spawned.localScale = data.boxGrid.itemScale;
-
-            if (spawned.TryGetComponent(out Rigidbody rb))
-                rb.isKinematic = true;
-
-            slotOccupants[i] = spawned;
-        }
-
-        UpdateVisual();
-    }
-
-    int GetNullSlot()
-    {
-        for (int i = 0; i < slotOccupants.Count; i++)
-            if (slotOccupants[i] == null) return i;
-        return -1;
-    }
-
     public void UpdateVisual()
     {
         if (itemIconImage == null) return;
@@ -124,21 +88,16 @@ public class ItemBox : MonoBehaviour
 
  public bool AddItem(Transform item, Items type, Segment segment)
 {
-    if (boxType == Items.None)
+    for (int g = 0; g < groups.Length; g++)
     {
-        AllIThingsData newData = ServiceLocator.Get<ItemManager>().GetItemData(type);
-        slotLocalPositions = newData.boxGrid.GenerateLocalPositions();
-        slotOccupants = new List<Transform>(new Transform[slotLocalPositions.Length]);
-    }
+        if (groups[g].type != type) continue;
 
-    if (boxType != Items.None && boxType != type) return false;
+        int index = groups[g].GetNullSpace();
+        if (index == -1) return false;
 
-    int index = GetNullSlot();
-    if (index == -1) return false;
+        Transform target = groups[g].allItems[index];
 
-    Vector3 target = slotLocalPositions[index];
-
-    slotOccupants[index] = item;
+        groups[g].spaces[index] = item;
 
         item.SetParent(itemsParent);
 
@@ -147,7 +106,7 @@ public class ItemBox : MonoBehaviour
 seq.SetDelay(visualDelay + Random.Range(0f,0.015f));
 
 Vector3 start = item.localPosition;
-Vector3 end = target;
+Vector3 end = target.localPosition;
 
 float distance = Vector3.Distance(start,end);
 float height = distance * 0.21f;
@@ -163,10 +122,6 @@ Vector3[] path = new Vector3[]
 };
 
 Vector3 originalScale = item.localScale;
-
-AllIThingsData data = ServiceLocator.Get<ItemManager>().GetItemData(type);
-Quaternion targetLocalRotation = Quaternion.Euler(data.boxGrid.itemRotationEuler);
-Vector3 targetLocalScale = data.boxGrid.itemScale;
 
 seq.Append(
     item.DOLocalPath(path, 0.27f, PathType.CatmullRom)
@@ -194,15 +149,15 @@ seq.Append(
 );
 
 seq.Join(
-    item.DOLocalRotateQuaternion(targetLocalRotation, 0.08f)
+    item.DOLocalRotateQuaternion(target.localRotation, 0.08f)
 );
 
 seq.Append(
-    item.DOScale(targetLocalScale * 1.08f, 0.06f)
+    item.DOScale(target.localScale * 1.08f, 0.06f)
 );
 
 seq.Append(
-    item.DOScale(targetLocalScale, 0.12f)
+    item.DOScale(target.localScale, 0.12f)
     .SetEase(Ease.OutBack)
 );
 
@@ -233,37 +188,42 @@ segment.OnLookAtWithRestriction();
         allowedFurniture = segment.FurnitureType;
         return true;
     }
+
+    return false;
+}
 public void SetBoxType(Items type)
     {
-
+        
         boxType = type;
 
     }
-
+    
     public Transform TakeItemByType(Items type)
 
     {
 visualDelay = 0;
-
-        if (boxType != type) return null;
-
-        for (int i = slotOccupants.Count - 1; i >= 0; i--)
+        for (int g = 0; g < groups.Length; g++)
         {
-            Transform item = slotOccupants[i];
-            if (item == null) continue;
+            if (groups[g].type != type) continue;
 
-            slotOccupants[i] = null;
-
-            if (IsEmpty())
+            for (int i = groups[g].spaces.Count - 1; i >= 0; i--)
             {
-                allowedFurniture = FurnitureType.None;
-                boxType = Items.None;
-                UpdateVisual();
+                Transform item = groups[g].spaces[i];
+                if (item == null) continue;
+
+                groups[g].spaces[i] = null;
+
+                if (IsEmpty())
+                {
+                    allowedFurniture = FurnitureType.None;
+                    boxType = Items.None;
+                    UpdateVisual();
+                }
+
+
+                return item;
             }
-
-            return item;
         }
-
         allowedFurniture = FurnitureType.None;
         boxType = Items.None;
         return null;

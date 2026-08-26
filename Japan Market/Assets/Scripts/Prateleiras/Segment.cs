@@ -4,15 +4,19 @@ using DG.Tweening;
 [System.Serializable]
 public class SegmentTypeGroup
 {
-    public Items type; // ÚNICO campo configurado manualmente no Inspector
+    public Items type;
+    public Transform[] allItems;
+    public List<Transform> spaces;
 
-    [System.NonSerialized] public Vector3[] localPositions;
-    [System.NonSerialized] public List<Transform> spaces;
-
-    public void InitFromConfig(ItemGridConfig config)
+    public void Init()
     {
-        localPositions = config != null ? config.GenerateLocalPositions() : new Vector3[0];
-        spaces = new List<Transform>(new Transform[localPositions.Length]);
+
+        spaces = new List<Transform>(new Transform[allItems.Length]);
+    }
+     public void InitWithType(Items item)
+    {
+        if(item!= type)
+        spaces = new List<Transform>(new Transform[allItems.Length]);
     }
 
     public int GetNullSpace()
@@ -29,12 +33,11 @@ public class SegmentTypeGroup
 }
 public class Segment : InteractableBase
 {
-    [SerializeField] SegmentTypeGroup[] groups;
+    [SerializeField] SegmentTypeGroup[] groups; 
     [SerializeField] float delayBetweenItems = 0.08f;
     [SerializeField] Material greenMaterial, redMaterial, transparentMaterial;
     [SerializeField] Shelf shelf;
     [SerializeField]FurnitureType myType;
-    [SerializeField] Transform itemsParent;
     public   FurnitureType FurnitureType => myType;
 
 
@@ -58,15 +61,8 @@ Tween outlineWidhtTween;
 Tween outlineColorTween;
     private void Start()
     {
-        var itemManager = ServiceLocator.Get<ItemManager>();
-
         for (int i = 0; i < groups.Length; i++)
-        {
-            AllIThingsData data = itemManager.GetItemData(groups[i].type);
-            groups[i].InitFromConfig(data != null ? data.shelfGrid : null);
-        }
-
-        if (itemsParent == null) itemsParent = transform;
+            groups[i].Init();
 
 if(outlineMeshRenderer == null)
         outlineMeshRenderer = GetComponent<MeshRenderer>();
@@ -76,7 +72,7 @@ if(outlineMeshRenderer == null)
         if (outline != null)
             outline.OutlineWidth = 0;
 
-    }
+    }   
     public bool IsEmpty()
     {
         return mySegment == Items.None;
@@ -156,17 +152,14 @@ public void RemoveItem(int groupIndex, int spaceIndex)
             int spaceIndex = groups[g].GetNullSpace();
             if (spaceIndex == -1) return false;
 
-            AllIThingsData data = ServiceLocator.Get<ItemManager>().GetItemData(type);
-            Vector3 targetLocalPos = groups[g].localPositions[spaceIndex];
-            Vector3 end = itemsParent.TransformPoint(targetLocalPos);
-            Quaternion targetRotation = itemsParent.rotation * Quaternion.Euler(data.shelfGrid.itemRotationEuler);
-            Vector3 targetScale = data.shelfGrid.itemScale;
+            Transform target = groups[g].allItems[spaceIndex];
 
-            itemTransform.SetParent(itemsParent);
+            itemTransform.SetParent(target.parent);
 
             groups[g].spaces[spaceIndex] = itemTransform;
 
             Vector3 start = itemTransform.position;
+    Vector3 end = target.position;
 
     float height = Vector3.Distance(start, end) * 0.21f;
 
@@ -191,7 +184,7 @@ public void RemoveItem(int groupIndex, int spaceIndex)
 
     seq.Join(
         itemTransform.DORotateQuaternion(
-            targetRotation * Quaternion.Euler(
+            target.rotation * Quaternion.Euler(
                 Random.Range(-6f,6f),
                 Random.Range(-12f,12f),
                 Random.Range(-4f,4f)
@@ -201,7 +194,7 @@ public void RemoveItem(int groupIndex, int spaceIndex)
     );
 
     // seq.Join(
-    //     itemTransform.DOScaleY(targetScale.y * 1.2f, 0.18f)
+    //     itemTransform.DOScaleY(target.localScale.y * 1.2f, 0.18f)
     //     .SetEase(Ease.OutQuad)
     // );
 
@@ -211,14 +204,14 @@ public void RemoveItem(int groupIndex, int spaceIndex)
     );
 
     seq.Join(
-        itemTransform.DORotateQuaternion(targetRotation, 0.05f)
+        itemTransform.DORotateQuaternion(target.rotation, 0.05f)
     );
     seq.Join(
-        itemTransform.DOScaleY(targetScale.y * 1.2f, 0.18f)
+        itemTransform.DOScaleY(target.localScale.y * 1.2f, 0.18f)
         .SetEase(Ease.OutQuad)
     );
     seq.Append(
-        itemTransform.DOScale(targetScale, 0.12f)
+        itemTransform.DOScale(target.localScale, 0.12f)
         .SetEase(Ease.OutBack)
     );
 
