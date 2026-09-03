@@ -60,6 +60,8 @@ public class MarketManager : MonoBehaviour
     {
         money += quantity;
 
+        ServiceLocator.Get<SoundManager>().Play(SFX.GanharDinheiro);
+
         moneyTween?.Kill();
         moneyTween = DOTween.To(
             () => late_money,

@@ -481,6 +481,7 @@ public class FurnitureManager : MonoBehaviour
         GameObject obj = Instantiate(selectedData.prefab, lastPos, lastRot);
         obj.transform.SetParent(furnitureContainer);
         AnimatePlacedFurniture(obj.transform);
+        ServiceLocator.Get<SoundManager>().Play(SFX.FurnitureColocada);
 
         if (obj.TryGetComponent(out FurnitureInstance instance))
         {

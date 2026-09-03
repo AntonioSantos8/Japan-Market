@@ -5,7 +5,16 @@ using UnityEngine.Audio;
 
 public enum SFX
 {
-   
+    AbrirCaixa,
+    GanharDinheiro,
+    PopItemPrateleira,
+    PortaAutomaticaAbrir,
+    PararDeVerSegmento,
+    VerSegmentoInteragivel,
+    FurnitureColocada,
+    WooshTransicaoItem,
+    PegarMoeda,
+    WooshPegarDinheiro
 }
 
 [System.Serializable]

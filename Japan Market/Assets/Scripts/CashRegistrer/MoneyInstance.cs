@@ -21,6 +21,7 @@ public class MoneyInstance : InteractableBase
     }
     public void GoToPosition(Vector3 position)
     {
+        ServiceLocator.Get<SoundManager>().Play(SFX.WooshPegarDinheiro);
         transform.DOJump(position, moveDuration, jumpPower, moveDuration).SetEase(Ease.InOutSine).OnComplete(() =>
         {
             canInteract = true;

@@ -60,6 +60,7 @@ public class AutomaticDoor : MonoBehaviour
 
         if(_tutorialManager)
         _tutorialManager.NotifyGameEvent("EnteredStore");
+        ServiceLocator.Get<SoundManager>().Play(SFX.PortaAutomaticaAbrir);
         leftTween?.Kill();
         rightTween?.Kill();
 

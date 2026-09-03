@@ -24,6 +24,7 @@ public class MoneyStorageMoney : InteractableBase
         // A nota só é criada se fizer parte de um pagamento em dinheiro aberto.
         if (!cashRegister.AddMoney(value)) return;
         print("devia spawna");
+        ServiceLocator.Get<SoundManager>().Play(SFX.PegarMoeda);
         MoneyInstance money = Instantiate(moneyPrefab, transform.position, Quaternion.identity);
         money.Setup(cashRegister, value);
         cashRegister.RegisterMoneyInstance(money);

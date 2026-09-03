@@ -101,6 +101,8 @@ public class ItemBox : MonoBehaviour
 
         item.SetParent(itemsParent);
 
+    ServiceLocator.Get<SoundManager>().Play(SFX.WooshTransicaoItem);
+
     Sequence seq = DOTween.Sequence();
 
 seq.SetDelay(visualDelay + Random.Range(0f,0.015f));

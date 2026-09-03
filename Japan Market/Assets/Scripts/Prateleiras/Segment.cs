@@ -158,6 +158,8 @@ public void RemoveItem(int groupIndex, int spaceIndex)
 
             groups[g].spaces[spaceIndex] = itemTransform;
 
+            ServiceLocator.Get<SoundManager>().Play(SFX.WooshTransicaoItem);
+
             Vector3 start = itemTransform.position;
     Vector3 end = target.position;
 
@@ -213,6 +215,7 @@ public void RemoveItem(int groupIndex, int spaceIndex)
     seq.Append(
         itemTransform.DOScale(target.localScale, 0.12f)
         .SetEase(Ease.OutBack)
+        .OnComplete(() => ServiceLocator.Get<SoundManager>().Play(SFX.PopItemPrateleira))
     );
 
     // seq.Append(
@@ -345,6 +348,7 @@ visualDelay = 0;
           if(box.AllowedFurniture != myType && !box.AllowedFurniture.Equals(FurnitureType.None))
         {
         ChangeMaterialColor(ServiceLocator.Get<FurnitureManager>().RedSegment);
+        PlayOutlineOnSound();
         return false;
 
         }
@@ -365,6 +369,7 @@ visualDelay = 0;
             // outlineMeshRenderer.material = greenMaterial;
             ChangeMaterialColor(ServiceLocator.Get<FurnitureManager>().GreenSegment);
         }
+        PlayOutlineOnSound();
         return true;
     }
     public override void OnLookAway()
@@ -375,7 +380,19 @@ visualDelay = 0;
 if(outlineMeshRenderer != null)
         ChangeMaterialColor(ServiceLocator.Get<FurnitureManager>().TransparentSegment, true);
 
+        if (_outlineSoundOn)
+        {
+            _outlineSoundOn = false;
+            ServiceLocator.Get<SoundManager>().Play(SFX.PararDeVerSegmento);
+        }
+    }
 
+    bool _outlineSoundOn;
+    void PlayOutlineOnSound()
+    {
+        if (_outlineSoundOn) return;
+        _outlineSoundOn = true;
+        ServiceLocator.Get<SoundManager>().Play(SFX.VerSegmentoInteragivel);
     }
     public void OnLookAtWithRestriction(){if(isLooking) ServiceLocator.Get<ItemRaycastController>().ReLook(this);}
     void ChangeMaterialColor(Color to,bool isTransparent = false)

@@ -74,6 +74,7 @@ public class Box : InteractableBase
 
         //if (ServiceLocator.Get<ItemRaycastController>().PickItem(rb))
             anim.SetTrigger("Open");
+        ServiceLocator.Get<SoundManager>().Play(SFX.AbrirCaixa);
     }
 
     public void StopHolding()
