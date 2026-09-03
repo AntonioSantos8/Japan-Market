@@ -61,6 +61,7 @@ public class StoreSign : InteractableBase
             isRotating = false;
             isOpen = !isOpen;
             marketManager.Open = isOpen;
+            ServiceLocator.Get<SoundManager>().Play(SFX.LojaAbertaFechada);
             if (isOpen)
                 npcManager.StartSpawning();
             else
