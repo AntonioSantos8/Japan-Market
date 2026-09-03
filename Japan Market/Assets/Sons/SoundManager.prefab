@@ -1,0 +1,187 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &4928975589677794747
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8339493297252641011}
+  - component: {fileID: 6380869732058320193}
+  m_Layer: 0
+  m_Name: SoundManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8339493297252641011
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4928975589677794747}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 358.21136, y: 388.3885, z: 733.3444}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6380869732058320193
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4928975589677794747}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1bb53974551e55a4faf1a807401a4a3f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SoundManager
+  soundConfigs:
+  - sound: 0
+    clips:
+    - {fileID: 8300000, guid: 84277408ab544f942a8b976176c6f441, type: 3}
+    volume: 1
+    poolSize: 3
+    mixerGroup: {fileID: 0}
+    randomPitch: 0
+    pitchVariation: 0.1
+    spatialAudio3D: 0
+    dopplerLevel: 1
+    spread: 0
+    minDistance: 1
+    maxDistance: 500
+    rolloffMode: 0
+  - sound: 1
+    clips:
+    - {fileID: 8300000, guid: c2d7a9570deb4ac4a9c6ea4e02632d57, type: 3}
+    volume: 1
+    poolSize: 3
+    mixerGroup: {fileID: 0}
+    randomPitch: 0
+    pitchVariation: 0.1
+    spatialAudio3D: 0
+    dopplerLevel: 1
+    spread: 0
+    minDistance: 1
+    maxDistance: 500
+    rolloffMode: 0
+  - sound: 2
+    clips:
+    - {fileID: 8300000, guid: b5959e773a4230047b3a072c5625dff8, type: 3}
+    volume: 1
+    poolSize: 3
+    mixerGroup: {fileID: 0}
+    randomPitch: 0
+    pitchVariation: 0.1
+    spatialAudio3D: 0
+    dopplerLevel: 1
+    spread: 0
+    minDistance: 1
+    maxDistance: 500
+    rolloffMode: 0
+  - sound: 3
+    clips:
+    - {fileID: 8300000, guid: 4e606220018c7934096f05d53b36eb4a, type: 3}
+    volume: 1
+    poolSize: 3
+    mixerGroup: {fileID: 0}
+    randomPitch: 0
+    pitchVariation: 0.1
+    spatialAudio3D: 0
+    dopplerLevel: 1
+    spread: 0
+    minDistance: 1
+    maxDistance: 500
+    rolloffMode: 0
+  - sound: 4
+    clips:
+    - {fileID: 8300000, guid: b3bf925fd64e8664096aa8f4b0cb6e45, type: 3}
+    volume: 1
+    poolSize: 3
+    mixerGroup: {fileID: 0}
+    randomPitch: 0
+    pitchVariation: 0.1
+    spatialAudio3D: 0
+    dopplerLevel: 1
+    spread: 0
+    minDistance: 1
+    maxDistance: 500
+    rolloffMode: 0
+  - sound: 5
+    clips:
+    - {fileID: 8300000, guid: ab867c2391bce6f45a6295cac5f9b89f, type: 3}
+    volume: 1
+    poolSize: 3
+    mixerGroup: {fileID: 0}
+    randomPitch: 0
+    pitchVariation: 0.1
+    spatialAudio3D: 0
+    dopplerLevel: 1
+    spread: 0
+    minDistance: 1
+    maxDistance: 500
+    rolloffMode: 0
+  - sound: 6
+    clips:
+    - {fileID: 8300000, guid: 76c899478e32b164187bb492156ba15a, type: 3}
+    volume: 1
+    poolSize: 3
+    mixerGroup: {fileID: 0}
+    randomPitch: 0
+    pitchVariation: 0.1
+    spatialAudio3D: 0
+    dopplerLevel: 1
+    spread: 0
+    minDistance: 1
+    maxDistance: 500
+    rolloffMode: 0
+  - sound: 7
+    clips:
+    - {fileID: 8300000, guid: 38f7a2d7bb0c64c40a971733026c298f, type: 3}
+    volume: 1
+    poolSize: 3
+    mixerGroup: {fileID: 0}
+    randomPitch: 0
+    pitchVariation: 0.1
+    spatialAudio3D: 0
+    dopplerLevel: 1
+    spread: 0
+    minDistance: 1
+    maxDistance: 500
+    rolloffMode: 0
+  - sound: 8
+    clips:
+    - {fileID: 8300000, guid: 24ffaedd6f1357e499acf65826a45baa, type: 3}
+    volume: 1
+    poolSize: 3
+    mixerGroup: {fileID: 0}
+    randomPitch: 0
+    pitchVariation: 0.1
+    spatialAudio3D: 0
+    dopplerLevel: 1
+    spread: 0
+    minDistance: 1
+    maxDistance: 500
+    rolloffMode: 0
+  - sound: 9
+    clips:
+    - {fileID: 8300000, guid: bc539cc2153bb594aa94e65a9f974abd, type: 3}
+    volume: 1
+    poolSize: 3
+    mixerGroup: {fileID: 0}
+    randomPitch: 0
+    pitchVariation: 0.1
+    spatialAudio3D: 0
+    dopplerLevel: 1
+    spread: 0
+    minDistance: 1
+    maxDistance: 500
+    rolloffMode: 0
