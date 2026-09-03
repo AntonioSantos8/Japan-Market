@@ -73,6 +73,7 @@ public class TrashBin : MonoBehaviour
         if (controller.HeldItem != null)
             controller.DropItem();
 
+        ServiceLocator.Get<TrashSystem>().UnregisterTrash(trashObj);
         Destroy(trashObj);
         SpawnLosePop();
         ServiceLocator.Get<MarketManager>().Lose_Money(_moneyPenalty);

@@ -12,9 +12,10 @@ public class CardMachine : InteractableBase
     [SerializeField] private CinemachineCamera machineCamera;
     [SerializeField] private int               machineCameraPriority = 15;
     [SerializeField] private CashRegister      cashRegister;
+    [SerializeField] private PaymentCard       paymentCard;
 
     public override void Interact()
     {
-        cashRegister.EnterCardMachineMode(machineCamera, machineCameraPriority);
+        cashRegister.EnterCardMachineMode(machineCamera, machineCameraPriority, paymentCard);
     }
 }

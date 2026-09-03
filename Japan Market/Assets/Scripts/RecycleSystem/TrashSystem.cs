@@ -5,9 +5,13 @@ using UnityEngine;
 public class TrashSystem : MonoBehaviour
 {
     [SerializeField] private TrashData[] trashDatas;
-    [SerializeField] private int maxTrashCount = 10;
+    [SerializeField] private int maxTrashCount = 8;
 
     [Header("Spawn")]
+    [Tooltip("Intervalo (em segundos) entre cada tentativa de spawnar lixo.")]
+    [SerializeField] private float _spawnInterval = 20f;
+    [Tooltip("Chance (0-1) de spawnar lixo a cada tentativa, aplicada uma única vez por tentativa — não por cliente.")]
+    [SerializeField] private float _spawnChance = 1f / 8f;
     [Tooltip("Raio ao redor do cliente onde o lixo pode aparecer.")]
     [SerializeField] private float _spawnRadius = 1.5f;
     [Tooltip("Layers que representam o chão para o raycast de spawn.")]
@@ -27,7 +31,7 @@ public class TrashSystem : MonoBehaviour
     {
         while (true)
         {
-            yield return new WaitForSeconds(10f);
+            yield return new WaitForSeconds(_spawnInterval);
 
             MarketManager market = ServiceLocator.Get<MarketManager>();
             if (!market.Open || market.Clients == 0) continue;
@@ -36,19 +40,24 @@ public class TrashSystem : MonoBehaviour
             // Remove referências de clientes já destruídos
             _trashSpawners.RemoveWhere(t => t == null);
 
+            // Escolhe no máximo um cliente elegível e rola a chance uma única vez —
+            // antes a chance era rolada por cliente, então mais clientes na loja
+            // significava muito mais lixo (efetivamente bem acima do valor configurado).
+            var eligible = new List<Transform>();
             foreach (var client in market.ClientTransforms)
             {
                 if (client == null) continue;
                 if (_trashSpawners.Contains(client)) continue;
-
-                if (Random.value <= 1f / 6f)
-                {
-                    _trashSpawners.Add(client);
-                    if (TryFindSpawnPosition(client.position, out Vector3 spawnPos))
-                        SpawnAt(spawnPos);
-                    break;
-                }
+                eligible.Add(client);
             }
+
+            if (eligible.Count == 0) continue;
+            if (Random.value > _spawnChance) continue;
+
+            var chosen = eligible[Random.Range(0, eligible.Count)];
+            _trashSpawners.Add(chosen);
+            if (TryFindSpawnPosition(chosen.position, out Vector3 spawnPos))
+                SpawnAt(spawnPos);
         }
     }
 

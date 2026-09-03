@@ -14,7 +14,6 @@ public class CashRegister : InteractableBase
     // ── Tutorial event IDs ────────────────────────────────────────────────────
     private const string EnteredCashRegisterEventId = "EnteredCashRegister";
     private const string PassedAllProductsEventId   = "PassedAllProducts";
-    private const string FinishTutorialEventId      = "FinishedTutorial";
 
     // ── State ─────────────────────────────────────────────────────────────────
     private enum State { Idle, Scanning, WaitingPayment }
@@ -201,7 +200,11 @@ public class CashRegister : InteractableBase
 
     private void EnterCashMode()
     {
-        _state = State.Scanning;
+        // Resume para WaitingPayment se o cliente atual já tinha terminado de ser escaneado
+        // antes do jogador sair do modo caixa (Esc) — senão o pagamento nunca reaparece e o
+        // ciclo trava esperando o cliente desistir.
+        bool scanningAlreadyDone = _totalExpected > 0 && _scannedCount >= _totalExpected && GetCurrentCustomer() != null;
+        _state = scanningAlreadyDone ? State.WaitingPayment : State.Scanning;
         NotifyTutorial(EnteredCashRegisterEventId);
 
         playerMotor.SetCanMove(false);
@@ -212,6 +215,9 @@ public class CashRegister : InteractableBase
         Cursor.visible   = false;
         reticle.SetActive(true);
         quitButton.SetActive(false);
+
+        if (_state == State.WaitingPayment)
+            ShowTotalAndPaymentOptions();
 
         DOTween.Sequence()
             .Append(FOVTween(zoom - 3f, 0.55f, Ease.InQuart))
@@ -232,7 +238,7 @@ public class CashRegister : InteractableBase
 
         if (paymentMoney != null) paymentMoney.Close();
         if (paymentCard  != null) paymentCard.Close();
-        totalPrice = 0;
+        HidePaymentObjects();
 
         DOTween.Sequence()
             .Append(quitButton.transform.DOScale(Vector3.zero, 0.2f).SetEase(Ease.InBack))
@@ -244,10 +250,14 @@ public class CashRegister : InteractableBase
 
     // ── Card Machine Mode ─────────────────────────────────────────────────────
 
-    public void EnterCardMachineMode(CinemachineCamera machineCamera, int priority)
+    public void EnterCardMachineMode(CinemachineCamera machineCamera, int priority, PaymentCard machinePaymentCard = null)
     {
         if (_state != State.WaitingPayment || _inCardMachineMode || machineCamera == null) return;
         if (!IsCardPayment()) return;
+
+        // A maquininha pode ter seu próprio PaymentCard (com a UI real que o jogador usa),
+        // diferente do paymentCard padrão do registro — usa esse a partir daqui.
+        if (machinePaymentCard != null) paymentCard = machinePaymentCard;
 
         if (paymentCard != null && !paymentCard.IsOpen) paymentCard.Open(totalPrice);
 
@@ -383,9 +393,12 @@ public class CashRegister : InteractableBase
         foreach (var hit in hits)
         {
             var pm = hit.collider.GetComponentInParent<PaymentMoney>();
-            if (pm != null && paymentType == PaymentType.Cash && !pm.IsOpen)
+            if (pm != null && paymentType == PaymentType.Cash)
             {
-                pm.Open(totalPrice);
+                // Primeiro clique abre o pagamento; clicar de novo confirma o troco
+                // dado até agora (só fecha a venda se o troco estiver certo).
+                if (!pm.IsOpen) pm.Open(totalPrice);
+                else            pm.Confirm();
                 return;
             }
 
@@ -484,10 +497,6 @@ public class CashRegister : InteractableBase
 
     public void ApplyPenalty()
     {
-        var customer = GetCurrentCustomer();
-        if (customer == null) return;
-        if (customer.TryGetComponent(out NpcInstance instance))
-            instance.ReceiveWrongChange(30);
     }
 
     public void FinalizeTransaction()
@@ -502,21 +511,10 @@ public class CashRegister : InteractableBase
         if (!_tutorialFinished)
         {
             _tutorialFinished = true;
-            NotifyTutorial(FinishTutorialEventId);
+            // Chamada direta (não NotifyGameEvent) pra garantir que o mascote some na
+            // primeira venda mesmo que o tutorial ainda esteja num passo anterior.
+            ServiceLocator.Get<TutorialManager>()?.SkipTutorial();
         }
-    }
-
-    public void ClearForCustomerLeave()
-    {
-        foreach (var item in itemsQueue)
-            if (item != null) Destroy(item.gameObject);
-
-        ResetMoneyPlacementState();
-        paymentMoney?.Close();
-        paymentCard?.Close();
-        ResetForNextCustomer();
-        nameItemText.text  = "";
-        priceItemText.text = "";
     }
 
     // ── Private Helpers ───────────────────────────────────────────────────────

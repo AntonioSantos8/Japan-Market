@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using DG.Tweening;
 using UnityEngine;
 using UnityEngine.AI;
@@ -10,8 +9,6 @@ public class NpcTraject : MonoBehaviour
 {
     // ─── Referências ──────────────────────────────────────────────────────────
     private NavMeshAgent _agent;
-    private NpcInstance _npcInstance;
-    private NpcPhrases _npcPhrases;
     private FurnitureManager _furnitureManager;
     private CashRegister _cashRegister;
 
@@ -25,14 +22,8 @@ public class NpcTraject : MonoBehaviour
     [SerializeField] private int[] _itemsPerFurnitureWeights = { 1, 1, 1, 2, 2, 3 };
 
     [Header("Comportamento")]
-    [Tooltip("Tempo base (em segundos) que o NPC aguenta esperar na frente do caixa antes de desistir. É multiplicado pela paciência do humor atual.")]
-    [SerializeField] private float _queuePatienceSeconds = 90f;
-    [Tooltip("Quantidade de sujeiras ativas a partir da qual o NPC reclama da loja suja.")]
-    [SerializeField] private int _dirtyComplainThreshold = 5;
     [Tooltip("Quantidade de sujeiras ativas a partir da qual o NPC desiste e vai embora.")]
     [SerializeField] private int _dirtyLeaveThreshold = 12;
-    [Tooltip("Intervalo (em segundos) entre frases de impaciência enquanto espera no caixa.")]
-    [SerializeField] private float _impatientPhraseInterval = 25f;
     [Tooltip("Preço máximo em ¥ que o NPC aceita pagar por um item. Acima disso reclama e não compra.")]
     [SerializeField] private float _maxAcceptableItemPrice = 500f;
 
@@ -48,10 +39,6 @@ public class NpcTraject : MonoBehaviour
 
     private Transform _exitPoint;
     private readonly List<ShoppingItem> _inventory = new List<ShoppingItem>();
-
-    // Snapshot dos itens colocados no balcão — usado para "devolvê-los" se o NPC desistir.
-    private readonly List<ShoppingItem> _unloadedItems = new List<ShoppingItem>();
-    private bool _itemsFullyUnloaded = false;
 
     // Slot reservado na furniture atual
     private FurnitureOccupancy _currentOccupancy;
@@ -72,8 +59,6 @@ public class NpcTraject : MonoBehaviour
     private void Awake()
     {
         _agent = GetComponent<NavMeshAgent>();
-        _npcInstance = GetComponent<NpcInstance>();
-        _npcPhrases = GetComponent<NpcPhrases>();
         _tutorialManager = ServiceLocator.Get<TutorialManager>();
     }
 
@@ -101,9 +86,6 @@ public class NpcTraject : MonoBehaviour
 
     private IEnumerator CashRegisterWatcher()
     {
-        float timeWaitingAtFront = 0f;
-        float nextImpatientAt = _impatientPhraseInterval;
-
         while (true)
         {
             if (_isLeaving) yield break;
@@ -117,21 +99,6 @@ public class NpcTraject : MonoBehaviour
 
                 if (!_itemsPlaced)
                     PlaceItemsOnCounter();
-
-
-                timeWaitingAtFront += 0.5f;
-
-                if (timeWaitingAtFront >= nextImpatientAt)
-                {
-                    _npcPhrases?.SayEvent(NpcEvent.Impatient);
-                    nextImpatientAt += _impatientPhraseInterval;
-                }
-
-                if (timeWaitingAtFront >= _queuePatienceSeconds * GetPatienceMultiplier())
-                {
-                    yield return StartCoroutine(GiveUpAndReturnItems());
-                    yield break;
-                }
             }
 
             yield return new WaitForSeconds(0.5f);
@@ -148,9 +115,6 @@ public class NpcTraject : MonoBehaviour
     private IEnumerator UnloadInventoryRoutine()
     {
 
-        _unloadedItems.Clear();
-        _unloadedItems.AddRange(_inventory);
-
         yield return new WaitForSeconds(0.2f);
 
         foreach (var shoppingItem in _inventory)
@@ -160,84 +124,7 @@ public class NpcTraject : MonoBehaviour
         }
 
         _inventory.Clear();
-        _itemsFullyUnloaded = true;
         Debug.Log("[NPC] Itens colocados no balcão.");
-    }
-
-    // ─── Desistência no caixa ─────────────────────────────────────────────────
-
-    private float GetPatienceMultiplier()
-    {
-        switch (_npcInstance.CurrentHumor)
-        {
-            case NpcHumor.Happy: return 1.3f;
-            case NpcHumor.Neutral: return 1.0f;
-            case NpcHumor.Angry: return 0.65f;
-            default: return 1.0f;
-        }
-    }
-
-    private IEnumerator GiveUpAndReturnItems()
-    {
-        if (_isLeaving) yield break;
-
-        StopFidget();
-        _cashRegister.LeaveQueue(this);
-        _cashRegister.ClearForCustomerLeave();
-        _npcPhrases?.SayEvent(NpcEvent.CashierTooSlow);
-
-        _agent.isStopped = false;
-
-        yield return new WaitForSeconds(1.5f);
-
-        var source = _itemsFullyUnloaded || _inventory.Count == 0 ? _unloadedItems : _inventory;
-        var items = new List<ShoppingItem>(source);
-
-        var frozenItems = items.Where(i => GetFurnitureTypeForItem(i.Type) == FurnitureType.Freezer).ToList();
-        var shelfItems = items.Where(i => GetFurnitureTypeForItem(i.Type) != FurnitureType.Freezer).ToList();
-
-        yield return StartCoroutine(ReturnGroupToFurniture(frozenItems, FurnitureType.Freezer));
-        yield return StartCoroutine(ReturnGroupToFurniture(shelfItems, FurnitureType.Shelf));
-
-        _inventory.Clear();
-        _unloadedItems.Clear();
-        GoAway();
-    }
-
-    private IEnumerator ReturnGroupToFurniture(List<ShoppingItem> items, FurnitureType furnitureType)
-    {
-        if (items.Count == 0) yield break;
-
-        FurnitureInstance target = FindFurnitureOfType(furnitureType);
-        if (target == null) yield break;
-
-        _npcPhrases?.SayEvent(NpcEvent.ReturningItems);
-        yield return StartCoroutine(GoToDest(target.InteractionPosition));
-        yield return new WaitForSeconds(1.5f);
-    }
-
-    private FurnitureInstance FindFurnitureOfType(FurnitureType type)
-    {
-        var placed = _furnitureManager.GetPlacedFurnitures();
-        if (placed == null) return null;
-
-        var matches = placed.Where(f => f != null && f.Data != null && f.Data.type == type).ToList();
-        return matches.Count > 0 ? matches[Random.Range(0, matches.Count)] : null;
-    }
-
-    private static FurnitureType GetFurnitureTypeForItem(Items item)
-    {
-        switch (item)
-        {
-            case Items.IceCream:
-            case Items.FrozenMeat:
-            case Items.FrozenPizza:
-            case Items.Fish:
-            case Items.Cola:
-                return FurnitureType.Freezer;
-            default:
-                return FurnitureType.Shelf;
-        }
     }
 
     private IEnumerator ShoppingRoutine()
@@ -280,12 +167,9 @@ public class NpcTraject : MonoBehaviour
                 _currentOccupancy?.Release(_reservedSlotPosition);
                 _currentOccupancy = null;
 
-                ReactToDirtyStore();
-
                 if (Clean.ActiveDustCount >= _dirtyLeaveThreshold)
                 {
                     Debug.Log("[NPC] Loja suja demais, indo embora.");
-                    _npcPhrases?.SayEvent(NpcEvent.DirtyStore);
                     yield return new WaitForSeconds(2f);
                     GoAway();
                     yield break;
@@ -296,7 +180,6 @@ public class NpcTraject : MonoBehaviour
         if (_inventory.Count == 0)
         {
             Debug.Log("[NPC] Sem itens (prateleiras vazias), indo embora.");
-            _npcPhrases?.SayEvent(NpcEvent.EmptyShelves);
             yield return new WaitForSeconds(2f);
             GoAway();
             yield break;
@@ -304,17 +187,6 @@ public class NpcTraject : MonoBehaviour
 
         _cashRegister.EnterQueue(this);
         Debug.Log("[NPC] Entrou na fila.");
-    }
-
-    private void ReactToDirtyStore()
-    {
-        int dustCount = Clean.ActiveDustCount;
-        if (dustCount < _dirtyComplainThreshold) return;
-
-        _npcPhrases?.SayEvent(NpcEvent.DirtyStore);
-
-        int penalty = Mathf.FloorToInt(dustCount / (float)_dirtyComplainThreshold) * 5;
-        _npcInstance.ReceiveWrongChange(penalty);
     }
 
     // ─── Saída da loja ────────────────────────────────────────────────────────
@@ -385,10 +257,9 @@ public class NpcTraject : MonoBehaviour
         float elapsed = 0f;
         const float timeout = 15f;
 
-        while ((_agent.remainingDistance > _agent.stoppingDistance
-               || (_agent.hasPath && _agent.velocity.sqrMagnitude > 0.01f))
-               && elapsed < timeout)
+        while (_agent.remainingDistance > _agent.stoppingDistance && elapsed < timeout)
         {
+            if (_agent.pathStatus == NavMeshPathStatus.PathInvalid) break;
             elapsed += Time.deltaTime;
             yield return null;
         }
@@ -458,8 +329,17 @@ public class NpcTraject : MonoBehaviour
 
         float arrivalThreshold = _agent.stoppingDistance + 0.05f;
 
-        while (_agent.remainingDistance > arrivalThreshold)
+        // Timeout evita que o NPC fique preso pra sempre num destino inalcançável
+        // (slot bloqueado, NavMesh com buraco, etc.) — sem isso ele travava a rotina inteira.
+        float elapsed = 0f;
+        const float timeout = 15f;
+
+        while (_agent.remainingDistance > arrivalThreshold && elapsed < timeout)
+        {
+            if (_agent.pathStatus == NavMeshPathStatus.PathInvalid) break;
+            elapsed += Time.deltaTime;
             yield return null;
+        }
     }
 
     // ─── Seleção de furnitures ────────────────────────────────────────────────
@@ -493,11 +373,7 @@ public class NpcTraject : MonoBehaviour
             float price = globalPrices.GetItemCurrentPrice(peekedType);
 
             if (price > _maxAcceptableItemPrice)
-            {
-                _npcPhrases?.SayEvent(NpcEvent.PriceTooHigh);
-                _npcInstance.ReceiveWrongChange(8);
                 break;
-            }
 
             Items taken = shelf.TakeItemOfType(peekedType);
             if (taken == Items.None) break;
