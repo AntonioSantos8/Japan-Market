@@ -90,7 +90,12 @@ public class ShopBuyItems : MonoBehaviour
         ServiceLocator.Get<SoundManager>().Play(SFX.ComprarItemOuFurnitureComputador);
         if(_tutorialManager)
             _tutorialManager.BoughtItem(_sellingItemType);
-        Instantiate(currentItemBox, boxesSpawnPoint.position, Quaternion.identity);
+        GameObject spawnedBox = Instantiate(currentItemBox, boxesSpawnPoint.position, Quaternion.identity);
+        var itemBox = spawnedBox.GetComponentInChildren<ItemBox>();
+        if (itemBox != null)
+        {
+            itemBox.InitializeBox(currentObj.Data.itemType);
+        }
     }
 
     void Update()

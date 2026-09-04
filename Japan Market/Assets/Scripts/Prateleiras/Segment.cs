@@ -5,47 +5,49 @@ using DG.Tweening;
 public class SegmentTypeGroup
 {
     public Items type;
-    public Transform[] allItems;
-    public List<Transform> spaces;
+    public List<Transform> spaces = new List<Transform>();
+    [System.NonSerialized] public ItemGridSettings gridSettings;
 
-    public void Init()
+    public void Init(ItemGridSettings settings)
     {
-
-        spaces = new List<Transform>(new Transform[allItems.Length]);
-    }
-     public void InitWithType(Items item)
-    {
-        if(item!= type)
-        spaces = new List<Transform>(new Transform[allItems.Length]);
+        gridSettings = settings;
+        int capacity = settings != null ? settings.TotalCapacity : 0;
+        spaces = new List<Transform>(new Transform[capacity]);
     }
 
     public int GetNullSpace()
     {
-         for (int i = 0; i < spaces.Count; i++)
-         {
-             if (spaces[i] == null)
+        for (int i = 0; i < spaces.Count; i++)
+        {
+            if (spaces[i] == null)
                 return i;
-    }
-         return -1;
-
-
+        }
+        return -1;
     }
 }
 public class Segment : InteractableBase
 {
     [SerializeField] SegmentTypeGroup[] groups; 
+    [SerializeField] List<Items> supportedItems = new List<Items>();
+    [SerializeField] Transform itemsParent;
     [SerializeField] float delayBetweenItems = 0.08f;
     [SerializeField] Material greenMaterial, redMaterial, transparentMaterial;
     [SerializeField] Shelf shelf;
-    [SerializeField]FurnitureType myType;
-    public   FurnitureType FurnitureType => myType;
+    [SerializeField] FurnitureType myType;
+    public FurnitureType FurnitureType => myType;
 
-
-    public SegmentTypeGroup[] Groups { get { return groups; } set => groups = value; }
+    public SegmentTypeGroup[] Groups 
+    { 
+        get 
+        { 
+            InitializeGroups(); 
+            return groups; 
+        } 
+        set => groups = value; 
+    }
     public bool IsAnimating { set => isAnimating = value; }
 
-
-    [SerializeField]MeshRenderer outlineMeshRenderer;
+    [SerializeField] MeshRenderer outlineMeshRenderer;
 
     int activeTweens;
     float visualDelay;
@@ -55,202 +57,279 @@ public class Segment : InteractableBase
     Items mySegment = Items.None;
     public Items SegmenyType => mySegment;
 
+    Tween materialColorTween;
+    Tween outlineWidhtTween;
+    Tween outlineColorTween;
+    bool _isInitialized;
 
-Tween materialColorTween;
-Tween outlineWidhtTween;
-Tween outlineColorTween;
+    public void InitializeGroups()
+    {
+        if (_isInitialized) return;
+        _isInitialized = true;
+
+        EnsureItemsParent();
+
+        var itemManager = ServiceLocator.Get<ItemManager>();
+
+        if (groups != null && groups.Length > 0)
+        {
+            for (int i = 0; i < groups.Length; i++)
+            {
+                var data = itemManager != null ? itemManager.GetItemData(groups[i].type) : null;
+                groups[i].Init(data != null ? data.shelfGrid : null);
+            }
+        }
+        else if (supportedItems != null && supportedItems.Count > 0)
+        {
+            groups = new SegmentTypeGroup[supportedItems.Count];
+            for (int i = 0; i < supportedItems.Count; i++)
+            {
+                groups[i] = new SegmentTypeGroup { type = supportedItems[i] };
+                var data = itemManager != null ? itemManager.GetItemData(supportedItems[i]) : null;
+                groups[i].Init(data != null ? data.shelfGrid : null);
+            }
+        }
+        else if (itemManager != null)
+        {
+            var matchingData = itemManager.GetItemsForFurniture(myType);
+            if (matchingData != null && matchingData.Count > 0)
+            {
+                groups = new SegmentTypeGroup[matchingData.Count];
+                for (int i = 0; i < matchingData.Count; i++)
+                {
+                    groups[i] = new SegmentTypeGroup { type = matchingData[i].itemType };
+                    groups[i].Init(matchingData[i].shelfGrid);
+                }
+            }
+            else
+            {
+                groups = new SegmentTypeGroup[0];
+            }
+        }
+        else
+        {
+            groups = new SegmentTypeGroup[0];
+        }
+    }
+
+    void EnsureItemsParent()
+    {
+        if (itemsParent != null) return;
+
+        if (transform.parent != null)
+        {
+            GameObject container = new GameObject($"{gameObject.name}_Items");
+            container.transform.SetParent(transform.parent);
+            container.transform.position = transform.position;
+            container.transform.rotation = transform.rotation;
+            container.transform.localScale = Vector3.one;
+            itemsParent = container.transform;
+        }
+        else
+        {
+            itemsParent = transform;
+        }
+    }
+
     private void Start()
     {
-        for (int i = 0; i < groups.Length; i++)
-            groups[i].Init();
+        InitializeGroups();
 
-if(outlineMeshRenderer == null)
-        outlineMeshRenderer = GetComponent<MeshRenderer>();
-
+        if (outlineMeshRenderer == null)
+            outlineMeshRenderer = GetComponent<MeshRenderer>();
 
         outline = gameObject.GetComponent<Outline>();
         if (outline != null)
             outline.OutlineWidth = 0;
-
     }   
+
     public bool IsEmpty()
     {
         return mySegment == Items.None;
     }
-public void RemoveItem(int groupIndex, int spaceIndex)
-{
-    groups[groupIndex].spaces[spaceIndex] = null;
 
-    bool hasAny = false;
-
-    for (int g = 0; g < groups.Length; g++)
+    public void RemoveItem(int groupIndex, int spaceIndex)
     {
-        for (int i = 0; i < groups[g].spaces.Count; i++)
+        groups[groupIndex].spaces[spaceIndex] = null;
+
+        bool hasAny = false;
+
+        for (int g = 0; g < groups.Length; g++)
         {
-            if (groups[g].spaces[i] != null)
+            for (int i = 0; i < groups[g].spaces.Count; i++)
             {
-                hasAny = true;
-                break;
-            }
-        }
-        if (hasAny) break;
-    }
-
-    if (!hasAny)
-    {
-        mySegment = Items.None;
-    }
-}
- public bool IsFull()
-    {
-        if(mySegment == Items.None) return false;
-
-        foreach(SegmentTypeGroup sT in groups)
-        {
-            if(sT.type == mySegment)
-            {
-
-                    for(int i = 0; i < sT.spaces.Count; i++)
+                if (groups[g].spaces[i] != null)
                 {
-
-                    if(sT.spaces[i] == null) return false;
-
-
-
+                    hasAny = true;
+                    break;
                 }
-
-
             }
-
-
+            if (hasAny) break;
         }
 
-            return true;
-
-
-
-
+        if (!hasAny)
+        {
+            mySegment = Items.None;
+        }
     }
 
+    public bool IsFull()
+    {
+        if (mySegment == Items.None) return false;
+
+        foreach (SegmentTypeGroup sT in groups)
+        {
+            if (sT.type == mySegment)
+            {
+                if (sT.spaces.Count == 0) return true;
+                for (int i = 0; i < sT.spaces.Count; i++)
+                {
+                    if (sT.spaces[i] == null) return false;
+                }
+            }
+        }
+
+        return true;
+    }
 
     public void FreeSpace(int groupIndex, int spaceIndex)
     {   
         groups[groupIndex].spaces[spaceIndex] = null;
-
     }
+
     bool PlaceSingleItem(Transform itemTransform, Items type)
     {
-        if(mySegment != Items.None && type != mySegment) return false;
+        if (mySegment != Items.None && type != mySegment) return false;
+
+        InitializeGroups();
+
+        int groupIndex = -1;
+        for (int g = 0; g < groups.Length; g++)
+        {
+            if (groups[g].type == type)
+            {
+                groupIndex = g;
+                break;
+            }
+        }
+
+        // Se o grupo não existia na lista inicial mas o item é suportado por esse tipo de móvel, adiciona em runtime
+        if (groupIndex == -1 && (supportedItems == null || supportedItems.Count == 0))
+        {
+            var itemData = ServiceLocator.Get<ItemManager>()?.GetItemData(type);
+            if (itemData != null && (itemData.allowedFurniture == myType || myType == FurnitureType.None))
+            {
+                var newGroup = new SegmentTypeGroup { type = type };
+                newGroup.Init(itemData.shelfGrid);
+                System.Array.Resize(ref groups, groups.Length + 1);
+                groups[groups.Length - 1] = newGroup;
+                groupIndex = groups.Length - 1;
+            }
+        }
+
+        if (groupIndex == -1) return false;
+
+        int spaceIndex = groups[groupIndex].GetNullSpace();
+        if (spaceIndex == -1) return false;
+
+        EnsureItemsParent();
+
+        ItemGridSettings settings = groups[groupIndex].gridSettings;
+        if (settings == null)
+        {
+            var data = ServiceLocator.Get<ItemManager>()?.GetItemData(type);
+            settings = data != null ? data.shelfGrid : new ItemGridSettings();
+            groups[groupIndex].gridSettings = settings;
+        }
 
         mySegment = type;
         ServiceLocator.Get<GlobalPrices>().HasPutItem(mySegment);
 
-        for (int g = 0; g < groups.Length; g++)
+        itemTransform.SetParent(itemsParent);
+        groups[groupIndex].spaces[spaceIndex] = itemTransform;
+
+        ServiceLocator.Get<SoundManager>().Play(SFX.WooshTransicaoItem);
+
+        Vector3 localPos = settings.GetLocalPosition(spaceIndex);
+        Vector3 end = itemsParent.TransformPoint(localPos);
+        Quaternion targetRotation = itemsParent.rotation * settings.GetLocalRotation();
+        Vector3 targetScale = settings.itemScale;
+
+        Vector3 start = itemTransform.position;
+        float height = Vector3.Distance(start, end) * 0.21f;
+
+        Vector3 mid = (start + end) * 0.5f;
+        mid += Vector3.up * height;
+
+        Vector3[] path = new Vector3[]
         {
-            if (groups[g].type != type) continue;
+            start,
+            mid,
+            end
+        };
 
-            int spaceIndex = groups[g].GetNullSpace();
-            if (spaceIndex == -1) return false;
+        Sequence seq = DOTween.Sequence();
 
-            Transform target = groups[g].allItems[spaceIndex];
+        seq.SetDelay(visualDelay + Random.Range(0f, 0.025f));
 
-            itemTransform.SetParent(target.parent);
+        seq.Append(
+            itemTransform.DOPath(path, 0.34f, PathType.CatmullRom)
+            .SetEase(Ease.OutCubic)
+        );
 
-            groups[g].spaces[spaceIndex] = itemTransform;
+        seq.Join(
+            itemTransform.DORotateQuaternion(
+                targetRotation * Quaternion.Euler(
+                    Random.Range(-6f, 6f),
+                    Random.Range(-12f, 12f),
+                    Random.Range(-4f, 4f)
+                ),
+                0.26f
+            ).SetEase(Ease.OutSine)
+        );
 
-            ServiceLocator.Get<SoundManager>().Play(SFX.WooshTransicaoItem);
+        seq.Append(
+            itemTransform.DOMove(end, 0.05f)
+            .SetEase(Ease.InQuad)
+        );
 
-            Vector3 start = itemTransform.position;
-    Vector3 end = target.position;
+        seq.Join(
+            itemTransform.DORotateQuaternion(targetRotation, 0.05f)
+        );
+        seq.Join(
+            itemTransform.DOScaleY(targetScale.y * 1.2f, 0.18f)
+            .SetEase(Ease.OutQuad)
+        );
+        seq.Append(
+            itemTransform.DOScale(targetScale, 0.12f)
+            .SetEase(Ease.OutBack)
+            .OnComplete(() => ServiceLocator.Get<SoundManager>().Play(SFX.PopItemPrateleira))
+        );
 
-    float height = Vector3.Distance(start, end) * 0.21f;
+        activeTweens++;
+        isAnimating = true;
 
-    Vector3 mid = (start + end) * 0.5f;
-    mid += Vector3.up * height;
+        seq.OnComplete(() =>
+        {
+            activeTweens--;
 
-    Vector3[] path = new Vector3[]
-    {
-        start,
-        mid,
-        end
-    };
-
-    Sequence seq = DOTween.Sequence();
-
-    seq.SetDelay(visualDelay + Random.Range(0f,0.025f));
-
-    seq.Append(
-        itemTransform.DOPath(path, 0.34f, PathType.CatmullRom)
-        .SetEase(Ease.OutCubic)
-    );
-
-    seq.Join(
-        itemTransform.DORotateQuaternion(
-            target.rotation * Quaternion.Euler(
-                Random.Range(-6f,6f),
-                Random.Range(-12f,12f),
-                Random.Range(-4f,4f)
-            ),
-            0.26f
-        ).SetEase(Ease.OutSine)
-    );
-
-    // seq.Join(
-    //     itemTransform.DOScaleY(target.localScale.y * 1.2f, 0.18f)
-    //     .SetEase(Ease.OutQuad)
-    // );
-
-    seq.Append(
-        itemTransform.DOMove(end, 0.05f)
-        .SetEase(Ease.InQuad)
-    );
-
-    seq.Join(
-        itemTransform.DORotateQuaternion(target.rotation, 0.05f)
-    );
-    seq.Join(
-        itemTransform.DOScaleY(target.localScale.y * 1.2f, 0.18f)
-        .SetEase(Ease.OutQuad)
-    );
-    seq.Append(
-        itemTransform.DOScale(target.localScale, 0.12f)
-        .SetEase(Ease.OutBack)
-        .OnComplete(() => ServiceLocator.Get<SoundManager>().Play(SFX.PopItemPrateleira))
-    );
-
-    // seq.Append(
-    //     itemTransform.DOPunchPosition(Vector3.up * 0.02f, 0.09f, 5, 0.8f)
-    // );
-
-            //transform.DOPunchPosition(Vector3.back * 0.015f, 0.12f, 3, 0.6f);
-
-            activeTweens++;
-            isAnimating = true;
-
-            seq.OnComplete(() =>
+            if (activeTweens <= 0)
             {
-                activeTweens--;
+                isAnimating = false;
+                OnLookAtWithRestriction();
+            }
+        });
 
-                if(activeTweens <= 0)
-                {
-                    isAnimating = false;
-                    OnLookAtWithRestriction();
-                }
-            });
+        visualDelay += delayBetweenItems;
 
-            visualDelay += delayBetweenItems;
+        ShelfItem shelfItem = itemTransform.GetComponent<ShelfItem>();
+        if (shelfItem == null)
+            shelfItem = itemTransform.gameObject.AddComponent<ShelfItem>();
 
-            ShelfItem shelfItem = itemTransform.GetComponent<ShelfItem>();
-            if (shelfItem == null)
-                shelfItem = itemTransform.gameObject.AddComponent<ShelfItem>();
+        shelf.RegisterSegment(type, this);
+        shelfItem.Setup(this, groupIndex, spaceIndex);
 
-            shelf.RegisterSegment(type, this);
-            shelfItem.Setup(this, g, spaceIndex);
-
-            return true;
-        }
-
-        return false;
+        return true;
     }
 
  bool TakeItem(ItemBox box)
