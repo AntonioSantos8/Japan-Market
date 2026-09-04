@@ -32,9 +32,16 @@ public class MarketManager : MonoBehaviour
     }
     public void UnregisterClient(Transform client) => clientTransforms.Remove(client);
 
+    void Awake()
+    {
+        // Registro em Awake: o Unity garante que TODOS os Awake rodam antes de
+        // QUALQUER Start. Registrar em Start deixava a ordem indefinida e, na build,
+        // o StoreSign.Start podia rodar antes e cachear um MarketManager nulo.
+        ServiceLocator.Register(this);
+    }
+
     void Start()
     {
-        ServiceLocator.Register(this);
         Earn_Money(8000);
         if (moneyText != null)
         {
