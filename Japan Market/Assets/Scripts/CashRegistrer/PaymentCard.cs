@@ -61,7 +61,6 @@ public class PaymentCard : MonoBehaviour
         if (currentValue.Length >= 6) return;
         currentValue += number;
         RefreshUI();
-        ServiceLocator.Get<SoundManager>().Play(SFX.ClicarBotaoMaquinaCartao);
         valueText.transform.DOPunchScale(Vector3.one * 0.1f, 0.21f, 2, 0.12f);
     }
 
@@ -71,7 +70,6 @@ public class PaymentCard : MonoBehaviour
         if (currentValue.Length == 0) return;
         currentValue = currentValue.Remove(currentValue.Length - 1);
         RefreshUI();
-        ServiceLocator.Get<SoundManager>().Play(SFX.ClicarBotaoMaquinaCartao);
     }
 
     public void AddPoint() { /* Yen has no decimal subunit — button kept for UI completeness */ }

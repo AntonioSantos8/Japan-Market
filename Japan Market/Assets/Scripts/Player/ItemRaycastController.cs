@@ -261,8 +261,6 @@ public class ItemRaycastController : MonoBehaviour
     {
         if (heldItem != null) return false;
 
-        ServiceLocator.Get<SoundManager>().Play(SFX.PegarItem);
-
         useItemRotation = useRotationFollow;
 
         heldItemRb = itemRb;

@@ -37,10 +37,6 @@ public class NpcAnimationManager : MonoBehaviour
         SetState(NpcAnimationState.Idle);
     }
 
-    /// <summary>
-    /// Atualiza a animação a cada frame com base na velocidade real do agente,
-    /// eliminando a dependência de quem está chamando SetAnimationState na hora certa.
-    /// </summary>
     private void Update()
     {
         bool isMoving = _agent.velocity.magnitude > _movementThreshold;

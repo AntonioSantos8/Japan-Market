@@ -41,6 +41,16 @@ public class ShopBuyItems : MonoBehaviour
     void Awake(){ _tutorialManager = ServiceLocator.Get<TutorialManager>();}
     void Start()
     {
+        for (int i = 0; i < objects.Length; i++)
+        {
+            if (objects[i].Visual == null || objects[i].Data == null)
+            {
+                Debug.LogError($"[ShopBuyItems] '{gameObject.name}' has an unassigned entry at objects[{i}] (missing Visual and/or Data). Fill it in the Inspector.", this);
+                enabled = false;
+                return;
+            }
+        }
+
         originalScales = new Vector3[objects.Length];
 
         for (int i = 0; i < objects.Length; i++)
@@ -73,6 +83,13 @@ public class ShopBuyItems : MonoBehaviour
     }
     public void BuyBox()
     {
+        if (_tutorialManager != null && _tutorialManager.IsPurchaseBlocked(currentObj.Data.itemType))
+        {
+            ServiceLocator.Get<SoundManager>().Play(SFX.NaoPodePagarSemDinheiro);
+            ServiceLocator.Get<Warnings>().ShowWarning("This item isn't available during the tutorial yet.", false);
+            return;
+        }
+
         float price = 0f;
 
         price = currentObj.Data.singleItemPrice;
@@ -81,13 +98,11 @@ public class ShopBuyItems : MonoBehaviour
 
         if (market.Money < price)
         {
-            ServiceLocator.Get<SoundManager>().Play(SFX.NaoPodePagarSemDinheiro);
             ServiceLocator.Get<Warnings>().ShowWarning("Not enough money.", false);
             return;
         }
 
         market.Lose_Money(price);
-        ServiceLocator.Get<SoundManager>().Play(SFX.ComprarItemOuFurnitureComputador);
         if(_tutorialManager)
             _tutorialManager.BoughtItem(_sellingItemType);
         Instantiate(currentItemBox, boxesSpawnPoint.position, Quaternion.identity);
@@ -106,14 +121,12 @@ public class ShopBuyItems : MonoBehaviour
     public void Next()
     {
          if(objects.Length == 1) return;
-        ServiceLocator.Get<SoundManager>().Play(SFX.NavegacaoBotoesComputador);
         ChangeItem(currentIndex + 1 >= objects.Length ? 0 : currentIndex + 1);
     }
 
     public void Previous()
     {
          if(objects.Length == 1) return;
-        ServiceLocator.Get<SoundManager>().Play(SFX.NavegacaoBotoesComputador);
         ChangeItem(currentIndex - 1 < 0 ? objects.Length - 1 : currentIndex - 1);
 
     }

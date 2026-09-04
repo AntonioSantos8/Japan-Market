@@ -30,9 +30,14 @@ public class ConstructionUI : MonoBehaviour
     private static readonly Color BadFlashFilter     = new(1.00f, 0.40f, 0.35f);
     private static readonly Color BadFlashVignette   = new(0.50f, 0.05f, 0.05f);
 
+    private void Awake()
+    {
+        // Register em Awake: todos os Awake correm antes de qualquer Start.
+        ServiceLocator.Register(this);
+    }
+
     private void Start()
     {
-        ServiceLocator.Register(this);
         _manager = ServiceLocator.Get<FurnitureManager>();
         panelMode.SetActive(false);
         BuildVolume();

@@ -23,6 +23,8 @@ public class PlayerMotor : MonoBehaviour
     [SerializeField] private float maxTilt = 10f;
     [SerializeField] private float tiltSpeed = 5f;
     [SerializeField] private CinemachineCamera cam;
+    [SerializeField] private AudioClip passos;
+    [SerializeField] private AudioSource passosSource;
     bool canMove = true;
     public void SetCanMove(bool value) { canMove = value; }
     private float fovValue = 60f;
@@ -119,7 +121,8 @@ public class PlayerMotor : MonoBehaviour
 
             if (stepTimer <= 0)
             {
-                ServiceLocator.Get<SoundManager>().Play(SFX.Passo);
+                passosSource.pitch = IsRunning ? 1.1f : 1.0f;
+                passosSource.PlayOneShot(passos);
                 stepTimer = 1f / currentStepRate;
             }
         }
