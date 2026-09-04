@@ -41,6 +41,16 @@ public class ShopBuyItems : MonoBehaviour
     void Awake(){ _tutorialManager = ServiceLocator.Get<TutorialManager>();}
     void Start()
     {
+        for (int i = 0; i < objects.Length; i++)
+        {
+            if (objects[i].Visual == null || objects[i].Data == null)
+            {
+                Debug.LogError($"[ShopBuyItems] '{gameObject.name}' has an unassigned entry at objects[{i}] (missing Visual and/or Data). Fill it in the Inspector.", this);
+                enabled = false;
+                return;
+            }
+        }
+
         originalScales = new Vector3[objects.Length];
 
         for (int i = 0; i < objects.Length; i++)
@@ -73,6 +83,13 @@ public class ShopBuyItems : MonoBehaviour
     }
     public void BuyBox()
     {
+        if (_tutorialManager != null && _tutorialManager.IsPurchaseBlocked(currentObj.Data.itemType))
+        {
+            ServiceLocator.Get<SoundManager>().Play(SFX.NaoPodePagarSemDinheiro);
+            ServiceLocator.Get<Warnings>().ShowWarning("This item isn't available during the tutorial yet.", false);
+            return;
+        }
+
         float price = 0f;
 
         price = currentObj.Data.singleItemPrice;
