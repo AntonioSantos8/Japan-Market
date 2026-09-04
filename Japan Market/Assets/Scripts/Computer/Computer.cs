@@ -23,6 +23,7 @@ public class Computer : InteractableBase
             if (_tutorialManager)
                 _tutorialManager.NotifyGameEvent("EnteredComputer");
 
+            ServiceLocator.Get<SoundManager>().Play(SFX.PCLigarDesligar);
             computerScreen.SetActive(true);
             computerCamera.Priority = 5;
             isInComputer = true;
@@ -40,6 +41,7 @@ public class Computer : InteractableBase
 
             if (Input.GetKeyDown(KeyCode.Escape))
             {
+                ServiceLocator.Get<SoundManager>().Play(SFX.PCLigarDesligar);
                 computerCamera.Priority = 0;
                 computerScreen.SetActive(false);
                 onLeaveComputer?.Invoke();

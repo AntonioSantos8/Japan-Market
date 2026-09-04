@@ -60,21 +60,24 @@ public class NpcTraject : MonoBehaviour
     {
         _agent = GetComponent<NavMeshAgent>();
         _tutorialManager = ServiceLocator.Get<TutorialManager>();
-        _exitPoint = GameObject.FindGameObjectWithTag("Exit").transform;
-        _cashRegister = ServiceLocator.Get<CashRegister>();
-        _furnitureManager = ServiceLocator.Get<FurnitureManager>();
-        if (_furnitureManager == null)
-            _furnitureManager = FindAnyObjectByType<FurnitureManager>();
     }
 
     private void Start()
     {
+        _exitPoint = GameObject.FindGameObjectWithTag("Exit").transform;
+        _cashRegister = ServiceLocator.Get<CashRegister>();
+        _furnitureManager = ServiceLocator.Get<FurnitureManager>();
+
+        if (_furnitureManager == null)
+            _furnitureManager = FindAnyObjectByType<FurnitureManager>();
+
         if (_furnitureManager == null)
         {
             Debug.LogError("[NpcTraject] FurnitureManager não encontrado!");
             GoAway();
             return;
         }
+
         StartCoroutine(CashRegisterWatcher());
         StartCoroutine(ShoppingRoutine());
     }

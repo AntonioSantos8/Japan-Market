@@ -44,6 +44,8 @@ public class Warnings : MonoBehaviour
             yield break;
         IsWarningActive = true;
 
+        ServiceLocator.Get<SoundManager>().Play(SFX.Warning);
+
         if (goodWarning)
             warningTmp.color = Color.green;
         else

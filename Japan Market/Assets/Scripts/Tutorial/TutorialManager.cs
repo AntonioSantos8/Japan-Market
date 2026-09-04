@@ -16,19 +16,13 @@ public class TutorialManager : MonoBehaviour
     private ITutorialState _currentState;
     private bool _tutorialFinished;
 
-    private static readonly Items[] BlockedItemsDuringTutorial =
-    {
-        Items.Freezer, Items.IceCream, Items.FrozenMeat, Items.FrozenPizza
-    };
-
     public MascotController MascotController => mascotController;
     public TutorialStepData CurrentStepData =>
         (_currentStepIndex >= 0 && _currentStepIndex < steps.Length) ? steps[_currentStepIndex] : null;
     public int CurrentStepIndex => _currentStepIndex;
     public int TotalSteps => steps.Length;
-    public bool IsTutorialActive => !_tutorialFinished && _currentStepIndex >= 0;
 
-
+   
     public event Action<TutorialStepData, int> OnStepChanged;
 
     public event Action OnTutorialCompleted;
@@ -43,9 +37,6 @@ public class TutorialManager : MonoBehaviour
         if(boughtFurniture && boughtFood)
             NotifyGameEvent("BoughtFurnitureAndFood");
     }
-
-    public bool IsPurchaseBlocked(Items item) =>
-        IsTutorialActive && Array.IndexOf(BlockedItemsDuringTutorial, item) >= 0;
     void Awake(){ServiceLocator.Register(this);}
     private void Start()
     {

@@ -5,14 +5,10 @@ public class ButtonOrganizer : MonoBehaviour
 {
     GameObject lastSelectedButton;
     EventSystem eventSystem;
-    private void Awake()
-    {
-        // Register em Awake: todos os Awake correm antes de qualquer Start.
-        ServiceLocator.Register(this);
-    }
     private void Start()
     {
         eventSystem = EventSystem.current;
+        ServiceLocator.Register(this);
     }
     public void ChangeLastSelected(GameObject button)
     {

@@ -9,9 +9,4 @@ public class AllIThingsData : ScriptableObject
     public GameObject itemBoxPrefab;
     public Sprite itemSprite;
     public float marketPrice;
-    public FurnitureType allowedFurniture;
-
-    [Header("Procedural Grid Configurations")]
-    public ItemGridSettings shelfGrid = new ItemGridSettings();
-    public ItemGridSettings boxGrid = new ItemGridSettings();
 }

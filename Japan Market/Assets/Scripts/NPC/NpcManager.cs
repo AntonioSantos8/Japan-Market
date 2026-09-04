@@ -29,7 +29,7 @@ public class NpcManager : MonoBehaviour
 
     private readonly List<GameObject> _activeNpcs = new List<GameObject>();
 
-    private void Awake()
+    private void Start()
     {
         ServiceLocator.Register(this);
     }
@@ -53,18 +53,9 @@ public class NpcManager : MonoBehaviour
     }
     private IEnumerator SpawnRoutine()
     {
-        MarketManager market = ServiceLocator.Get<MarketManager>();
-        if (market == null)
-            Debug.LogError("[NpcManager] MarketManager nao registrado; a rotina vai spawnar sem checar Open.");
-
         while (true)
         {
-            // Se o MarketManager ainda nao existia quando a rotina arrancou, tenta de novo.
-            if (market == null) market = ServiceLocator.Get<MarketManager>();
-
-            // So aborta quando temos a certeza de que a loja esta fechada. Um null aqui
-            // costumava lancar NullReferenceException e matar a corrotina em silencio.
-            if (market != null && !market.Open)
+            if (!ServiceLocator.Get<MarketManager>().Open)
                 yield break;
 
             float interval = Random.Range(_minSpawnInterval, _maxSpawnInterval);

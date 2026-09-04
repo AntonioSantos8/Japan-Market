@@ -15,6 +15,7 @@ public class AutomaticDoor : MonoBehaviour
     Tween leftTween;
    Tween rightTween;
    bool playerInside;
+   bool isOpen;
    float closeTimer;
 
    TutorialManager _tutorialManager;
@@ -60,7 +61,15 @@ public class AutomaticDoor : MonoBehaviour
 
         if(_tutorialManager)
         _tutorialManager.NotifyGameEvent("EnteredStore");
-        ServiceLocator.Get<SoundManager>().Play(SFX.PortaAutomaticaAbrir);
+
+        // Só toca o som na transição fechada -> aberta, não a cada vez que
+        // alguém entra no trigger com a porta já aberta.
+        if (!isOpen)
+        {
+            isOpen = true;
+            ServiceLocator.Get<SoundManager>().Play(SFX.PortaAutomaticaAbrir);
+        }
+
         leftTween?.Kill();
         rightTween?.Kill();
 
@@ -70,6 +79,8 @@ public class AutomaticDoor : MonoBehaviour
 
     private void CloseDoors()
     {
+        isOpen = false;
+
         leftTween?.Kill();
         rightTween?.Kill();
 

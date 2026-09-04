@@ -5,7 +5,7 @@ using UnityEngine.Audio;
 
 public enum SFX
 {
-    AbrirCaixa,
+    AbrirCaixa, // não usado mais em código — substituído por PegarItem. Mantido pra não deslocar os índices já configurados na cena.
     GanharDinheiro,
     PopItemPrateleira,
     PortaAutomaticaAbrir,
@@ -14,7 +14,17 @@ public enum SFX
     FurnitureColocada,
     WooshTransicaoItem,
     PegarMoeda,
-    WooshPegarDinheiro
+    WooshPegarDinheiro,
+    Passo,
+    ClicarBotaoMaquinaCartao,
+    ComprarItemOuFurnitureComputador,
+    LojaAbertaFechada,
+    GastarDinheiro,
+    NaoPodePagarSemDinheiro,
+    NavegacaoBotoesComputador,
+    PCLigarDesligar,
+    PegarItem,
+    Warning
 }
 
 [System.Serializable]

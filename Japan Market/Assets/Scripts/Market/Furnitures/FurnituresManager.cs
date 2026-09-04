@@ -50,14 +50,12 @@ public class FurnitureManager : MonoBehaviour
     private struct InventoryItem
     {
         public readonly FurnitureData Data;
-        public readonly GameObject HeldInstance;
-        public readonly Vector3 OriginalScale;
+        public readonly FurnitureSaveData SaveData;
 
-        public InventoryItem(FurnitureData data, GameObject heldInstance = null, Vector3 originalScale = default)
+        public InventoryItem(FurnitureData data, FurnitureSaveData saveData = null)
         {
             Data = data;
-            HeldInstance = heldInstance;
-            OriginalScale = originalScale;
+            SaveData = saveData;
         }
     }
 
@@ -428,7 +426,7 @@ public class FurnitureManager : MonoBehaviour
         }
 
         _placedFurnitures.Remove(instance);
-        _inventory.Add(new InventoryItem(instance.Data, instance.gameObject, instance.transform.localScale));
+        _inventory.Add(new InventoryItem(instance.Data, instance.SaveData));
 
         AnimatePickedUpFurniture(instance.gameObject);
 
@@ -457,7 +455,7 @@ public class FurnitureManager : MonoBehaviour
             .Append(targetTransform.DOScale(Vector3.zero, 0.25f).SetEase(Ease.InBack))
             .Join(targetTransform.DORotate(Vector3.up * 180f, 0.33f, RotateMode.LocalAxisAdd).SetEase(Ease.InQuad))
             .SetLink(target)
-            .OnComplete(() => target.SetActive(false));
+            .OnComplete(() => Destroy(target));
     }
 
     private void PlaceFurniture()
@@ -472,7 +470,7 @@ public class FurnitureManager : MonoBehaviour
 
         _currentIndex = Mathf.Clamp(_currentIndex, 0, _inventory.Count - 1);
         InventoryItem inventoryItem = _inventory[_currentIndex];
-        bool wasMovingExistingFurniture = inventoryItem.HeldInstance != null;
+        bool wasMovingExistingFurniture = inventoryItem.SaveData != null;
         FurnitureData selectedData = _currentSelected;
 
         SettleGhostTransform();
@@ -480,32 +478,16 @@ public class FurnitureManager : MonoBehaviour
         lastPos.y = selectedData.floorDistance;
         DestroyGhostImmediate();
 
-        GameObject obj;
-        Vector3 finalScale;
-
-        if (wasMovingExistingFurniture)
-        {
-            obj = inventoryItem.HeldInstance;
-            finalScale = inventoryItem.OriginalScale;
-
-            obj.transform.DOKill(false);
-            obj.transform.SetPositionAndRotation(lastPos, lastRot);
-            obj.transform.SetParent(furnitureContainer);
-            obj.SetActive(true);
-        }
-        else
-        {
-            obj = Instantiate(selectedData.prefab, lastPos, lastRot);
-            finalScale = obj.transform.localScale;
-            obj.transform.SetParent(furnitureContainer);
-        }
-
-        AnimatePlacedFurniture(obj.transform, finalScale);
+        GameObject obj = Instantiate(selectedData.prefab, lastPos, lastRot);
+        obj.transform.SetParent(furnitureContainer);
+        AnimatePlacedFurniture(obj.transform);
         ServiceLocator.Get<SoundManager>().Play(SFX.FurnitureColocada);
 
         if (obj.TryGetComponent(out FurnitureInstance instance))
         {
             instance.Data = selectedData;
+            if (inventoryItem.SaveData != null)
+                instance.SaveData = inventoryItem.SaveData;
             _placedFurnitures.Add(instance);
         }
 
@@ -531,8 +513,9 @@ public class FurnitureManager : MonoBehaviour
         PlayCameraKick(-7f, 0.06f, 0.3f, Ease.OutElastic);
     }
 
-    private void AnimatePlacedFurniture(Transform target, Vector3 finalScale)
+    private void AnimatePlacedFurniture(Transform target)
     {
+        Vector3 finalScale = target.localScale;
         target.localScale = Vector3.zero;
 
         Collider[] colliders = target.GetComponentsInChildren<Collider>(true);
