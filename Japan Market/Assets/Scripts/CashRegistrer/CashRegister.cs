@@ -60,6 +60,8 @@ public class CashRegister : InteractableBase
     [Header("Item Scan")]
     [Tooltip("SphereCast radius for item click detection.")]
     [SerializeField] private float clickRadius = 0.05f;
+    [Tooltip("Maximum distance from the cash-register camera at which an item can be scanned.")]
+    [SerializeField] private float itemScanDistance = 5f;
 
     [Header("Coin Pop")]
     [SerializeField] private GameObject _coinPopPrefab;
@@ -81,6 +83,8 @@ public class CashRegister : InteractableBase
     private List<NpcTraject> npcQueue   = new();
     private List<MoneyInstance> spawnedMoney = new();
     private bool             _tutorialFinished;
+    private Item             _hoveredItem;      // item the player is currently looking at
+    private Outline          _hoveredOutline;   // cached outline of the hovered item
 
     [SerializeField] Transform coinsPosition;
     [SerializeField] Transform billPositions;
@@ -131,6 +135,12 @@ public class CashRegister : InteractableBase
         }
 
         UpdateCashCameraLook();
+
+        // Update hover outline for items on the counter
+        if (_state == State.Scanning)
+            UpdateItemHover();
+        else
+            ClearItemHover();
 
         if (_state == State.WaitingPayment && paymentMoney != null && paymentMoney.IsOpen
             && Input.GetKeyDown(KeyCode.Space))
@@ -227,6 +237,7 @@ public class CashRegister : InteractableBase
 
     public void ExitCashMode()
     {
+        ClearItemHover();
         _state = State.Idle;
 
         playerMotor.SetCanMove(true);
@@ -286,9 +297,11 @@ public class CashRegister : InteractableBase
 
     private void TryScanItem()
     {
-        if (!TryGetClickedItem(out Item item)) return;
-        if (item.PassedItem() || !itemsQueue.Contains(item)) return;
+        if (_hoveredItem == null) return;
+        if (_hoveredItem.PassedItem() || !itemsQueue.Contains(_hoveredItem)) return;
 
+        Item item = _hoveredItem;
+        ClearItemHover();
         DequeueItem(item);
         SendItemToBag(item);
     }
@@ -306,6 +319,62 @@ public class CashRegister : InteractableBase
             if (hit.collider.TryGetComponent(out item)) return true;
 
         return false;
+    }
+
+    /// <summary>
+    /// Every frame during Scanning, cast a ray from the screen center to detect
+    /// items on the counter. If an item is found, enable its outline; if the
+    /// player looks away, disable the previous outline.
+    /// </summary>
+    private void UpdateItemHover()
+    {
+        // Ray from the center of the screen (cursor is locked during cash mode)
+        Ray ray = mainCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
+        // Limit the cast to the checkout area. An unbounded SphereCastAll can
+        // find a queued product far past the counter when the player looks away.
+        RaycastHit[] hits = Physics.SphereCastAll(
+            ray, clickRadius, itemScanDistance, Physics.DefaultRaycastLayers,
+            QueryTriggerInteraction.Collide);
+        System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
+
+        Item found = null;
+        foreach (var hit in hits)
+        {
+            Item candidate = hit.collider.GetComponentInParent<Item>();
+            if (candidate != null
+                && !candidate.PassedItem()
+                && itemsQueue.Contains(candidate))
+            {
+                found = candidate;
+                break;
+            }
+        }
+
+        if (found == _hoveredItem) return;   // nothing changed
+
+        // Clear previous hover
+        ClearItemHover();
+
+        // Set new hover
+        if (found != null)
+        {
+            _hoveredItem = found;
+            _hoveredOutline = found.GetComponent<Outline>();
+            if (_hoveredOutline == null)
+                _hoveredOutline = found.GetComponentInChildren<Outline>(true);
+
+            if (_hoveredOutline != null)
+                _hoveredOutline.enabled = true;
+        }
+    }
+
+    private void ClearItemHover()
+    {
+        if (_hoveredOutline != null)
+            _hoveredOutline.enabled = false;
+
+        _hoveredItem    = null;
+        _hoveredOutline = null;
     }
 
     private void DequeueItem(Item item)
@@ -441,6 +510,15 @@ public class CashRegister : InteractableBase
             itemsQueue.Enqueue(itemComponent);
             _totalExpected++;
         }
+
+        // Ensure an Outline component exists so the hover system can toggle it.
+        var ol = newItem.GetComponent<Outline>();
+        if (ol == null) ol = newItem.GetComponentInChildren<Outline>(true);
+        if (ol == null) ol = newItem.AddComponent<Outline>();
+        ol.OutlineMode  = Outline.Mode.OutlineAll;
+        ol.OutlineColor = Color.white;
+        ol.OutlineWidth = 4f;
+        ol.enabled = false;
     }
 
     // ── Payment API (called by PaymentMoney / PaymentCard) ────────────────────
