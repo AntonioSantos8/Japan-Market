@@ -44,7 +44,13 @@ public class ItemRaycastController : MonoBehaviour
     [SerializeField] Ease easeReticleScale;
     bool generalCanInteract = true;
     bool isReticleFocused;
-    public void SetGeneralCanInteract(bool to) { generalCanInteract = to; }
+    public void SetGeneralCanInteract(bool to)
+    {
+        generalCanInteract = to;
+
+        if (!generalCanInteract)
+            ClearLastLooked();
+    }
 
     float currentHoldTime;
     InteractableBase currentHoldingInteractable;
@@ -83,14 +89,17 @@ public class ItemRaycastController : MonoBehaviour
     {
         if (TryGetInteractableHit(out RaycastHit hit))
         {
-            if (hit.collider.TryGetComponent(out InteractableBase interactable))
+            InteractableBase interactable = hit.collider.GetComponentInParent<InteractableBase>();
+            if (interactable != null)
             {
                 lastLookedInteractable?.OnLookAway();
                 lastLookedInteractable = interactable;
-                bool canLookAt = lastLookedInteractable.OnLookAt();
+                bool canLookAt = generalCanInteract && interactable.CanInteract && lastLookedInteractable.OnLookAt();
+                if (!canLookAt)
+                    interactable.OnLookAway();
+
                 canInteract = canLookAt;
-                if (canLookAt)
-                    ChangeNormalReticleState(true);
+                ChangeNormalReticleState(canLookAt);
             }
         }
     }
@@ -139,7 +148,10 @@ public class ItemRaycastController : MonoBehaviour
     }
     public void ReLook(InteractableBase inte)
     {
-        bool canLookAt = inte.OnLookAt();
+        bool canLookAt = generalCanInteract && inte.CanInteract && inte.OnLookAt();
+        if (!canLookAt)
+            inte.OnLookAway();
+
         canInteract = canLookAt;
         if (canLookAt)
         {
@@ -154,7 +166,8 @@ public class ItemRaycastController : MonoBehaviour
     {
         if (TryGetInteractableHit(out RaycastHit hit))
         {
-            if (hit.collider.TryGetComponent(out InteractableBase interactable))
+            InteractableBase interactable = hit.collider.GetComponentInParent<InteractableBase>();
+            if (interactable != null)
             {
                 if (interactable != lastLookedInteractable)
                 {
@@ -162,7 +175,10 @@ public class ItemRaycastController : MonoBehaviour
                     lastLookedInteractable = interactable;
                 }
 
-                bool canLookAtNow = interactable.OnLookAt();
+                bool canLookAtNow = generalCanInteract && interactable.CanInteract && interactable.OnLookAt();
+                if (!canLookAtNow)
+                    interactable.OnLookAway();
+
                 canInteract = canLookAtNow;
                 ChangeNormalReticleState(canLookAtNow);
 
@@ -175,7 +191,7 @@ public class ItemRaycastController : MonoBehaviour
                     return;
                 }
 
-                if (Input.GetMouseButton(0) && canInteract && generalCanInteract)
+                if (Input.GetMouseButton(0) && interactable.CanInteract && canInteract && generalCanInteract)
                 {
 
                     if (currentHoldingInteractable != interactable)

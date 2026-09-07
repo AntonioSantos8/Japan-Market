@@ -14,6 +14,8 @@ public abstract class InteractableBase : MonoBehaviour, IInteractable
     protected bool addOutline = true;
     public string interactionText;
 
+    public bool CanInteract => canInteract;
+
 
     // InteractableBase
     public virtual void Awake()
@@ -72,7 +74,7 @@ public abstract class InteractableBase : MonoBehaviour, IInteractable
     }
     public virtual void OnLookAway()
     {
-        if (outline != null)
+        if (outline == null)
             outline = GetComponentInChildren<Outline>(true);
 
         if (outline != null)
@@ -80,8 +82,10 @@ public abstract class InteractableBase : MonoBehaviour, IInteractable
     }
     public void SetCanInteract(bool value)
     {
-
         canInteract = value;
+
+        if (!canInteract)
+            OnLookAway();
     }
 
 

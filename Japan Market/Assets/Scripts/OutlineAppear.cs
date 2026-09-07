@@ -32,6 +32,13 @@ public class OutlineAppear : MonoBehaviour
     }
     void ActivateObject(RaycastHit hit)
     {
+        InteractableBase interactable = hit.collider.GetComponentInParent<InteractableBase>();
+        if (interactable == null || !interactable.CanInteract)
+        {
+            DisablePrevious();
+            return;
+        }
+
         Outline outline = hit.collider.GetComponent<Outline>();
         ObjectEmission highlight = hit.collider.GetComponent<ObjectEmission>();
 

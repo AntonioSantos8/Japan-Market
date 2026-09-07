@@ -210,6 +210,8 @@ public class CashRegister : InteractableBase
 
     private void EnterCashMode()
     {
+        SetCanInteract(false);
+
         // Resume para WaitingPayment se o cliente atual já tinha terminado de ser escaneado
         // antes do jogador sair do modo caixa (Esc) — senão o pagamento nunca reaparece e o
         // ciclo trava esperando o cliente desistir.
@@ -239,6 +241,7 @@ public class CashRegister : InteractableBase
     {
         ClearItemHover();
         _state = State.Idle;
+        SetCanInteract(true);
 
         playerMotor.SetCanMove(true);
         SetCashCameraBlend();
