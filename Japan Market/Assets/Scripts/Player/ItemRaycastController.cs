@@ -43,12 +43,25 @@ public class ItemRaycastController : MonoBehaviour
     [SerializeField] float reticleTweenTime;
     [SerializeField] Ease easeReticleScale;
     bool generalCanInteract = true;
+    // Construction shares the mouse with normal interactions. This lock is kept
+    // independent from UI locks so each system restores only its own state.
+    bool buildModeInteractionBlocked;
+    bool CanProcessInteractions => generalCanInteract && !buildModeInteractionBlocked;
     bool isReticleFocused;
     public void SetGeneralCanInteract(bool to)
     {
         generalCanInteract = to;
 
-        if (!generalCanInteract)
+        if (!CanProcessInteractions)
+            ClearLastLooked();
+    }
+
+    public void SetBuildModeInteractionBlocked(bool blocked)
+    {
+        if (buildModeInteractionBlocked == blocked) return;
+
+        buildModeInteractionBlocked = blocked;
+        if (blocked)
             ClearLastLooked();
     }
 
@@ -87,14 +100,15 @@ public class ItemRaycastController : MonoBehaviour
     }
     public void ReRaycast()
     {
+        if (!CanProcessInteractions) return;
+
         if (TryGetInteractableHit(out RaycastHit hit))
         {
             InteractableBase interactable = hit.collider.GetComponentInParent<InteractableBase>();
             if (interactable != null)
             {
-                lastLookedInteractable?.OnLookAway();
-                lastLookedInteractable = interactable;
-                bool canLookAt = generalCanInteract && interactable.CanInteract && lastLookedInteractable.OnLookAt();
+                ChangeLookedInteractable(interactable);
+                bool canLookAt = CanProcessInteractions && interactable.CanInteract && lastLookedInteractable.OnLookAt();
                 if (!canLookAt)
                     interactable.OnLookAway();
 
@@ -148,7 +162,7 @@ public class ItemRaycastController : MonoBehaviour
     }
     public void ReLook(InteractableBase inte)
     {
-        bool canLookAt = generalCanInteract && inte.CanInteract && inte.OnLookAt();
+        bool canLookAt = CanProcessInteractions && inte.CanInteract && inte.OnLookAt();
         if (!canLookAt)
             inte.OnLookAway();
 
@@ -164,18 +178,17 @@ public class ItemRaycastController : MonoBehaviour
     }
     private void PerformInteractionRaycast()
     {
+        if (!CanProcessInteractions) return;
+
         if (TryGetInteractableHit(out RaycastHit hit))
         {
             InteractableBase interactable = hit.collider.GetComponentInParent<InteractableBase>();
             if (interactable != null)
             {
                 if (interactable != lastLookedInteractable)
-                {
-                    lastLookedInteractable?.OnLookAway();
-                    lastLookedInteractable = interactable;
-                }
+                    ChangeLookedInteractable(interactable);
 
-                bool canLookAtNow = generalCanInteract && interactable.CanInteract && interactable.OnLookAt();
+                bool canLookAtNow = CanProcessInteractions && interactable.CanInteract && interactable.OnLookAt();
                 if (!canLookAtNow)
                     interactable.OnLookAway();
 
@@ -191,7 +204,7 @@ public class ItemRaycastController : MonoBehaviour
                     return;
                 }
 
-                if (Input.GetMouseButton(0) && interactable.CanInteract && canInteract && generalCanInteract)
+                if (Input.GetMouseButton(0) && interactable.CanInteract && canInteract && CanProcessInteractions)
                 {
 
                     if (currentHoldingInteractable != interactable)
@@ -254,15 +267,30 @@ public class ItemRaycastController : MonoBehaviour
 
     private void ClearLastLooked()
     {
-        if (lastLookedInteractable != null)
-        {
-            lastLookedInteractable.OnLookAway();
-            ChangeNormalReticleState(false);
-            lastLookedInteractable = null;
-        }
+        // Unity's destroyed objects can still hold a managed C# reference. Clear it
+        // before invoking callbacks so a destroyed interactable cannot remain stuck
+        // here and throw MissingReferenceException every frame.
+        InteractableBase previous = lastLookedInteractable;
+        lastLookedInteractable = null;
+
+        if (previous != null)
+            previous.OnLookAway();
+
+        ChangeNormalReticleState(false);
 
         waitMouseReleaseAfterInteract = false;
         ResetHold();
+    }
+
+    private void ChangeLookedInteractable(InteractableBase next)
+    {
+        InteractableBase previous = lastLookedInteractable;
+        lastLookedInteractable = null;
+
+        if (previous != null)
+            previous.OnLookAway();
+
+        lastLookedInteractable = next;
     }
 
     void HandleHeldItemInput()

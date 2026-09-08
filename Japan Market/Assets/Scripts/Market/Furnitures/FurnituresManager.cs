@@ -72,6 +72,7 @@ public class FurnitureManager : MonoBehaviour
 
     private void OnDestroy()
     {
+        SetWorldInteractionBlocked(false);
         KillGhostTweens();
         _holdTween?.Kill();
         _holdTween = null;
@@ -144,6 +145,7 @@ public class FurnitureManager : MonoBehaviour
         }
 
         IsBuildingMode = true;
+        SetWorldInteractionBlocked(true);
 
         if (HasFurnitureInInventory)
             LoadCurrentFromInventory();
@@ -152,6 +154,7 @@ public class FurnitureManager : MonoBehaviour
     private void ExitBuildMode()
     {
         IsBuildingMode = false;
+        SetWorldInteractionBlocked(false);
         _currentSelected = null;
         CancelPickupHold();
         DismissGhostAnimated();
@@ -505,12 +508,20 @@ public class FurnitureManager : MonoBehaviour
         else
         {
             IsBuildingMode = false;
+            SetWorldInteractionBlocked(false);
             _currentSelected = null;
             _currentIndex = 0;
             CancelPickupHold();
         }
 
         PlayCameraKick(-7f, 0.06f, 0.3f, Ease.OutElastic);
+    }
+
+    private static void SetWorldInteractionBlocked(bool blocked)
+    {
+        ItemRaycastController interactionController = ServiceLocator.Get<ItemRaycastController>();
+        if (interactionController != null)
+            interactionController.SetBuildModeInteractionBlocked(blocked);
     }
 
     private void AnimatePlacedFurniture(Transform target)
