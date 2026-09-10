@@ -24,7 +24,7 @@ public enum SFX
     NavegacaoBotoesComputador,
     PCLigarDesligar,
     PegarItem,
-    Warning
+    Warning, ButtonHover, ButtonClick, ButtonUnhover
 }
 
 [System.Serializable]
