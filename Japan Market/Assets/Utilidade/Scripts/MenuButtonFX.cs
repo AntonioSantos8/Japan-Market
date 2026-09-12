@@ -29,9 +29,7 @@ public class MenuButtonFX : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
 
     [SerializeField] private Vector3 clickPunchScale = new Vector3(0.15f, 0.15f, 0.15f);
     [SerializeField] private float clickPunchDuration = 0.3f;
-
-    [SerializeField] private Vector2 indicatorOffset;
-    [SerializeField] private Vector2 indicatorSize;
+    [SerializeField] bool useHoverColor = true;
     [SerializeField] private Color selectionColor = Color.white;
     [SerializeField] private Color deselectionColor = Color.gray;
 
@@ -45,13 +43,11 @@ public class MenuButtonFX : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
 
     private Sequence _idleSequence;
     private Sequence _hoverSequence;
-    private IndicatorManager _indicatorManager;
+
 
     public RectTransform GetVisual() => visual;
-    public Vector2 GetIndicatorOffset() => indicatorOffset;
-    public Vector2 GetIndicatorSize() => indicatorSize;
-    public Color GetSelectionColor() => selectionColor;
-    public Color GetDeselectionColor() => deselectionColor;
+
+
     CooldownTimer clickPunchCooldown;
 
     private void Awake()
@@ -65,7 +61,7 @@ public class MenuButtonFX : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
         _baseTextColor = label.color;
 clickPunchCooldown = new CooldownTimer(clickPunchDuration);
           }
-    void Start(){  _indicatorManager = ServiceLocator.Get<IndicatorManager>();
+    void Start(){  
 }
     void Update()
     {
@@ -73,6 +69,7 @@ clickPunchCooldown = new CooldownTimer(clickPunchDuration);
     }
     private void OnEnable()
     {
+        if(idleBobAmount>0)
         PlayIdleBob();
     }
 
@@ -102,15 +99,13 @@ clickPunchCooldown = new CooldownTimer(clickPunchDuration);
         if (!_button.interactable) return;
 
         AnimateTo(hoverScale, _restAnchoredPosition + Vector2.up * hoverLiftAmount, hoverTiltAngle, hoverButtonColor, hoverTextColor);
-        _indicatorManager.SelectRect(visual, indicatorOffset, indicatorSize, selectionColor);
         SoundManager.Instance.Play(SFX.ButtonHover);
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
         AnimateTo(1f, _restAnchoredPosition, 0f, _baseButtonColor, _baseTextColor);
-        _indicatorManager.Deselect(deselectionColor);
-        SoundManager.Instance.Play(SFX.ButtonUnhover);
+       SoundManager.Instance.Play(SFX.ButtonUnhover);
     }
 
     public void OnPointerClick(PointerEventData eventData)
@@ -135,13 +130,15 @@ clickPunchCooldown = new CooldownTimer(clickPunchDuration);
 
        
         _hoverSequence.Join(scaleTarget.DOScale(_restScale * scaleMultiplier, hoverScaleDuration).SetEase(Ease.OutBack, 1.4f));
-        //_hoverSequence.Join(_selfRect.DOAnchorPos(anchoredPosition, hoverMoveDuration).SetEase(Ease.OutQuad));
+        if(hoverLiftAmount > 0)
+        _hoverSequence.Join(visual.DOAnchorPos(anchoredPosition, hoverMoveDuration).SetEase(Ease.OutQuad));
        
         _hoverSequence.Join(visual.DOLocalRotate(new Vector3(0f, 0f, tiltAngle), hoverMoveDuration).SetEase(Ease.OutQuad));
         
-
+    if(useHoverColor){
         _hoverSequence.Join(buttonImage.DOColor(buttonColor, colorDuration));
         _hoverSequence.Join(label.DOColor(textColor, colorDuration));
+    }
     }
 
     // public void OnSelect(BaseEventData eventData)
