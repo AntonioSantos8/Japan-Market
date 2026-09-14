@@ -53,9 +53,12 @@ public static class SandboxSceneBuilder
         EditorSceneManager.SaveScene(scene, ScenePath);
         AssetDatabase.Refresh();
 
-        Debug.Log("[Sandbox] Cena criada em " + ScenePath +
-                  ". Falta: atribuir o ItemCatalog no GameContext e assar a NavMesh " +
-                  "(selecione 'Ground' → NavMeshSurface → Bake).");
+        Debug.Log("[Sandbox] Cena criada em " + ScenePath + ".\n" +
+                  "Falta fazer à mão:\n" +
+                  "  1. Assar a NavMesh (selecione 'Ground' → NavMeshSurface → Bake)\n" +
+                  "  2. Atribuir ItemCatalog e FurnitureCatalog no GameContext\n" +
+                  "  3. Arrastar o prefab do cliente e um CustomerProfileData no spawner\n" +
+                  "  4. Colocar uma prateleira (FurnitureInstance + ProductStorage + CustomerSlots)");
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -114,18 +117,39 @@ public static class SandboxSceneBuilder
     {
         var markers = new GameObject("— Markers —");
 
-        CreateMarker(markers.transform, "Entrance", new Vector3(0f, 0f, -12f), "Entrance");
-        CreateMarker(markers.transform, "Exit",     new Vector3(0f, 0f, -14f), "Exit");
-        CreateMarker(markers.transform, "NpcSpawn", new Vector3(0f, 0f, -13f), null);
+        Transform entrance = CreateMarker(markers.transform, "Entrance", new Vector3(0f, 0f, -10f), "Entrance");
+        Transform exit     = CreateMarker(markers.transform, "Exit",     new Vector3(0f, 0f, -14f), "Exit");
+        Transform spawn    = CreateMarker(markers.transform, "CustomerSpawn", new Vector3(0f, 0f, -13f), null);
+
+        BuildSpawner(spawn, entrance, exit);
     }
 
-    private static void CreateMarker(Transform parent, string name, Vector3 position, string tag)
+    /// <summary>
+    /// Deixa o spawner montado e apontado para os três pontos. Falta só arrastar
+    /// o prefab do cliente e um CustomerProfileData — o resto já está ligado.
+    /// </summary>
+    private static void BuildSpawner(Transform spawn, Transform entrance, Transform exit)
+    {
+        var host = new GameObject("— Customer Spawner —");
+        CustomerSpawner spawner = host.AddComponent<CustomerSpawner>();
+
+        var serialized = new SerializedObject(spawner);
+        serialized.FindProperty("_spawnPoint").objectReferenceValue = spawn;
+        serialized.FindProperty("_entryPoint").objectReferenceValue = entrance;
+        serialized.FindProperty("_exitPoint").objectReferenceValue = exit;
+
+        // Na Sandbox não existe placa de loja para abrir: começa spawnando.
+        serialized.FindProperty("_autoStart").boolValue = true;
+        serialized.ApplyModifiedPropertiesWithoutUndo();
+    }
+
+    private static Transform CreateMarker(Transform parent, string name, Vector3 position, string tag)
     {
         var marker = new GameObject(name);
         marker.transform.SetParent(parent);
         marker.transform.position = position;
 
-        if (string.IsNullOrEmpty(tag)) return;
+        if (string.IsNullOrEmpty(tag)) return marker.transform;
 
         // As tags "Entrance" e "Exit" já existem no projeto (o código legado as
         // usa), mas se alguém abrir isto num projeto limpo o SetTag lança.
@@ -135,5 +159,7 @@ public static class SandboxSceneBuilder
             Debug.LogWarning($"[Sandbox] Tag '{tag}' não existe no projeto. " +
                              $"Crie em Project Settings → Tags and Layers e recrie a cena.");
         }
+
+        return marker.transform;
     }
 }

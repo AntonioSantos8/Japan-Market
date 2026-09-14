@@ -16,7 +16,8 @@ namespace JapanMarket.Data
     /// RegisterScannedItem), o que com 100 produtos custa caro por checkout.
     /// </summary>
     [CreateAssetMenu(fileName = "ItemCatalog", menuName = "Japan Market/Item Catalog", order = 1)]
-    public sealed class ItemCatalog : ScriptableObject, IItemCatalog
+    public sealed class ItemCatalog : ScriptableObject,
+        IItemCatalog, IEditableCatalog<ItemDefinition>
     {
         [SerializeField] private List<ItemDefinition> _items = new();
 
@@ -28,6 +29,8 @@ namespace JapanMarket.Data
         private static readonly ItemDefinition[] EmptyItems = System.Array.Empty<ItemDefinition>();
 
         public IReadOnlyList<ItemDefinition> All => _items;
+        public string CatalogName => "Produtos";
+        public int EntryCount => _items.Count;
         public IReadOnlyList<ProductCategory> Categories { get { EnsureBuilt(); return _categories; } }
 
         private void OnEnable() => Rebuild();
@@ -150,21 +153,14 @@ namespace JapanMarket.Data
 
         // ── validação ────────────────────────────────────────────────────────
 
-        public readonly struct Problem
-        {
-            public readonly ItemDefinition Item;
-            public readonly string Message;
-            public Problem(ItemDefinition item, string message) { Item = item; Message = message; }
-        }
-
         /// <summary>
         /// Roda no import e no menu do editor. A ideia é que um produto mal
         /// configurado apareça na hora, e não semanas depois como "esse item
         /// vende por ¥0" ou "esse item não spawna no caixa".
         /// </summary>
-        public List<Problem> Validate()
+        public List<CatalogProblem> Validate()
         {
-            var problems = new List<Problem>();
+            var problems = new List<CatalogProblem>();
             var seenIds = new HashSet<ProductId>();
 
             for (int i = 0; i < _items.Count; i++)
@@ -173,43 +169,43 @@ namespace JapanMarket.Data
 
                 if (item == null)
                 {
-                    problems.Add(new Problem(null, $"Entrada {i} está vazia."));
+                    problems.Add(new CatalogProblem(this, $"Entrada {i} está vazia."));
                     continue;
                 }
 
                 if (!item.Id.IsValid)
-                    problems.Add(new Problem(item, "Sem id. Reabra o asset para gerar um."));
+                    problems.Add(new CatalogProblem(item, "Sem id. Reabra o asset para gerar um."));
                 else if (!seenIds.Add(item.Id))
-                    problems.Add(new Problem(item, $"Id duplicado: {item.Id}"));
+                    problems.Add(new CatalogProblem(item, $"Id duplicado: {item.Id}"));
 
                 if (item.DisplayName.IsEmpty)
-                    problems.Add(new Problem(item, "Sem nome em nenhum idioma."));
+                    problems.Add(new CatalogProblem(item, "Sem nome em nenhum idioma."));
 
                 if (item.Category == null)
-                    problems.Add(new Problem(item, "Sem categoria — não vai aparecer no catálogo filtrado."));
+                    problems.Add(new CatalogProblem(item, "Sem categoria — não vai aparecer no catálogo filtrado."));
 
                 if (item.ItemPrefab == null)
-                    problems.Add(new Problem(item, "Sem prefab de item — não pode ser colocado na prateleira."));
+                    problems.Add(new CatalogProblem(item, "Sem prefab de item — não pode ser colocado na prateleira."));
 
                 if (item.BoxPrefab == null)
-                    problems.Add(new Problem(item, "Sem prefab de caixa — não pode ser entregue."));
+                    problems.Add(new CatalogProblem(item, "Sem prefab de caixa — não pode ser entregue."));
 
                 if (item.BaseCost <= Money.Zero)
-                    problems.Add(new Problem(item, "Custo base zero ou negativo."));
+                    problems.Add(new CatalogProblem(item, "Custo base zero ou negativo."));
 
                 if (item.MarketPrice <= Money.Zero)
-                    problems.Add(new Problem(item, "Preço de mercado zero ou negativo."));
+                    problems.Add(new CatalogProblem(item, "Preço de mercado zero ou negativo."));
 
                 if (item.MarketPrice <= item.BaseCost)
-                    problems.Add(new Problem(item,
+                    problems.Add(new CatalogProblem(item,
                         $"Preço de mercado ({item.MarketPrice}) não é maior que o custo " +
                         $"({item.BaseCost}) — este produto dá prejuízo pelo preço de referência."));
 
                 if (!item.ShelfGrid.IsValid)
-                    problems.Add(new Problem(item, "Grid de prateleira com capacidade zero."));
+                    problems.Add(new CatalogProblem(item, "Grid de prateleira com capacidade zero."));
 
                 if (!item.BoxGrid.IsValid)
-                    problems.Add(new Problem(item, "Grid de caixa com capacidade zero."));
+                    problems.Add(new CatalogProblem(item, "Grid de caixa com capacidade zero."));
             }
 
             return problems;

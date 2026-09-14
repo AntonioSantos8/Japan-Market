@@ -1,11 +1,9 @@
 namespace JapanMarket.Domain
 {
     /// <summary>
-    /// Existe só para o assembly JapanMarket.Domain ser gerado enquanto a camada
-    /// ainda está vazia. Sem nenhum script, o Unity não compila o assembly e as
-    /// referências a ele viram no-op silenciosa.
-    ///
-    /// Some quando a Fase 5 trouxer CheckoutQueue, PaymentProcessor e companhia.
+    /// Este marcador existiu para o assembly JapanMarket.Domain ser gerado
+    /// enquanto a camada estava vazia. A Fase 3 trouxe os contratos de móvel e o
+    /// registro, então ele não é mais necessário — pode ser apagado.
     /// </summary>
     internal static class AssemblyMarker
     {

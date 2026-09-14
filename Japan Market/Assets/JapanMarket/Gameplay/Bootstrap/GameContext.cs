@@ -1,5 +1,7 @@
+using System.Collections.Generic;
 using JapanMarket.Core;
 using JapanMarket.Data;
+using JapanMarket.Domain;
 using UnityEngine;
 
 namespace JapanMarket.Gameplay
@@ -29,6 +31,9 @@ namespace JapanMarket.Gameplay
                  "pelo import — não arraste produtos à mão.")]
         [SerializeField] private ItemCatalog _itemCatalog;
 
+        [Tooltip("O único catálogo de móveis. Mesma regra: populado pelo import.")]
+        [SerializeField] private FurnitureCatalog _furnitureCatalog;
+
         [Header("Diagnóstico")]
         [Tooltip("Valida o catálogo ao entrar em Play e lista os problemas no console.")]
         [SerializeField] private bool _validateCatalogOnPlay = true;
@@ -36,12 +41,16 @@ namespace JapanMarket.Gameplay
         private ServiceContainer _container;
         private EventBus _events;
         private StoreProgress _progress;
+        private FurnitureRegistry _furniture;
+        private PricingService _pricing;
 
         public static GameContext Current { get; private set; }
 
         public IServiceContainer Services => _container;
         public IEventBus Events => _events;
         public StoreProgress Progress => _progress;
+        public IFurnitureRegistry Furniture => _furniture;
+        public IPricingService Pricing => _pricing;
 
         private void Awake()
         {
@@ -58,6 +67,8 @@ namespace JapanMarket.Gameplay
             _container = new ServiceContainer();
             _events    = new EventBus();
             _progress  = new StoreProgress();
+            _furniture = new FurnitureRegistry();
+            _pricing   = new PricingService();
 
             // A ponte com o ServiceLocator legado. Enquanto ela existir, os 87
             // scripts atuais continuam funcionando sem uma linha de mudança.
@@ -70,36 +81,57 @@ namespace JapanMarket.Gameplay
         {
             _container.Register<IEventBus>(_events);
             _container.Register<IUnlockContext>(_progress);
+            _container.Register<IFurnitureRegistry>(_furniture);
+
+            // Até a Fase 6, o PricingService guarda o que o jogador definir e
+            // cai no preço de mercado para o resto. Não é placeholder: é o
+            // comportamento correto de uma loja que ainda não remarcou nada.
+            _container.Register<IPricingService>(_pricing);
 
             if (_itemCatalog != null)
             {
                 _itemCatalog.Rebuild();
                 _container.Register<IItemCatalog>(_itemCatalog);
+            }
+            else WarnMissingCatalog("ItemCatalog", "produtos");
 
-                if (_validateCatalogOnPlay) ReportCatalogProblems();
-            }
-            else
+            if (_furnitureCatalog != null)
             {
-                Debug.LogWarning("[GameContext] Nenhum ItemCatalog atribuído. " +
-                                 "Os sistemas novos vão rodar sem catálogo até a Fase 2 " +
-                                 "estar ligada na cena.", this);
+                _furnitureCatalog.Rebuild();
+                _container.Register<IFurnitureCatalog>(_furnitureCatalog);
             }
+            else WarnMissingCatalog("FurnitureCatalog", "móveis");
+
+            if (!_validateCatalogOnPlay) return;
+
+            // A checagem de null tem que acontecer AQUI, com a referência ainda
+            // tipada como objeto Unity. Dentro de Validate o parâmetro é uma
+            // interface, e aí o operador == sobrecarregado sai de cena: um asset
+            // deletado passaria pelo guard e lançaria MissingReferenceException.
+            if (_itemCatalog != null) Validate(_itemCatalog);
+            if (_furnitureCatalog != null) Validate(_furnitureCatalog);
         }
 
-        private void ReportCatalogProblems()
+        private void WarnMissingCatalog(string assetType, string what) =>
+            Debug.LogWarning($"[GameContext] Nenhum {assetType} atribuído — os sistemas " +
+                             $"novos rodam sem catálogo de {what}. Crie um em " +
+                             "Assets → Create → Japan Market e arraste aqui.", this);
+
+        private void Validate(IValidatableCatalog catalog)
         {
-            var problems = _itemCatalog.Validate();
+            List<CatalogProblem> problems = catalog.Validate();
             if (problems.Count == 0)
             {
-                Debug.Log($"[GameContext] Catálogo OK — {_itemCatalog.All.Count} produtos.", this);
+                Debug.Log($"[Catálogo] {catalog.CatalogName}: {catalog.EntryCount} " +
+                          "entradas, nenhum problema.", this);
                 return;
             }
 
-            foreach (ItemCatalog.Problem problem in problems)
+            foreach (CatalogProblem problem in problems)
             {
-                Object context = problem.Item != null ? problem.Item : (Object)this;
-                string where = problem.Item != null ? problem.Item.name : "catálogo";
-                Debug.LogWarning($"[Catálogo] {where}: {problem.Message}", context);
+                Object context = problem.Asset != null ? problem.Asset : (Object)this;
+                Debug.LogWarning($"[Catálogo] {catalog.CatalogName} · " +
+                                 $"{problem.AssetName}: {problem.Message}", context);
             }
         }
 
