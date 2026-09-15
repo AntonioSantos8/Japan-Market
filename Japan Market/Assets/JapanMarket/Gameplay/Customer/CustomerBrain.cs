@@ -77,6 +77,7 @@ namespace JapanMarket.Gameplay
                 .Add(new PickingProductState())
                 .Add(new SeekingCheckoutState())
                 .Add(new QueueingState())
+                .Add(new AtCounterState())
                 .Add(new FrustratedState())
                 .Add(new LeavingState());
         }
@@ -84,7 +85,7 @@ namespace JapanMarket.Gameplay
         /// <summary>
         /// ─────────────────────────────────────────────────────────────────────
         ///  GLOBAIS (avaliadas antes de tudo, valem de qualquer estado)
-        ///    *                 → Frustrated   motivo registrado e ainda não reagiu
+        ///    *                 → Frustrated   motivo registrado, ainda não reagiu, não pagou
         ///    *                 → Leaving      loja fechou
         ///
         ///  NORMAIS
@@ -95,16 +96,25 @@ namespace JapanMarket.Gameplay
         ///    ApproachingShelf  → Browsing         perdeu o alvo ou o caminho
         ///    PickingProduct    → Browsing         pegou o que queria
         ///    SeekingCheckout   → Queueing         achou caixa operante
-        ///    Queueing          → Leaving          venda concluída
+        ///    Queueing          → AtCounter        é o primeiro e já parou
         ///    Queueing          → SeekingCheckout  o caixa sumiu
+        ///    AtCounter         → Leaving          pagou
+        ///    AtCounter         → SeekingCheckout  o caixa sumiu no meio
         ///    Frustrated        → Leaving          terminou de reclamar
         /// ─────────────────────────────────────────────────────────────────────
         /// </summary>
         private void RegisterTransitions()
         {
             _machine
+                // `!c.SaleFinished` não é detalhe. A global é avaliada ANTES das
+                // transições normais, então sem ela a ordem cuidadosa de
+                // AtCounter (Paid antes de LostStation) seria contornada por
+                // cima: um cliente que estourou a paciência no mesmo frame em
+                // que a venda fechou iria para Frustrated, a loja receberia o
+                // dinheiro, e ele sairia publicado como insatisfeito.
                 .AddAnyTransition<FrustratedState>(c =>
-                    c.PendingFrustration.HasValue && !c.FrustrationDone && !c.IsLeaving)
+                    c.PendingFrustration.HasValue && !c.FrustrationDone
+                    && !c.IsLeaving && !c.SaleFinished)
                 .AddAnyTransition<LeavingState>(c => c.StoreClosed);
 
             _machine
@@ -125,8 +135,14 @@ namespace JapanMarket.Gameplay
                 // verdadeiras — e Evaluate devolve a primeira. Na ordem inversa
                 // o cliente já pago voltava a procurar caixa e ia embora
                 // marcado como insatisfeito.
-                .AddTransition<QueueingState, LeavingState>(QueueingState.Paid)
+                .AddTransition<QueueingState, AtCounterState>(QueueingState.MyTurn)
                 .AddTransition<QueueingState, SeekingCheckoutState>(QueueingState.LostStation)
+
+                // Mesma ordem, e pelo mesmo motivo: a venda fechada tem
+                // prioridade sobre o caixa ter sumido no mesmo frame. Quem já
+                // pagou vai embora satisfeito, não volta a procurar caixa.
+                .AddTransition<AtCounterState, LeavingState>(AtCounterState.Paid)
+                .AddTransition<AtCounterState, SeekingCheckoutState>(AtCounterState.LostStation)
 
                 .AddTransition<FrustratedState, LeavingState>(FrustratedState.ReactionOver);
         }

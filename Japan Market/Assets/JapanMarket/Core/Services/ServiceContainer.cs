@@ -30,7 +30,14 @@ namespace JapanMarket.Core
         public static void SetCurrent(ServiceContainer container) =>
             _current = container ?? throw new ArgumentNullException(nameof(container));
 
-        /// <summary>Chamado pelo GameContext no OnDestroy.</summary>
+        /// <summary>
+        /// Descarta o container global se ainda for este.
+        ///
+        /// Chamado pelo <c>GameContext.Teardown()</c>, e NÃO pelo OnDestroy: o
+        /// OnDestroy do contexto roda antes do de todo MonoBehaviour legado (é o
+        /// preço do DefaultExecutionOrder(-10000)), e vários deles consultam
+        /// serviços ao morrer. Quem quiser derrubar de verdade chama Teardown.
+        /// </summary>
         public static void ClearCurrent(ServiceContainer container)
         {
             if (ReferenceEquals(_current, container)) _current = null;

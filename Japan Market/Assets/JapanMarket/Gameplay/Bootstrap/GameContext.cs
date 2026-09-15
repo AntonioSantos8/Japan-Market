@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using JapanMarket.Core;
 using JapanMarket.Data;
@@ -34,6 +35,16 @@ namespace JapanMarket.Gameplay
         [Tooltip("O único catálogo de móveis. Mesma regra: populado pelo import.")]
         [SerializeField] private FurnitureCatalog _furnitureCatalog;
 
+        [Header("Economia")]
+        [Tooltip("Saldo com que a loja começa uma partida nova, em ienes.")]
+        [SerializeField] private long _openingBalanceYen = 8000;
+
+        [Tooltip("Aluguel cobrado todo fim de dia, em ienes.")]
+        [SerializeField] private long _dailyRentYen = 100;
+
+        [Header("Tempo")]
+        [SerializeField] private GameClockSettings _clock = GameClockSettings.Default;
+
         [Header("Diagnóstico")]
         [Tooltip("Valida o catálogo ao entrar em Play e lista os problemas no console.")]
         [SerializeField] private bool _validateCatalogOnPlay = true;
@@ -43,6 +54,15 @@ namespace JapanMarket.Gameplay
         private StoreProgress _progress;
         private FurnitureRegistry _furniture;
         private PricingService _pricing;
+        private CheckoutService _checkout;
+
+        private GameClock _gameClock;
+        private Ledger _ledger;
+        private ExpenseService _expenses;
+        private DailyReportService _reports;
+        private SalesAccountant _accountant;
+        private DayCycle _dayCycle;
+        private IDisposable _daySubscription;
 
         public static GameContext Current { get; private set; }
 
@@ -51,6 +71,11 @@ namespace JapanMarket.Gameplay
         public StoreProgress Progress => _progress;
         public IFurnitureRegistry Furniture => _furniture;
         public IPricingService Pricing => _pricing;
+        public ICheckoutService Checkout => _checkout;
+        public IGameClock Clock => _gameClock;
+        public ILedger Ledger => _ledger;
+        public IExpenseService Expenses => _expenses;
+        public IDailyReportService Reports => _reports;
 
         private void Awake()
         {
@@ -69,12 +94,45 @@ namespace JapanMarket.Gameplay
             _progress  = new StoreProgress();
             _furniture = new FurnitureRegistry();
             _pricing   = new PricingService();
+            _checkout  = new CheckoutService(_furniture, _events);
+
+            BuildEconomy();
 
             // A ponte com o ServiceLocator legado. Enquanto ela existir, os 87
             // scripts atuais continuam funcionando sem uma linha de mudança.
             ServiceContainer.SetCurrent(_container);
 
             RegisterCoreServices();
+        }
+
+        /// <summary>
+        /// A ordem aqui é uma dependência real, não estilo: o relógio dá o dia
+        /// às movimentações, o livro-razão dá o saldo ao relatório, e o ciclo do
+        /// dia precisa dos três montados para poder fechar o expediente na
+        /// ordem certa.
+        /// </summary>
+        private void BuildEconomy()
+        {
+            _gameClock = new GameClock(_events, _clock);
+            _ledger    = new Ledger(_events, _gameClock, Money.FromYen(_openingBalanceYen));
+            _expenses  = new ExpenseService(_ledger);
+            _reports   = new DailyReportService(_events, _ledger, _gameClock.Day);
+
+            _accountant = new SalesAccountant(_events, _ledger);
+            _dayCycle   = new DayCycle(_gameClock, _expenses, _reports, _events);
+
+            // As duas despesas que existem desde o primeiro dia. Salário,
+            // parcela de empréstimo e licença entram registrando mais fontes,
+            // sem tocar em nada disto.
+            if (_dailyRentYen > 0)
+                _expenses.Register(new FlatExpense(
+                    "Aluguel", TransactionReason.Rent, Money.FromYen(_dailyRentYen)));
+
+            _expenses.Register(new PowerExpense(_furniture));
+
+            // O progresso precisa saber o dia para as condições de desbloqueio
+            // que dependem dele.
+            _daySubscription = _events.Subscribe<DayStarted>(e => _progress.SetDay(e.Day));
         }
 
         private void RegisterCoreServices()
@@ -87,6 +145,12 @@ namespace JapanMarket.Gameplay
             // cai no preço de mercado para o resto. Não é placeholder: é o
             // comportamento correto de uma loja que ainda não remarcou nada.
             _container.Register<IPricingService>(_pricing);
+            _container.Register<ICheckoutService>(_checkout);
+
+            _container.Register<IGameClock>(_gameClock);
+            _container.Register<ILedger>(_ledger);
+            _container.Register<IExpenseService>(_expenses);
+            _container.Register<IDailyReportService>(_reports);
 
             if (_itemCatalog != null)
             {
@@ -129,7 +193,10 @@ namespace JapanMarket.Gameplay
 
             foreach (CatalogProblem problem in problems)
             {
-                Object context = problem.Asset != null ? problem.Asset : (Object)this;
+                // Qualificado: este arquivo importa System e UnityEngine, e
+                // `Object` sozinho seria ambíguo entre os dois.
+                UnityEngine.Object context =
+                    problem.Asset != null ? problem.Asset : (UnityEngine.Object)this;
                 Debug.LogWarning($"[Catálogo] {catalog.CatalogName} · " +
                                  $"{problem.AssetName}: {problem.Message}", context);
             }
@@ -166,6 +233,12 @@ namespace JapanMarket.Gameplay
         /// </summary>
         public void Teardown()
         {
+            _daySubscription?.Dispose();
+            _dayCycle?.Dispose();
+            _accountant?.Dispose();
+            _reports?.Dispose();
+            _ledger?.Dispose();
+
             _events?.Clear();
             _container?.Clear();
             if (_container != null) ServiceContainer.ClearCurrent(_container);

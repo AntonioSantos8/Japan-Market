@@ -23,10 +23,17 @@ namespace JapanMarket.Tests
             public bool Emergency;
         }
 
-        private sealed class Recorder : IState<Ctx>
+        /// <summary>
+        /// Base dos estados de teste: só anota o que aconteceu. Abstrata, e não
+        /// selada, porque as três subclasses abaixo existem apenas para dar
+        /// TIPOS distintos à máquina — ela indexa estados por
+        /// <c>GetType()</c>, então "A", "B" e "emergência" precisam ser classes
+        /// diferentes, não três instâncias da mesma.
+        /// </summary>
+        private abstract class Recorder : IState<Ctx>
         {
             private readonly string _name;
-            public Recorder(string name) => _name = name;
+            protected Recorder(string name) => _name = name;
 
             public void Enter(Ctx c) => c.Log.Add($"enter:{_name}");
             public void Tick(Ctx c, float dt) => c.Log.Add($"tick:{_name}");

@@ -22,7 +22,16 @@ namespace JapanMarket.Domain
         void Notify(CustomerSignal signal);
     }
 
-    /// <summary>Fatos que o mundo comunica ao cliente.</summary>
+    /// <summary>
+    /// Fatos que o mundo comunica ao cliente.
+    ///
+    /// O conjunto é deliberadamente pequeno: só entra aqui o que o cliente NÃO
+    /// consegue descobrir perguntando. "Sou o primeiro da fila?" e "em que
+    /// posição eu estou?" ele pergunta à estação todo frame, e por isso não são
+    /// sinais — um aviso pode se perder ou chegar fora de ordem, uma consulta
+    /// não. Já "o caixa sumiu" precisa ser empurrado, porque quando o cliente
+    /// fosse perguntar já não haveria a quem.
+    /// </summary>
     public enum CustomerSignal
     {
         /// <summary>A loja fechou as portas.</summary>
@@ -31,13 +40,7 @@ namespace JapanMarket.Domain
         /// <summary>A estação onde ele estava na fila deixou de existir.</summary>
         CheckoutLost = 1,
 
-        /// <summary>Ele virou o primeiro da fila.</summary>
-        ReachedCounterFront = 2,
-
         /// <summary>A venda dele foi concluída.</summary>
         SaleFinished = 3,
-
-        /// <summary>Posição na fila mudou — precisa reposicionar.</summary>
-        QueuePositionChanged = 4,
     }
 }

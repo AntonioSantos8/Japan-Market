@@ -1,5 +1,4 @@
 using JapanMarket.Core;
-using JapanMarket.Domain;
 
 namespace JapanMarket.Gameplay
 {
@@ -27,44 +26,20 @@ namespace JapanMarket.Gameplay
             // que ninguém segura reserva por mais tempo do que precisa.
             context.ClearShelfTarget();
 
+            // Mesma razão para o caixa: se ele desistiu na fila ou no balcão,
+            // é agora que sai de lá — senão o lugar dele continua ocupado
+            // enquanto ele reclama e caminha até a porta.
+            context.ReleaseStation();
+
             CustomerLeaveReason reason = context.PendingFrustration ?? CustomerLeaveReason.NothingToBuy;
 
-            AbandonBasket(context);
+            context.ReturnBasketToShelves();
 
             // A loja fica sabendo agora, não quando ele cruzar a porta: o
             // relatório do dia e os objetivos reagem ao motivo, e o jogador vê
             // o balão de reclamação enquanto o cliente ainda está na frente dele.
             context.Events?.Publish(new CustomerLeft(
                 context.Agent != null ? context.Agent.Id : 0, false, reason));
-        }
-
-        /// <summary>
-        /// Devolve o que estava na cesta. Se a prateleira de origem sumiu ou
-        /// encheu, o produto simplesmente evapora — melhor perder a unidade do
-        /// que deixar o cliente travado tentando devolver.
-        /// </summary>
-        private static void AbandonBasket(CustomerContext context)
-        {
-            if (context.Basket == null || context.Basket.IsEmpty) return;
-
-            while (context.Basket.TryTakeFirst(out CustomerBasket.Entry entry))
-                TryReturn(context, entry);
-
-            context.Animation?.SetCarrying(false);
-        }
-
-        private static void TryReturn(CustomerContext context, CustomerBasket.Entry entry)
-        {
-            var shelves = context.Furniture.WithCapability<IProductStorage>();
-
-            for (int i = 0; i < shelves.Count; i++)
-            {
-                IProductStorage shelf = shelves[i];
-
-                if (shelf?.Owner == null || !shelf.Owner.IsAlive) continue;
-                if (!shelf.Accepts(entry.Product)) continue;
-                if (shelf.TryPlace(entry.Product, out _)) return;
-            }
         }
 
         public override void Tick(CustomerContext context, float deltaTime)

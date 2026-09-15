@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using JapanMarket.Core;
 using JapanMarket.Data;
 using JapanMarket.Domain;
@@ -29,6 +30,7 @@ namespace JapanMarket.Gameplay
         public IFurnitureRegistry Furniture;
         public IEventBus Events;
         public IPricingService Pricing;
+        public ICheckoutService Checkout;
 
         /// <summary>Pode ser null até a Fase 8. Ausente = loja limpa.</summary>
         public IStoreCleanliness Cleanliness;
@@ -41,7 +43,32 @@ namespace JapanMarket.Gameplay
         public IProductStorage TargetShelf;
         public ISlotReservation Reservation;
         public ICheckoutStation Station;
+        public CheckoutSession Session;
+
+        /// <summary>
+        /// Posição na fila. É ESCRITA pelo estado a partir de uma consulta à
+        /// estação, e nunca empurrada de fora.
+        ///
+        /// A alternativa — a fila chamar um SetQueueIndex em cada cliente — é o
+        /// que o CashRegister faz hoje, e é como um aviso perdido deixa o NPC
+        /// parado num lugar que já não é o dele. Uma consulta não se perde e não
+        /// chega fora de ordem.
+        /// </summary>
         public int QueueIndex;
+
+        /// <summary>Já chegou e parou no lugar dele na fila.</summary>
+        public bool QueueSettled;
+
+        /// <summary>
+        /// Tempo acumulado procurando caixa, ZERADO só quando ele consegue
+        /// entrar numa fila.
+        ///
+        /// Não dá para usar o StateTime aqui: ele reinicia a cada troca de
+        /// estado, e o vaivém Seeking → Queueing → Seeking (a fila encheu entre
+        /// a escolha e a chegada) nunca acumularia o tempo de desistência — o
+        /// cliente oscilaria para sempre sem enfileirar nem ir embora.
+        /// </summary>
+        public float CheckoutSearchTime;
 
         // ── plano de compras ─────────────────────────────────────────────────
         public int ShelvesRemaining;
@@ -98,8 +125,18 @@ namespace JapanMarket.Gameplay
         public bool ReservationLost => Reservation == null || !Reservation.IsValid;
 
         public bool StationLost =>
-            Station == null || Station.Owner == null || !Station.Owner.IsAlive
-            || !Station.IsOperational;
+            !StationAlive || !Station.IsOperational;
+
+        /// <summary>
+        /// A estação ainda é um objeto válido?
+        ///
+        /// Diferente de <see cref="StationLost"/>, que também cobre "desligada
+        /// pelo jogador". A distinção importa na hora de sair da fila: um caixa
+        /// desligado continua sendo um objeto com quem dá para conversar, e
+        /// deixar de avisá-lo faria o cliente vazar dentro da fila dele.
+        /// </summary>
+        public bool StationAlive =>
+            Station != null && Station.Owner != null && Station.Owner.IsAlive;
 
         /// <summary>Preço que este cliente aceita pagar por esse produto.</summary>
         public bool AcceptsPrice(ItemDefinition product, out Money price)
@@ -128,6 +165,74 @@ namespace JapanMarket.Gameplay
             TargetShelf = null;
         }
 
+        /// <summary>
+        /// Abandona a estação de checkout: encerra a venda se houver, sai da
+        /// fila e esquece a referência.
+        ///
+        /// Fica aqui, e não no Exit do QueueingState, por um motivo específico:
+        /// a transição Queueing → AtCounter NÃO pode sair da fila — sair seria
+        /// perder o lugar no exato momento de ser atendido. Então quem solta a
+        /// estação são os estados que encerram o episódio de checkout (Leaving,
+        /// Frustrated, SeekingCheckout) e a destruição do cliente. Uma única
+        /// regra, nos quatro caminhos que existem para fora do balcão.
+        /// </summary>
+        public void ReleaseStation()
+        {
+            if (Station == null) { Session = null; return; }
+
+            if (StationAlive)
+            {
+                if (Session != null && !Session.IsComplete)
+                    Station.CloseSession(Session, SessionCloseReason.Abandoned);
+
+                Station.LeaveQueue(Agent);
+            }
+
+            Session = null;
+            Station = null;
+            QueueIndex = 0;
+            QueueSettled = false;
+        }
+
+        /// <summary>
+        /// Devolve para as prateleiras o que ele pegou e não pagou.
+        ///
+        /// Fica no contexto porque DOIS estados de saída precisam dela — o
+        /// cliente que desiste (Frustrated) e o que é expulso pelo fechamento da
+        /// loja (Leaving). Quando só o Frustrated devolvia, toda vez que a loja
+        /// fechava com gente dentro o jogador perdia mercadoria: as unidades já
+        /// tinham saído da prateleira e sumiam junto com o cliente, sem uma
+        /// linha no console.
+        ///
+        /// Se a prateleira de origem sumiu ou encheu, a unidade evapora mesmo —
+        /// melhor perder uma unidade do que travar o cliente tentando devolver.
+        /// </summary>
+        public void ReturnBasketToShelves()
+        {
+            if (Basket == null || Basket.IsEmpty) return;
+
+            while (Basket.TryTakeFirst(out CustomerBasket.Entry entry))
+                ReturnOne(entry);
+
+            if (Animation != null) Animation.SetCarrying(false);
+        }
+
+        private void ReturnOne(CustomerBasket.Entry entry)
+        {
+            if (Furniture == null || entry.Product == null) return;
+
+            IReadOnlyList<IProductStorage> shelves = Furniture.WithCapability<IProductStorage>();
+
+            for (int i = 0; i < shelves.Count; i++)
+            {
+                IProductStorage shelf = shelves[i];
+
+                if (shelf?.Owner == null || !shelf.Owner.IsAlive) continue;
+                if (!shelf.Accepts(entry.Product)) continue;
+                if (shelf.TryPlace(entry.Product, out _)) return;
+            }
+        }
+
         /// <summary>Registra um motivo para desistir. A transição global cuida do resto.</summary>
         public void Frustrate(CustomerLeaveReason reason)
         {
@@ -137,15 +242,5 @@ namespace JapanMarket.Gameplay
             FrustrationDone = false;
         }
 
-        public void ResetSignals()
-        {
-            StoreClosed = false;
-            SaleFinished = false;
-            CheckoutLost = false;
-            PendingFrustration = null;
-            FrustrationDone = false;
-            ReadyToDespawn = false;
-            IsLeaving = false;
-        }
     }
 }

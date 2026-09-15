@@ -16,54 +16,10 @@ namespace JapanMarket.Tests
     /// </summary>
     public sealed class FurnitureRegistryTests
     {
-        // ── dublês ───────────────────────────────────────────────────────────
+        // Os dublês (FakeFurniture, FakeCheckoutStation, FakeCustomer) moram em
+        // Tests/Fakes e são compartilhados com os testes de checkout.
 
         private interface IDummyCapability : IFurnitureCapability { }
-
-        private sealed class DummyCheckout : ICheckoutStation
-        {
-            public IFurniture Owner { get; set; }
-            public CheckoutStationState State { get; set; } = CheckoutStationState.Idle;
-            public bool IsOperational => State != CheckoutStationState.Unavailable;
-            public int QueueLength { get; set; }
-            public Vector3 QueueAnchor => Vector3.zero;
-            public Vector3 QueueDirection => Vector3.back;
-            public float QueueSpacing => 1f;
-            public Vector3 CounterPosition => Vector3.zero;
-            public event Action<ICheckoutStation> StateChanged;
-            public void RaiseStateChanged() => StateChanged?.Invoke(this);
-        }
-
-        private sealed class FakeFurniture : IFurniture, ICapabilityProvider
-        {
-            private readonly Dictionary<Type, IFurnitureCapability> _capabilities = new();
-
-            public FurnitureId Id { get; } = FurnitureId.Generate();
-            public FurnitureDefinition Definition => null;
-            public Vector3 Position { get; set; }
-            public Quaternion Rotation => Quaternion.identity;
-            public bool IsAlive { get; set; } = true;
-
-            public FakeFurniture With<T>(T capability) where T : class, IFurnitureCapability
-            {
-                _capabilities[typeof(T)] = capability;
-                if (capability is DummyCheckout checkout) checkout.Owner = this;
-                return this;
-            }
-
-            public bool TryGetCapability<T>(out T capability) where T : class, IFurnitureCapability
-            {
-                if (_capabilities.TryGetValue(typeof(T), out IFurnitureCapability found))
-                { capability = (T)found; return true; }
-                capability = null; return false;
-            }
-
-            public bool HasCapability<T>() where T : class, IFurnitureCapability =>
-                _capabilities.ContainsKey(typeof(T));
-
-            public IEnumerable<KeyValuePair<Type, IFurnitureCapability>> EnumerateCapabilities() =>
-                _capabilities;
-        }
 
         // ── testes ───────────────────────────────────────────────────────────
 
@@ -96,7 +52,7 @@ namespace JapanMarket.Tests
         public void WithCapability_indexa_por_contrato()
         {
             var registry = new FurnitureRegistry();
-            registry.Register(new FakeFurniture().With<ICheckoutStation>(new DummyCheckout()));
+            registry.Register(new FakeFurniture().With<ICheckoutStation>(new FakeCheckoutStation()));
             registry.Register(new FakeFurniture());   // sem capacidade nenhuma
 
             Assert.AreEqual(1, registry.WithCapability<ICheckoutStation>().Count);
@@ -120,7 +76,7 @@ namespace JapanMarket.Tests
             // quem reage ao aviso ainda precisa conseguir ler a estação para se
             // desligar dela em ordem.
             var registry = new FurnitureRegistry();
-            var furniture = new FakeFurniture().With<ICheckoutStation>(new DummyCheckout());
+            var furniture = new FakeFurniture().With<ICheckoutStation>(new FakeCheckoutStation());
             registry.Register(furniture);
 
             int visibleDuringEvent = -1;
@@ -137,7 +93,7 @@ namespace JapanMarket.Tests
         public void Placed_dispara_com_o_movel_ja_consultavel()
         {
             var registry = new FurnitureRegistry();
-            var furniture = new FakeFurniture().With<ICheckoutStation>(new DummyCheckout());
+            var furniture = new FakeFurniture().With<ICheckoutStation>(new FakeCheckoutStation());
 
             int visibleDuringEvent = -1;
             registry.Placed += _ =>
@@ -166,7 +122,7 @@ namespace JapanMarket.Tests
             // O NPC pergunta "tem caixa disponível?" no mesmo frame em que o
             // jogador arrancou a última. Não pode receber a morta.
             var registry = new FurnitureRegistry();
-            var dead = new FakeFurniture().With<ICheckoutStation>(new DummyCheckout());
+            var dead = new FakeFurniture().With<ICheckoutStation>(new FakeCheckoutStation());
             registry.Register(dead);
             dead.IsAlive = false;
 
@@ -178,10 +134,12 @@ namespace JapanMarket.Tests
         {
             var registry = new FurnitureRegistry();
 
-            var busy = new DummyCheckout { QueueLength = 4 };
-            var free = new DummyCheckout { QueueLength = 0 };
+            var busy = new FakeCheckoutStation();
+            var free = new FakeCheckoutStation();
             registry.Register(new FakeFurniture().With<ICheckoutStation>(busy));
             registry.Register(new FakeFurniture().With<ICheckoutStation>(free));
+
+            for (int i = 0; i < 4; i++) busy.TryJoinQueue(new FakeCustomer(), out _);
 
             Assert.IsTrue(registry.TryFind<ICheckoutStation>(
                 station => station.QueueLength == 0, out ICheckoutStation found));

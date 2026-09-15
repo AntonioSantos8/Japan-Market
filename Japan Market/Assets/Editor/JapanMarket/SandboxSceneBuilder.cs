@@ -46,6 +46,7 @@ public static class SandboxSceneBuilder
         BuildEnvironment();
         BuildContext();
         BuildMarkers();
+        BuildCheckout();
 
         if (!AssetDatabase.IsValidFolder(SceneFolder))
             AssetDatabase.CreateFolder("Assets", "Scenes");
@@ -58,7 +59,12 @@ public static class SandboxSceneBuilder
                   "  1. Assar a NavMesh (selecione 'Ground' → NavMeshSurface → Bake)\n" +
                   "  2. Atribuir ItemCatalog e FurnitureCatalog no GameContext\n" +
                   "  3. Arrastar o prefab do cliente e um CustomerProfileData no spawner\n" +
-                  "  4. Colocar uma prateleira (FurnitureInstance + ProductStorage + CustomerSlots)");
+                  "  4. Colocar uma prateleira (FurnitureInstance + ProductStorage + CustomerSlots)\n" +
+                  "\nO caixa já vem montado, com atendimento automático a cada 2 s " +
+                  "(campo 'Sandbox' do CheckoutStation). Zere para atender à mão.\n" +
+                  "O relógio roda a 0,2 h por segundo: o dia inteiro em ~90 s. " +
+                  "Use o menu de contexto do GameClockRunner para abrir a loja, " +
+                  "fechar, ou encerrar o dia na hora.");
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -110,6 +116,10 @@ public static class SandboxSceneBuilder
         var contextObject = new GameObject("— Game Context —");
         contextObject.AddComponent<GameContext>();
 
+        // O relógio precisa de alguém que empurre Time.deltaTime. Sem ele o dia
+        // nunca vira, as contas nunca são cobradas e o relatório nunca fecha.
+        contextObject.AddComponent<GameClockRunner>();
+
         Selection.activeGameObject = contextObject;
     }
 
@@ -141,6 +151,57 @@ public static class SandboxSceneBuilder
         // Na Sandbox não existe placa de loja para abrir: começa spawnando.
         serialized.FindProperty("_autoStart").boolValue = true;
         serialized.ApplyModifiedPropertiesWithoutUndo();
+    }
+
+    /// <summary>
+    /// Um caixa completo: móvel + capacidade de checkout + pontos da fila.
+    ///
+    /// Vem montado porque sem ele o ciclo da loja não fecha — o cliente compra,
+    /// procura caixa, não acha e vai embora reclamando. Com o atendimento
+    /// automático ligado, dá para apertar Play e ver a volta inteira sem ter
+    /// construído nenhuma interface.
+    /// </summary>
+    private static void BuildCheckout()
+    {
+        // Fica no lado +x, com a fila crescendo para -z. Assim a cauda de oito
+        // lugares (1,5 → 9,2 m da âncora) cabe folgada dentro do chão de 30 m e
+        // não atravessa a porta, que está em x = 0.
+        GameObject counter = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        counter.name = "Caixa 01";
+        counter.transform.position = new Vector3(6f, 0.5f, 0f);
+        counter.transform.localScale = new Vector3(2f, 1f, 1f);
+        counter.isStatic = true;
+
+        counter.AddComponent<FurnitureInstance>();
+        CheckoutStation station = counter.AddComponent<CheckoutStation>();
+
+        // Os pontos ficam FORA do cubo, senão herdam a escala 2 × 1 × 1 dele e a
+        // fila sai torta. Um objeto vazio irmão é o equivalente ao que um prefab
+        // de caixa de verdade teria como filho sem escala.
+        var points = new GameObject("Caixa 01 · Pontos");
+        points.transform.position = counter.transform.position;
+
+        Transform queueStart = CreateChild(points.transform, "QueueAnchor",
+                                           new Vector3(6f, 0f, -1.5f));
+        Transform queueEnd   = CreateChild(points.transform, "QueueDirection",
+                                           new Vector3(6f, 0f, -4f));
+        Transform counterTop = CreateChild(points.transform, "Counter",
+                                           new Vector3(6f, 1f, 0f));
+
+        var serialized = new SerializedObject(station);
+        serialized.FindProperty("_queueAnchor").objectReferenceValue = queueStart;
+        serialized.FindProperty("_queueDirectionMarker").objectReferenceValue = queueEnd;
+        serialized.FindProperty("_counterPoint").objectReferenceValue = counterTop;
+        serialized.FindProperty("_autoServeSeconds").floatValue = 2f;
+        serialized.ApplyModifiedPropertiesWithoutUndo();
+    }
+
+    private static Transform CreateChild(Transform parent, string name, Vector3 position)
+    {
+        var child = new GameObject(name);
+        child.transform.SetParent(parent);
+        child.transform.position = position;
+        return child.transform;
     }
 
     private static Transform CreateMarker(Transform parent, string name, Vector3 position, string tag)

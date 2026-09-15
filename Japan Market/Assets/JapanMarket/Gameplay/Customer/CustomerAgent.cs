@@ -124,6 +124,9 @@ namespace JapanMarket.Gameplay
             services.TryResolve(out IStoreCleanliness cleanliness);
             context.Cleanliness = cleanliness;
 
+            services.TryResolve(out ICheckoutService checkout);
+            context.Checkout = checkout;
+
             return context;
         }
 
@@ -156,6 +159,13 @@ namespace JapanMarket.Gameplay
 
             _brain.Stop();
             _context?.ReleaseReservation();
+
+            // O Stop acima já chamou o Exit do estado corrente, mas o Exit do
+            // QueueingState não sai da fila de propósito (ver ReleaseStation).
+            // Sem esta linha, um cliente destruído por fora — troca de cena,
+            // jogador apagando o objeto — ficaria pendurado na fila até o
+            // PruneDead da estação notar.
+            _context?.ReleaseStation();
         }
 
         // ── ICustomer ────────────────────────────────────────────────────────
@@ -177,23 +187,7 @@ namespace JapanMarket.Gameplay
                 case CustomerSignal.SaleFinished:
                     _context.SaleFinished = true;
                     break;
-
-                case CustomerSignal.QueuePositionChanged:
-                    // A posição em si é escrita por SetQueueIndex; este sinal só
-                    // existe para o caso de a fila querer avisar sem mudar índice.
-                    break;
-
-                case CustomerSignal.ReachedCounterFront:
-                    _context.QueueIndex = 0;
-                    break;
             }
-        }
-
-        /// <summary>Chamado pela fila do caixa quando a posição dele muda (Fase 5).</summary>
-        public void SetQueueIndex(int index)
-        {
-            if (!_initialized) return;
-            _context.QueueIndex = Mathf.Max(0, index);
         }
 
         // ── depuração ────────────────────────────────────────────────────────

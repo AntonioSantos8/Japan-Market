@@ -52,6 +52,19 @@ namespace JapanMarket.Core
         public DayStarted(int day) => Day = day;
     }
 
+    /// <summary>
+    /// O expediente acabou: contas cobradas, relatório fechado.
+    ///
+    /// Carrega só o número do dia. O relatório em si é um objeto de Domain (fala
+    /// de despesas e de motivos de desistência), que Core não enxerga — quem
+    /// quiser os números pede ao <c>IDailyReportService</c>.
+    /// </summary>
+    public readonly struct DayEnded : IGameEvent
+    {
+        public readonly int Day;
+        public DayEnded(int day) => Day = day;
+    }
+
     /// <summary>A loja abriu ou fechou as portas.</summary>
     public readonly struct StoreOpenStateChanged : IGameEvent
     {
@@ -96,6 +109,46 @@ namespace JapanMarket.Core
         NoCheckout       = 4,
         WaitedTooLong    = 5,
         StoreClosed      = 6,
+    }
+
+    /// <summary>
+    /// Uma venda foi concluída num caixa.
+    ///
+    /// É o evento central do item 13 do refatoramento: daqui saem economia,
+    /// objetivos e estatísticas, sem que o checkout conheça nenhum dos três.
+    ///
+    /// Carrega totais, e não a lista de produtos, porque Core não enxerga Data
+    /// e portanto não pode falar de ItemDefinition. Quem precisa do detalhe por
+    /// produto assina <c>ICheckoutService.SaleCompleted</c>, que entrega a
+    /// sessão inteira — mesmo fato, duas fidelidades, cada uma na camada que
+    /// consegue enxergá-la.
+    /// </summary>
+    public readonly struct SaleCompleted : IGameEvent
+    {
+        public readonly int CustomerId;
+        public readonly FurnitureId StationId;
+
+        /// <summary>Quanto o cliente pagou.</summary>
+        public readonly Money Revenue;
+
+        /// <summary>Quanto as unidades vendidas custaram para comprar.</summary>
+        public readonly Money Cost;
+
+        public readonly int ItemCount;
+        public readonly PaymentMethod Method;
+
+        public Money Profit => Revenue - Cost;
+
+        public SaleCompleted(int customerId, FurnitureId stationId, Money revenue,
+                             Money cost, int itemCount, PaymentMethod method)
+        {
+            CustomerId = customerId;
+            StationId  = stationId;
+            Revenue    = revenue;
+            Cost       = cost;
+            ItemCount  = itemCount;
+            Method     = method;
+        }
     }
 
     /// <summary>O nível de sujeira da loja mudou.</summary>
