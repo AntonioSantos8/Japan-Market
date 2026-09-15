@@ -7,19 +7,7 @@ using UnityEngine;
 
 namespace JapanMarket.Gameplay
 {
-    /// <summary>
-    /// Um móvel colocado na loja.
-    ///
-    /// Repare no que esta classe NÃO faz: não sabe estocar produto, não sabe
-    /// atender cliente, não sabe consumir energia. Ela só carrega identidade,
-    /// entra no registro e sabe responder "eu tenho a capacidade X?". Todo o
-    /// resto vem de componentes no prefab.
-    ///
-    /// É a diferença direta entre o que existe hoje — <c>FurnitureInstance</c>
-    /// com um campo <c>public Shelf shelf</c> pendurado, e um <c>FurnitureType</c>
-    /// enum de quatro valores decidindo o comportamento — e um modelo onde
-    /// adicionar "Vitrine Refrigerada com leitor de código" é montar um prefab.
-    /// </summary>
+
     [DisallowMultipleComponent]
     public sealed class FurnitureInstance : MonoBehaviour, IFurniture, ICapabilityProvider
     {
@@ -40,22 +28,10 @@ namespace JapanMarket.Gameplay
 
         private static bool _missingContextWarned;
 
-        // ── IFurniture ───────────────────────────────────────────────────────
-
         public FurnitureDefinition Definition => _definition;
 
-        /// <summary>
-        /// Identidade desta instância — única por móvel colocado, não por modelo.
-        /// Dois freezers idênticos são dois ids diferentes, porque o save precisa
-        /// saber qual deles guardava o quê.
-        /// </summary>
         public FurnitureId Id => _runtimeId;
 
-        /// <summary>
-        /// Só depende de estado gerenciado, então continua respondendo mesmo
-        /// depois de o objeto nativo ser destruído — que é exatamente quando
-        /// alguém precisa da resposta.
-        /// </summary>
         public bool IsAlive => _alive && this != null;
 
         public Vector3 Position => IsAlive ? transform.position : _lastKnownPosition;
@@ -81,8 +57,6 @@ namespace JapanMarket.Gameplay
                 yield return pair;
         }
 
-        // ── ciclo de vida ────────────────────────────────────────────────────
-
         private void Awake()
         {
             if (!_runtimeId.IsValid) _runtimeId = FurnitureId.Generate();
@@ -102,9 +76,7 @@ namespace JapanMarket.Gameplay
 
         private void OnDisable()
         {
-            // A posição é gravada ANTES de sair do registro: quem reage ao evento
-            // Removing ainda pode perguntar onde o móvel estava, sem tocar no
-            // transform de um objeto que pode já estar destruído.
+
             CacheTransform();
 
             _registry?.Unregister(this);
@@ -137,14 +109,6 @@ namespace JapanMarket.Gameplay
             return null;
         }
 
-        // ── descoberta de capacidades ────────────────────────────────────────
-
-        /// <summary>
-        /// Uma varredura, no Awake, indexando cada componente sob TODAS as
-        /// interfaces de capacidade que ele implementa. A partir daí,
-        /// <see cref="TryGetCapability{T}"/> é um lookup de dicionário — nunca
-        /// um GetComponent, muito menos um GetComponent dentro de Update.
-        /// </summary>
         private void CollectCapabilities()
         {
             _capabilities.Clear();
@@ -169,10 +133,6 @@ namespace JapanMarket.Gameplay
 
         private static readonly Dictionary<Type, Type[]> ContractCache = new();
 
-        /// <summary>
-        /// Reflexão uma vez por TIPO de componente, não por instância. Colocar
-        /// cem prateleiras na loja custa a mesma reflexão que colocar uma.
-        /// </summary>
         private static Type[] GetCapabilityContracts(Type componentType)
         {
             if (ContractCache.TryGetValue(componentType, out Type[] cached)) return cached;
@@ -190,10 +150,6 @@ namespace JapanMarket.Gameplay
             return result;
         }
 
-        /// <summary>
-        /// Chamado pelo posicionamento ao instanciar o prefab. Fica fora de
-        /// #if UNITY_EDITOR de propósito: colocar móvel é ação de jogo.
-        /// </summary>
         public void SetDefinition(FurnitureDefinition definition) => _definition = definition;
 
 #if UNITY_EDITOR

@@ -3,14 +3,7 @@ using NUnit.Framework;
 
 namespace JapanMarket.Tests
 {
-    /// <summary>
-    /// Estes testes existem por um motivo concreto: o projeto atual confere troco
-    /// com <c>Mathf.Abs(giving - correctChange) &lt; 0.5f</c>. Essa tolerância é
-    /// uma cicatriz de ponto flutuante. Os dois últimos testes provam que ela não
-    /// é mais necessária.
-    ///
-    /// Rodam sem abrir cena, sem Play Mode, em milissegundos.
-    /// </summary>
+
     public sealed class MoneyTests
     {
         [Test]
@@ -36,7 +29,7 @@ namespace JapanMarket.Tests
         [Test]
         public void Desconto_arredonda_meio_para_cima()
         {
-            // ¥155 com 15% de desconto = ¥131,75 → ¥132
+
             Money discounted = Money.FromYen(155) * 0.85f;
             Assert.AreEqual(132L, discounted.Yen);
         }
@@ -53,14 +46,14 @@ namespace JapanMarket.Tests
         [Test]
         public void Troco_de_mil_operacoes_nao_acumula_erro()
         {
-            // O caso que o float não aguenta: somar e subtrair muitas vezes.
+
             Money balance = Money.Zero;
             for (int i = 0; i < 1000; i++)
             {
                 balance += Money.FromYen(137);
                 balance -= Money.FromYen(29);
             }
-            Assert.AreEqual(108_000L, balance.Yen, "Nenhuma tolerância deveria ser necessária.");
+            Assert.AreEqual(108_000L, balance.Yen, "No tolerance should be necessary.");
         }
 
         [Test]
@@ -71,7 +64,7 @@ namespace JapanMarket.Tests
             Money change = paid - total;
 
             Money given = Money.FromYen(500) + Money.FromYen(100) + Money.FromYen(33);
-            Assert.AreEqual(change, given, "Troco confere sem Mathf.Abs e sem margem de 0.5.");
+            Assert.AreEqual(change, given, "Change matches without Mathf.Abs and without 0.5 margin.");
         }
 
         [Test]

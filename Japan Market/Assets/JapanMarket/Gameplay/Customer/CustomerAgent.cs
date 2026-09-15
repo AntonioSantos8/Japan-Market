@@ -5,18 +5,7 @@ using UnityEngine;
 
 namespace JapanMarket.Gameplay
 {
-    /// <summary>
-    /// Fachada e ciclo de vida de um cliente. Não decide nada e não move nada:
-    /// junta as peças, entrega os serviços e repassa o tempo.
-    ///
-    /// Substitui o NpcTraject e o NpcInstance juntos. O que sumiu, e por quê:
-    ///  • a corrotina de compras virou máquina de estados (CustomerBrain);
-    ///  • o DOTween no transform virou animação (CustomerAnimation);
-    ///  • o polling de 0,5 s no caixa virou sinal (<see cref="Notify"/>);
-    ///  • o GameObject.FindGameObjectWithTag("Exit") virou parâmetro de spawn;
-    ///  • o ServiceLocator.Get&lt;CashRegister&gt;() cacheado no Start virou
-    ///    consulta ao registro, feita no momento em que ela importa.
-    /// </summary>
+
     [RequireComponent(typeof(CustomerLocomotion))]
     [RequireComponent(typeof(CustomerBasket))]
     [DisallowMultipleComponent]
@@ -24,8 +13,8 @@ namespace JapanMarket.Gameplay
     {
         [SerializeField] private CustomerProfileData _profile;
 
-        [Header("Depuração")]
-        [Tooltip("Escreve no console cada troca de estado. Essencial na Sandbox.")]
+        [Header("Debug")]
+        [Tooltip("Logs each state change to the console. Essential in Sandbox.")]
         [SerializeField] private bool _logStateChanges;
 
         private static int _nextId = 1;
@@ -43,10 +32,7 @@ namespace JapanMarket.Gameplay
         public CustomerAnimation Animation { get; private set; }
         public CustomerProfileData Profile => _profile;
 
-        /// <summary>Nome do estado atual — usado pelo gizmo e pelo log.</summary>
-        public string CurrentStateName => _brain?.CurrentStateType?.Name ?? "—";
-
-        // ── montagem ─────────────────────────────────────────────────────────
+        public string CurrentStateName => _brain?.CurrentStateType?.Name ?? "-";
 
         private void Awake()
         {
@@ -57,11 +43,6 @@ namespace JapanMarket.Gameplay
             Animation = GetComponent<CustomerAnimation>();
         }
 
-        /// <summary>
-        /// Chamado pelo spawner antes de o cliente começar a agir. Os pontos de
-        /// entrada e saída vêm de fora de propósito: o NPC não deve sair
-        /// procurando objetos por tag na cena.
-        /// </summary>
         public void Initialize(Vector3 entryPoint, Vector3 exitPoint,
                                CustomerProfileData profile = null)
         {
@@ -91,7 +72,7 @@ namespace JapanMarket.Gameplay
 
             if (_logStateChanges)
                 _brain.StateChanged += (from, to) =>
-                    Debug.Log($"[Cliente {Id}] {from?.Name ?? "—"} → {to.Name}", this);
+                    Debug.Log($"[Customer {Id}] {from?.Name ?? "-"} → {to.Name}", this);
 
             _initialized = true;
             _brain.Start();
@@ -116,8 +97,6 @@ namespace JapanMarket.Gameplay
                 ExitPoint = exit,
             };
 
-            // Serviços que ainda não existem em todas as fases entram por
-            // TryResolve: ausente é um estado válido, não um erro.
             services.TryResolve(out IPricingService pricing);
             context.Pricing = pricing;
 
@@ -129,8 +108,6 @@ namespace JapanMarket.Gameplay
 
             return context;
         }
-
-        // ── execução ─────────────────────────────────────────────────────────
 
         private void Update()
         {
@@ -147,12 +124,6 @@ namespace JapanMarket.Gameplay
             Destroy(gameObject);
         }
 
-        /// <summary>
-        /// Aqui está a garantia que faltava no sistema antigo: seja qual for o
-        /// motivo da destruição — despawn normal, troca de cena, jogador
-        /// apagando o objeto — o Stop chama o Exit do estado corrente, e o Exit
-        /// libera o slot reservado. Não existe caminho de morte que vaze.
-        /// </summary>
         private void OnDestroy()
         {
             if (_brain == null) return;
@@ -160,15 +131,8 @@ namespace JapanMarket.Gameplay
             _brain.Stop();
             _context?.ReleaseReservation();
 
-            // O Stop acima já chamou o Exit do estado corrente, mas o Exit do
-            // QueueingState não sai da fila de propósito (ver ReleaseStation).
-            // Sem esta linha, um cliente destruído por fora — troca de cena,
-            // jogador apagando o objeto — ficaria pendurado na fila até o
-            // PruneDead da estação notar.
             _context?.ReleaseStation();
         }
-
-        // ── ICustomer ────────────────────────────────────────────────────────
 
         public void Notify(CustomerSignal signal)
         {
@@ -189,8 +153,6 @@ namespace JapanMarket.Gameplay
                     break;
             }
         }
-
-        // ── depuração ────────────────────────────────────────────────────────
 
         private void OnDrawGizmosSelected()
         {

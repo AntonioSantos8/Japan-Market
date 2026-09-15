@@ -5,24 +5,11 @@ using UnityEngine;
 
 namespace JapanMarket.Gameplay
 {
-    /// <summary>
-    /// Guarda unidades de um produto. É o mesmo componente na prateleira, no
-    /// freezer, na geladeira e na vitrine — o que muda é o trait fornecido e
-    /// quantas seções o prefab tem.
-    ///
-    /// A "Prateleira Quádrupla" da referência não precisa de código nenhum:
-    /// é este componente com quatro âncoras de seção.
-    ///
-    /// O que ficou de fora, de propósito: animação, som, material, outline e
-    /// evento de tutorial. O <c>Segment</c> atual mistura tudo isso num
-    /// <c>Interact()</c> só, com 25 buscas de serviço no arquivo, várias delas
-    /// rodando a cada frame de hover. Aqui o componente cuida do estoque e avisa
-    /// quem quiser desenhar.
-    /// </summary>
+
     [DisallowMultipleComponent]
     public sealed class ProductStorage : FurnitureCapabilityBehaviour, IProductStorage
     {
-        [Tooltip("Condição que este móvel oferece. Só entram produtos que a exigem.")]
+        [Tooltip("Condition this furniture offers. Only products that require it can enter.")]
         [SerializeField] private StorageTrait _providedStorage;
 
         [Tooltip("Uma âncora por seção. Vazio = uma seção, na origem do móvel. " +
@@ -39,8 +26,6 @@ namespace JapanMarket.Gameplay
         private int _count;
 
         public event Action<IProductStorage> ContentsChanged;
-
-        // ── leitura ──────────────────────────────────────────────────────────
 
         public StorageTrait ProvidedStorage => _providedStorage;
         public ItemDefinition CurrentProduct => _product;
@@ -60,16 +45,12 @@ namespace JapanMarket.Gameplay
         {
             if (product == null) return false;
 
-            // Trait nulo no móvel = aceita qualquer condição de armazenamento.
-            // É o que permite um balcão genérico existir sem inventar um trait.
             if (_providedStorage != null && !product.FitsStorage(_providedStorage)) return false;
 
             if (_product == null) return product.ShelfGrid.Capacity > 0;
 
             return product == _product && !IsFull;
         }
-
-        // ── escrita ──────────────────────────────────────────────────────────
 
         public bool TryPlace(ItemDefinition product, out int slotIndex)
         {
@@ -95,8 +76,6 @@ namespace JapanMarket.Gameplay
             product = null;
             if (_product == null || _count == 0) return false;
 
-            // Retira do último slot ocupado: o cliente pega o da frente, não
-            // remexe o fundo da prateleira.
             for (int i = _occupied.Length - 1; i >= 0; i--)
             {
                 if (!_occupied[i]) continue;
@@ -112,8 +91,6 @@ namespace JapanMarket.Gameplay
                 return true;
             }
 
-            // Contagem e slots divergiram — não deveria acontecer, mas se
-            // acontecer é melhor recuperar do que travar a prateleira para sempre.
             Debug.LogWarning($"[ProductStorage] '{name}': contagem {_count} sem slot " +
                              "ocupado correspondente. Estoque zerado.", this);
             Clear();
@@ -133,8 +110,6 @@ namespace JapanMarket.Gameplay
             Transform anchor = GetSectionAnchor(section);
             return anchor.TransformPoint(_product.ShelfGrid.GetLocalPosition(local));
         }
-
-        // ── internos ─────────────────────────────────────────────────────────
 
         private Transform GetSectionAnchor(int section)
         {
@@ -185,7 +160,6 @@ namespace JapanMarket.Gameplay
             t.localRotation = product.ShelfGrid.Rotation;
             t.localScale = product.ShelfGrid.ItemScale;
 
-            // O item na prateleira é cenário: sem física, sem colisão de corpo.
             if (spawned.TryGetComponent(out Rigidbody body)) body.isKinematic = true;
 
             _slotVisuals[slotIndex] = t;

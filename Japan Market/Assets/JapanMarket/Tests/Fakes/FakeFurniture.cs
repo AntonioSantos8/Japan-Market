@@ -7,14 +7,7 @@ using UnityEngine;
 
 namespace JapanMarket.Tests
 {
-    /// <summary>
-    /// Um móvel de mentira, com as capacidades que o teste quiser pendurar.
-    ///
-    /// Está aqui, e não aninhado num arquivo de teste, porque checkout, registro
-    /// e — nas próximas fases — economia e objetivos precisam do mesmo dublê. Duas
-    /// cópias de um fake divergem exatamente como duas cópias de código de
-    /// produção.
-    /// </summary>
+
     public sealed class FakeFurniture : IFurniture, ICapabilityProvider
     {
         private readonly Dictionary<Type, IFurnitureCapability> _capabilities = new();
@@ -29,10 +22,6 @@ namespace JapanMarket.Tests
         {
             _capabilities[typeof(T)] = capability;
 
-            // Todo dublê de capacidade precisa saber de quem é. Testar por uma
-            // interface, e não por cada classe concreta, evita que a próxima
-            // capacidade de teste nasça sem dono e o teste falhe por um motivo
-            // que não é o testado.
             if (capability is IOwnedTestCapability owned) owned.Owner = this;
 
             return this;

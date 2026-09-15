@@ -4,10 +4,7 @@ using UnityEngine;
 
 namespace JapanMarket.EditorTools
 {
-    /// <summary>
-    /// Desenha <see cref="Money"/> como um campo numérico com o símbolo do iene,
-    /// em vez do foldout "Base Cost &gt; Yen" que a serialização produziria.
-    /// </summary>
+
     [CustomPropertyDrawer(typeof(Money))]
     public sealed class MoneyDrawer : PropertyDrawer
     {
@@ -18,7 +15,7 @@ namespace JapanMarket.EditorTools
             SerializedProperty yen = property.FindPropertyRelative("_yen");
             if (yen == null)
             {
-                EditorGUI.LabelField(position, label.text, "campo _yen ausente");
+                EditorGUI.LabelField(position, label.text, "missing _yen field");
                 return;
             }
 

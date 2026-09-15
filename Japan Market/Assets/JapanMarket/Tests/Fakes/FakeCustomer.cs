@@ -4,12 +4,7 @@ using UnityEngine;
 
 namespace JapanMarket.Tests
 {
-    /// <summary>
-    /// Um cliente de mentira que só anota os sinais que recebeu.
-    ///
-    /// É o suficiente para verificar a parte do NPC que mais quebra hoje: quem
-    /// foi avisado, com o quê, e quantas vezes. Nada disso precisa de NavMesh.
-    /// </summary>
+
     public sealed class FakeCustomer : ICustomer
     {
         private static int _nextId = 1;
@@ -19,7 +14,7 @@ namespace JapanMarket.Tests
         public FakeCustomer(string name = null)
         {
             Id = _nextId++;
-            Name = name ?? $"cliente {Id}";
+            Name = name ?? $"customer {Id}";
         }
 
         public int Id { get; }

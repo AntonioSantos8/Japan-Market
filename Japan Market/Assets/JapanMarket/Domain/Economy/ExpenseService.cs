@@ -3,34 +3,16 @@ using JapanMarket.Core;
 
 namespace JapanMarket.Domain
 {
-    /// <summary>
-    /// Quem cobra as contas do dia.
-    ///
-    /// Duas operações distintas de propósito: <see cref="Preview"/> apura sem
-    /// cobrar (é o que a tela de fim de dia mostra) e <see cref="ChargeDay"/>
-    /// cobra. Uma tela que precisasse cobrar para saber quanto mostrar seria uma
-    /// tela que não pode ser aberta duas vezes.
-    /// </summary>
+
     public interface IExpenseService
     {
         void Register(IExpenseSource source);
         void Unregister(IExpenseSource source);
 
-        /// <summary>
-        /// Apura sem cobrar. Só as fontes com valor acima de zero.
-        ///
-        /// A lista é reaproveitada entre chamadas — leia agora, não guarde a
-        /// referência para o frame seguinte.
-        /// </summary>
         IReadOnlyList<ExpenseLine> Preview();
 
-        /// <summary>Soma do Preview.</summary>
         Money PreviewTotal();
 
-        /// <summary>
-        /// Cobra tudo, uma linha por fonte. Usa <c>Charge</c>, não
-        /// <c>TryWithdraw</c>: conta de luz chega com ou sem saldo.
-        /// </summary>
         Money ChargeDay();
     }
 
@@ -88,9 +70,6 @@ namespace JapanMarket.Domain
         {
             if (_ledger == null) return Money.Zero;
 
-            // Cópia antes de cobrar: uma cobrança pode, por evento, fazer alguém
-            // registrar ou remover uma fonte — e a lista seria mutada no meio da
-            // iteração.
             Preview();
             ExpenseLine[] lines = _buffer.ToArray();
 

@@ -4,11 +4,7 @@ using NUnit.Framework;
 
 namespace JapanMarket.Tests
 {
-    /// <summary>
-    /// Os casos aqui são exatamente as armadilhas que o código atual cai:
-    /// listener que continua sendo chamado depois do objeto morrer, e recursão
-    /// silenciosa entre sistemas que se disparam mutuamente.
-    /// </summary>
+
     public sealed class EventBusTests
     {
         private readonly struct Ping : IGameEvent
@@ -53,15 +49,14 @@ namespace JapanMarket.Tests
             sub.Dispose();
             bus.Publish(new Ping(2));
 
-            Assert.AreEqual(1, calls, "Handler descartado não pode mais ser chamado.");
+            Assert.AreEqual(1, calls, "Discarded handler can no longer be called.");
             Assert.AreEqual(0, bus.SubscriberCount<Ping>());
         }
 
         [Test]
         public void Cancelar_durante_o_despacho_nao_chama_o_handler_cancelado()
         {
-            // Este é o bug que mata NPC: um objeto se destrói dentro de um evento
-            // e o listener seguinte da mesma lista ainda aponta para ele.
+
             var bus = new EventBus();
             int secondCalls = 0;
             IDisposable second = null;
@@ -72,7 +67,7 @@ namespace JapanMarket.Tests
             bus.Publish(new Ping(1));
 
             Assert.AreEqual(0, secondCalls,
-                "O segundo handler foi cancelado pelo primeiro e não podia rodar.");
+                "The second handler was cancelled by the first and could not run.");
             first.Dispose();
         }
 
@@ -86,7 +81,7 @@ namespace JapanMarket.Tests
                 bus.Subscribe<Ping>(__ => lateCalls++));
 
             Assert.DoesNotThrow(() => bus.Publish(new Ping(1)));
-            Assert.AreEqual(0, lateCalls, "Quem entrou durante o despacho só ouve o próximo.");
+            Assert.AreEqual(0, lateCalls, "Whoever entered during dispatch only hears the next one.");
         }
 
         [Test]
@@ -95,9 +90,6 @@ namespace JapanMarket.Tests
             var bus = new EventBus();
             using IDisposable sub = bus.Subscribe<Ping>(e => bus.Publish(new Ping(e.Value + 1)));
 
-            // Tem que CHEGAR ao chamador. Se o bus engolisse esta exceção junto
-            // com as dos handlers comuns, o guard viraria só uma linha no console
-            // e a recursão continuaria invisível.
             var ex = Assert.Throws<EventBusRecursionException>(() => bus.Publish(new Ping(0)));
             Assert.AreEqual(typeof(Ping), ex.EventType);
         }
@@ -105,7 +97,7 @@ namespace JapanMarket.Tests
         [Test]
         public void Publicar_outro_tipo_de_dentro_de_um_handler_e_permitido()
         {
-            // É assim que uma venda gera progresso de objetivo.
+
             var bus = new EventBus();
             int pongs = 0;
 
@@ -129,7 +121,7 @@ namespace JapanMarket.Tests
             try { bus.Publish(new Ping(1)); }
             finally { UnityEngine.TestTools.LogAssert.ignoreFailingMessages = false; }
 
-            Assert.AreEqual(1, reached, "Um sistema quebrado não pode derrubar os outros.");
+            Assert.AreEqual(1, reached, "A broken system cannot bring down the others.");
         }
     }
 }

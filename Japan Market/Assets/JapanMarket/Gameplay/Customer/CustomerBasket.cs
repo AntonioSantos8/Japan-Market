@@ -5,14 +5,7 @@ using UnityEngine;
 
 namespace JapanMarket.Gameplay
 {
-    /// <summary>
-    /// O que o cliente pegou e por quanto.
-    ///
-    /// Guarda o preço no momento em que o item foi pego, não o preço atual: se
-    /// o jogador remarcar a etiqueta enquanto o cliente está na fila, o cliente
-    /// paga o que viu na prateleira. É o comportamento da referência, e evita a
-    /// discussão de "por que o total mudou sozinho".
-    /// </summary>
+
     [DisallowMultipleComponent]
     public sealed class CustomerBasket : MonoBehaviour
     {

@@ -4,17 +4,7 @@ using UnityEngine;
 
 namespace JapanMarket.Data
 {
-    /// <summary>
-    /// Catálogo de produtos. UM asset no projeto inteiro.
-    ///
-    /// A lista não é arrastada à mão: um AssetPostprocessor a reconstrói sempre
-    /// que um ItemDefinition é criado, movido ou deletado. Cadastrar um produto
-    /// passa a ser criar um asset — e nada mais.
-    ///
-    /// Os índices são construídos no OnEnable e viram consultas O(1). O código
-    /// atual faz foreach linear em todo lugar (GetItemPrefab, GetMarketPrice,
-    /// RegisterScannedItem), o que com 100 produtos custa caro por checkout.
-    /// </summary>
+
     [CreateAssetMenu(fileName = "ItemCatalog", menuName = "Japan Market/Item Catalog", order = 1)]
     public sealed class ItemCatalog : ScriptableObject,
         IItemCatalog, IEditableCatalog<ItemDefinition>
@@ -29,13 +19,11 @@ namespace JapanMarket.Data
         private static readonly ItemDefinition[] EmptyItems = System.Array.Empty<ItemDefinition>();
 
         public IReadOnlyList<ItemDefinition> All => _items;
-        public string CatalogName => "Produtos";
+        public string CatalogName => "Products";
         public int EntryCount => _items.Count;
         public IReadOnlyList<ProductCategory> Categories { get { EnsureBuilt(); return _categories; } }
 
         private void OnEnable() => Rebuild();
-
-        // ── consultas ────────────────────────────────────────────────────────
 
         public bool TryGet(ProductId id, out ItemDefinition definition)
         {
@@ -48,8 +36,8 @@ namespace JapanMarket.Data
             EnsureBuilt();
             if (_byId.TryGetValue(id, out ItemDefinition found)) return found;
 
-            Debug.LogError($"[ItemCatalog] Produto '{id}' não existe no catálogo. " +
-                           "Um save antigo ou um asset deletado costuma ser a causa.");
+            Debug.LogError($"[ItemCatalog] Product '{id}' does not exist in the catalog. " +
+                           "An old save or a deleted asset is usually the cause.");
             return null;
         }
 
@@ -84,7 +72,6 @@ namespace JapanMarket.Data
             return result;
         }
 
-        /// <summary>Busca por nome, para o campo "Procurar…" do computador.</summary>
         public void Search(string query, List<ItemDefinition> results)
         {
             EnsureBuilt();
@@ -100,8 +87,6 @@ namespace JapanMarket.Data
                     results.Add(item);
             }
         }
-
-        // ── construção dos índices ───────────────────────────────────────────
 
         private void EnsureBuilt()
         {
@@ -121,9 +106,9 @@ namespace JapanMarket.Data
 
                 if (item.Id.IsValid && !_byId.TryAdd(item.Id, item))
                 {
-                    Debug.LogError($"[ItemCatalog] Id duplicado em '{item.name}' " +
-                                   $"({item.Id}). O primeiro asset com esse id prevalece; " +
-                                   "regenere o id do duplicado antes de continuar.", item);
+                    Debug.LogError($"[ItemCatalog] Duplicated id in '{item.name}' " +
+                                   $"({item.Id}). The first asset with this id prevails; " +
+                                   "regenerate the id for the duplicate before continuing.", item);
                 }
 
                 if (item.Category != null)
@@ -151,13 +136,6 @@ namespace JapanMarket.Data
             _categories.Sort((a, b) => a.SortOrder.CompareTo(b.SortOrder));
         }
 
-        // ── validação ────────────────────────────────────────────────────────
-
-        /// <summary>
-        /// Roda no import e no menu do editor. A ideia é que um produto mal
-        /// configurado apareça na hora, e não semanas depois como "esse item
-        /// vende por ¥0" ou "esse item não spawna no caixa".
-        /// </summary>
         public List<CatalogProblem> Validate()
         {
             var problems = new List<CatalogProblem>();
@@ -169,50 +147,50 @@ namespace JapanMarket.Data
 
                 if (item == null)
                 {
-                    problems.Add(new CatalogProblem(this, $"Entrada {i} está vazia."));
+                    problems.Add(new CatalogProblem(this, $"Entry {i} is empty."));
                     continue;
                 }
 
                 if (!item.Id.IsValid)
-                    problems.Add(new CatalogProblem(item, "Sem id. Reabra o asset para gerar um."));
+                    problems.Add(new CatalogProblem(item, "No id. Reopen the asset to generate one."));
                 else if (!seenIds.Add(item.Id))
-                    problems.Add(new CatalogProblem(item, $"Id duplicado: {item.Id}"));
+                    problems.Add(new CatalogProblem(item, $"Duplicated id: {item.Id}"));
 
                 if (item.DisplayName.IsEmpty)
-                    problems.Add(new CatalogProblem(item, "Sem nome em nenhum idioma."));
+                    problems.Add(new CatalogProblem(item, "No name in any language."));
 
                 if (item.Category == null)
-                    problems.Add(new CatalogProblem(item, "Sem categoria — não vai aparecer no catálogo filtrado."));
+                    problems.Add(new CatalogProblem(item, "No category — won't appear in the filtered catalog."));
 
                 if (item.ItemPrefab == null)
-                    problems.Add(new CatalogProblem(item, "Sem prefab de item — não pode ser colocado na prateleira."));
+                    problems.Add(new CatalogProblem(item, "No item prefab — cannot be placed on the shelf."));
 
                 if (item.BoxPrefab == null)
-                    problems.Add(new CatalogProblem(item, "Sem prefab de caixa — não pode ser entregue."));
+                    problems.Add(new CatalogProblem(item, "No box prefab — cannot be delivered."));
 
                 if (item.BaseCost <= Money.Zero)
-                    problems.Add(new CatalogProblem(item, "Custo base zero ou negativo."));
+                    problems.Add(new CatalogProblem(item, "Zero or negative base cost."));
 
                 if (item.MarketPrice <= Money.Zero)
-                    problems.Add(new CatalogProblem(item, "Preço de mercado zero ou negativo."));
+                    problems.Add(new CatalogProblem(item, "Zero or negative market price."));
 
                 if (item.MarketPrice <= item.BaseCost)
                     problems.Add(new CatalogProblem(item,
-                        $"Preço de mercado ({item.MarketPrice}) não é maior que o custo " +
-                        $"({item.BaseCost}) — este produto dá prejuízo pelo preço de referência."));
+                        $"Market price ({item.MarketPrice}) is not greater than the cost " +
+                        $"({item.BaseCost}) — this product takes a loss at the reference price."));
 
                 if (!item.ShelfGrid.IsValid)
-                    problems.Add(new CatalogProblem(item, "Grid de prateleira com capacidade zero."));
+                    problems.Add(new CatalogProblem(item, "Shelf grid with zero capacity."));
 
                 if (!item.BoxGrid.IsValid)
-                    problems.Add(new CatalogProblem(item, "Grid de caixa com capacidade zero."));
+                    problems.Add(new CatalogProblem(item, "Box grid with zero capacity."));
             }
 
             return problems;
         }
 
 #if UNITY_EDITOR
-        /// <summary>Chamado pelo AssetPostprocessor. Devolve true se mudou algo.</summary>
+
         public bool EditorSetItems(List<ItemDefinition> items)
         {
             if (_items.Count == items.Count)

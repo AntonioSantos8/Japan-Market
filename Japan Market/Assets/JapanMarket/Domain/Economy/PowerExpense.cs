@@ -3,22 +3,12 @@ using JapanMarket.Core;
 
 namespace JapanMarket.Domain
 {
-    /// <summary>
-    /// A conta de luz.
-    ///
-    /// Esta classe é a recompensa do modelo de capacidades. O aviso da
-    /// referência — "quanto mais aparelhos elétricos, mais caras as despesas" —
-    /// não é uma regra escrita em lugar nenhum: é literalmente a soma dos
-    /// móveis que expõem <see cref="IPowerConsumer"/> e estão ligados.
-    ///
-    /// Adicionar um novo móvel elétrico ao jogo não passa por aqui. Ele entra na
-    /// conta porque tem a capacidade, não porque alguém lembrou de somá-lo.
-    /// </summary>
+
     public sealed class PowerExpense : IExpenseSource
     {
         private readonly IFurnitureRegistry _furniture;
 
-        public PowerExpense(IFurnitureRegistry furniture, string label = "Eletricidade")
+        public PowerExpense(IFurnitureRegistry furniture, string label = "Electricity")
         {
             _furniture = furniture;
             Label = label;
@@ -49,7 +39,6 @@ namespace JapanMarket.Domain
             return total;
         }
 
-        /// <summary>Quantos aparelhos estão pesando na conta. Para a tela.</summary>
         public int PoweredDeviceCount
         {
             get

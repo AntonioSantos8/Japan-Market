@@ -5,13 +5,7 @@ using NUnit.Framework;
 
 namespace JapanMarket.Tests
 {
-    /// <summary>
-    /// O balcão é o estado do caixa. Ele mora em Domain — e não dentro do
-    /// MonoBehaviour — exatamente para que o caso mais importante do
-    /// refatoramento, "o jogador arranca a registradora com fila e venda
-    /// aberta", seja verificado no código que roda no jogo, e não num dublê que
-    /// o imita.
-    /// </summary>
+
     public sealed class CheckoutDeskTests
     {
         private static Money Y(long yen) => Money.FromYen(yen);
@@ -22,8 +16,6 @@ namespace JapanMarket.Tests
             foreach (long price in prices) lines.Add(new SaleLine(null, Y(price)));
             return lines;
         }
-
-        // ── estado ───────────────────────────────────────────────────────────
 
         [Test]
         public void Nasce_ocioso_e_vira_esperando_com_fila()
@@ -62,13 +54,11 @@ namespace JapanMarket.Tests
             int fired = 0;
             desk.StateChanged += _ => fired++;
 
-            desk.TryJoinQueue(new FakeCustomer(), out _);   // continua Waiting
+            desk.TryJoinQueue(new FakeCustomer(), out _);   
             desk.Refresh();
 
             Assert.AreEqual(0, fired);
         }
-
-        // ── operação ─────────────────────────────────────────────────────────
 
         [Test]
         public void Caixa_desligado_nao_aceita_ninguem()
@@ -92,7 +82,7 @@ namespace JapanMarket.Tests
 
             Assert.IsFalse(desk.TryJoinQueue(new FakeCustomer(), out _));
             Assert.IsFalse(desk.AcceptsNewCustomers);
-            Assert.IsTrue(desk.IsOperational, "Quem já está na fila continua sendo atendido.");
+            Assert.IsTrue(desk.IsOperational, "Those already in the queue continue to be served.");
         }
 
         [Test]
@@ -121,14 +111,12 @@ namespace JapanMarket.Tests
             Assert.AreEqual(2, desk.QueueLength);
         }
 
-        // ── venda ────────────────────────────────────────────────────────────
-
         [Test]
         public void Quem_nao_e_o_primeiro_nao_abre_venda()
         {
             var desk = new CheckoutDesk();
-            var primeiro = new FakeCustomer("primeiro");
-            var segundo = new FakeCustomer("segundo");
+            var primeiro = new FakeCustomer("first");
+            var segundo = new FakeCustomer("second");
             desk.TryJoinQueue(primeiro, out _);
             desk.TryJoinQueue(segundo, out _);
 
@@ -161,8 +149,7 @@ namespace JapanMarket.Tests
         [Test]
         public void Abandonar_nao_manda_sinal_nenhum()
         {
-            // Quem desistiu já sabe. Avisá-lo o faria agir como se o caixa
-            // tivesse sumido — e voltar a procurar caixa em vez de ir embora.
+
             var desk = new CheckoutDesk();
             var customer = new FakeCustomer();
             desk.TryJoinQueue(customer, out _);
@@ -185,7 +172,7 @@ namespace JapanMarket.Tests
 
             desk.LeaveQueue(customer);
 
-            Assert.IsNull(desk.CurrentSession, "Senão o balcão fica travado para sempre.");
+            Assert.IsNull(desk.CurrentSession, "Otherwise the desk gets stuck forever.");
             Assert.AreEqual(CheckoutStationState.Idle, desk.State);
         }
 
@@ -209,35 +196,30 @@ namespace JapanMarket.Tests
             Assert.IsFalse(b.Received(CustomerSignal.CheckoutLost));
         }
 
-        // ── o caso central ───────────────────────────────────────────────────
-
         [Test]
         public void Caixa_arrancado_com_fila_e_venda_aberta_avisa_todo_mundo_uma_vez()
         {
             bool operational = true;
             var desk = new CheckoutDesk(() => operational);
 
-            var atendido = new FakeCustomer("atendido");
-            var esperando = new FakeCustomer("esperando");
-            var ultimo = new FakeCustomer("ultimo");
+            var atendido = new FakeCustomer("served");
+            var esperando = new FakeCustomer("waiting");
+            var ultimo = new FakeCustomer("last");
 
             desk.TryJoinQueue(atendido, out _);
             desk.TryJoinQueue(esperando, out _);
             desk.TryJoinQueue(ultimo, out _);
             desk.TryOpenSession(atendido, Lines(730), PaymentMethod.Cash, out _);
 
-            // É assim que o componente faz: marca-se como fora de operação ANTES
-            // de encerrar, porque o balcão consulta esse estado durante o
-            // encerramento.
             operational = false;
             desk.Shutdown();
 
             Assert.AreEqual(1, atendido.CountOf(CustomerSignal.CheckoutLost),
-                "Quem estava sendo atendido não pode receber o aviso duas vezes.");
+                "Whoever was being served cannot receive the warning twice.");
             Assert.AreEqual(1, esperando.CountOf(CustomerSignal.CheckoutLost));
             Assert.AreEqual(1, ultimo.CountOf(CustomerSignal.CheckoutLost));
 
-            Assert.IsFalse(atendido.Received(CustomerSignal.SaleFinished), "Ninguém pagou.");
+            Assert.IsFalse(atendido.Received(CustomerSignal.SaleFinished), "Nobody paid.");
             Assert.IsNull(desk.CurrentSession);
             Assert.AreEqual(0, desk.QueueLength);
             Assert.AreEqual(CheckoutStationState.Unavailable, desk.State);
@@ -258,8 +240,8 @@ namespace JapanMarket.Tests
         public void Cliente_que_morreu_na_fila_e_removido_pela_varredura()
         {
             var desk = new CheckoutDesk();
-            var morto = new FakeCustomer("morto");
-            var vivo = new FakeCustomer("vivo");
+            var morto = new FakeCustomer("dead");
+            var vivo = new FakeCustomer("alive");
             desk.TryJoinQueue(morto, out _);
             desk.TryJoinQueue(vivo, out _);
 
@@ -273,8 +255,7 @@ namespace JapanMarket.Tests
         [Test]
         public void Varredura_fecha_a_venda_de_quem_morreu_atendido()
         {
-            // Sem isto o balcão fica travado com a venda de um cliente que já
-            // não existe, e nenhum outro consegue ser atendido nele.
+
             var desk = new CheckoutDesk();
             var customer = new FakeCustomer();
             desk.TryJoinQueue(customer, out _);

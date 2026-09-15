@@ -3,13 +3,7 @@ using UnityEngine;
 
 namespace JapanMarket.Data
 {
-    /// <summary>
-    /// Categoria de produto — bebidas, congelados, massas, doces…
-    ///
-    /// É um asset, não um enum, pela mesma razão que o produto é: categoria é
-    /// conteúdo. Adicionar "Higiene" ao jogo tem que ser criar um arquivo, não
-    /// recompilar o projeto e torcer para nenhum índice ter deslocado.
-    /// </summary>
+
     [CreateAssetMenu(fileName = "Category", menuName = "Japan Market/Product Category", order = 20)]
     public sealed class ProductCategory : ScriptableObject
     {
@@ -17,7 +11,7 @@ namespace JapanMarket.Data
         [SerializeField] private Sprite _icon;
         [SerializeField] private Color _tint = Color.white;
 
-        [Tooltip("Ordem de exibição no catálogo do computador. Menor aparece antes.")]
+        [Tooltip("Display order in the computer catalog. Lower appears first.")]
         [SerializeField] private int _sortOrder;
 
         public LocalizedText DisplayName => _displayName;

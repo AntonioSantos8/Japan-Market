@@ -4,20 +4,7 @@ using UnityEngine;
 
 namespace JapanMarket.Gameplay
 {
-    /// <summary>
-    /// Pontos onde clientes param para usar este móvel.
-    ///
-    /// Reescrita do <c>FurnitureOccupancy</c>, cujo vazamento de reservas é um
-    /// dos defeitos mais insidiosos do projeto atual: lá, liberar um slot exige
-    /// recalcular a posição de todos eles a partir do transform vivo e comparar
-    /// com a posição guardada, dentro de 1 cm. Mover a prateleira entre reservar
-    /// e liberar faz o loop não achar nada, e o slot fica preso para sempre.
-    /// Dois vazamentos e a prateleira some do mundo dos NPCs — sem uma linha no
-    /// console.
-    ///
-    /// Aqui a reserva é um objeto com o índice. Não há busca, não há tolerância,
-    /// e o móvel pode ser movido à vontade.
-    /// </summary>
+
     [DisallowMultipleComponent]
     public sealed class CustomerSlots : FurnitureCapabilityBehaviour, ICustomerSlots
     {
@@ -25,7 +12,7 @@ namespace JapanMarket.Gameplay
                  "à frente do móvel.")]
         [SerializeField] private Transform[] _slotAnchors;
 
-        [Tooltip("Distância à frente do móvel para o slot gerado automaticamente.")]
+        [Tooltip("Distance in front of the furniture for the auto-generated slot.")]
         [SerializeField] private float _fallbackDistance = 0.9f;
 
         private Reservation[] _reservations;
@@ -50,9 +37,6 @@ namespace JapanMarket.Gameplay
         {
             EnsureReservations();
 
-            // O móvel pode estar sendo removido enquanto um NPC ainda procura
-            // onde parar. Nesse caso ele não reserva — e o estado dele decide
-            // o que fazer, em vez de descobrir tarde demais.
             if (Owner == null || !Owner.IsAlive || !isActiveAndEnabled)
             {
                 reservation = null;
@@ -73,8 +57,6 @@ namespace JapanMarket.Gameplay
             return false;
         }
 
-        // ── posições ─────────────────────────────────────────────────────────
-
         private int SlotCount => _slotAnchors != null && _slotAnchors.Length > 0
             ? _slotAnchors.Length
             : 1;
@@ -90,7 +72,6 @@ namespace JapanMarket.Gameplay
             return transform.position + transform.forward * _fallbackDistance;
         }
 
-        /// <summary>Direção em que o cliente encara o móvel ao chegar no slot.</summary>
         internal Vector3 GetFacing(int index)
         {
             if (this == null) return Vector3.forward;
@@ -121,8 +102,6 @@ namespace JapanMarket.Gameplay
                 int copy = Mathf.Min(_reservations.Length, count);
                 for (int i = 0; i < copy; i++) rebuilt[i] = _reservations[i];
 
-                // Slots que sumiram na reconfiguração invalidam suas reservas em
-                // vez de deixá-las apontando para um índice que não existe mais.
                 for (int i = copy; i < _reservations.Length; i++)
                     _reservations[i]?.Invalidate();
             }
@@ -133,9 +112,6 @@ namespace JapanMarket.Gameplay
         {
             if (_reservations == null) return;
 
-            // O móvel está saindo. Toda reserva vira inválida agora, para que o
-            // NPC que a segura descubra pelo próprio handle — sem precisar
-            // consultar um objeto que pode já ter sido destruído.
             for (int i = 0; i < _reservations.Length; i++)
             {
                 _reservations[i]?.Invalidate();
@@ -154,8 +130,6 @@ namespace JapanMarket.Gameplay
             }
         }
 
-        // ── reserva ──────────────────────────────────────────────────────────
-
         private sealed class Reservation : ISlotReservation
         {
             private CustomerSlots _slots;
@@ -173,7 +147,6 @@ namespace JapanMarket.Gameplay
             public Vector3 WorldPosition => IsValid ? _slots.GetWorldPosition(SlotIndex) : Vector3.zero;
             public Vector3 Facing => IsValid ? _slots.GetFacing(SlotIndex) : Vector3.forward;
 
-            /// <summary>O móvel morreu: a reserva morre junto, sem liberar nada.</summary>
             public void Invalidate() => _slots = null;
 
             public void Dispose()

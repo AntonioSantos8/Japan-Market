@@ -4,12 +4,7 @@ using NUnit.Framework;
 
 namespace JapanMarket.Tests
 {
-    /// <summary>
-    /// O fechamento do dia inteiro, montado como o GameContext monta — e é aqui
-    /// que a ORDEM das etapas é fixada em código executável. Se alguém um dia
-    /// trocar a ordem por engano, estes testes é que dizem por quê ela era
-    /// aquela.
-    /// </summary>
+
     public sealed class DayCycleTests
     {
         private static Money Y(long yen) => Money.FromYen(yen);
@@ -38,7 +33,7 @@ namespace JapanMarket.Tests
             _accountant = new SalesAccountant(_events, _ledger);
             _cycle = new DayCycle(_clock, _expenses, _reports, _events);
 
-            _expenses.Register(new FlatExpense("Aluguel", TransactionReason.Rent, Y(100)));
+            _expenses.Register(new FlatExpense("Rent", TransactionReason.Rent, Y(100)));
         }
 
         [TearDown]
@@ -58,21 +53,15 @@ namespace JapanMarket.Tests
                 itemCount: items, method: PaymentMethod.Cash));
         }
 
-        // ── a venda vira dinheiro ────────────────────────────────────────────
-
         [Test]
         public void Venda_concluida_cai_no_caixa()
         {
-            // A seta "Checkout → Economia" do diagrama, de ponta a ponta: o
-            // checkout publicou, o contador creditou, e nenhum dos dois conhece
-            // o outro.
+
             Sell(revenue: 445, cost: 200, items: 3);
 
             Assert.AreEqual(Y(8445), _ledger.Balance);
             Assert.AreEqual(TransactionReason.ProductSale, _ledger.Today[0].Reason);
         }
-
-        // ── o relatório ──────────────────────────────────────────────────────
 
         [Test]
         public void Relatorio_soma_receita_custo_e_itens()
@@ -112,11 +101,9 @@ namespace JapanMarket.Tests
 
             DailyReport today = _reports.Current;
 
-            Assert.AreEqual(Y(500), today.Revenue, "Receita vem só do SaleCompleted.");
+            Assert.AreEqual(Y(500), today.Revenue, "Revenue only comes from SaleCompleted.");
             Assert.AreEqual(Y(730), today.Purchases);
         }
-
-        // ── a ordem do fechamento ────────────────────────────────────────────
 
         [Test]
         public void Fechar_o_dia_cobra_as_contas_antes_de_fechar_o_relatorio()
@@ -130,9 +117,9 @@ namespace JapanMarket.Tests
             Assert.IsNotNull(closed);
             Assert.AreEqual(1, closed.Day);
             Assert.AreEqual(Y(100), closed.Expenses);
-            Assert.AreEqual(Y(500), closed.NetProfit, "1000 de receita − 400 de custo − 100 de aluguel.");
+            Assert.AreEqual(Y(500), closed.NetProfit, "1000 revenue - 400 cost - 100 rent.");
             Assert.AreEqual(Y(8900), closed.ClosingBalance,
-                "O saldo final tem que já incluir o aluguel — é isso que a ordem garante.");
+                "The closing balance must already include the rent - that is what the order guarantees.");
             Assert.AreEqual(_ledger.Balance, closed.ClosingBalance);
         }
 
@@ -142,7 +129,7 @@ namespace JapanMarket.Tests
             _clock.RequestEndOfDay();
 
             Assert.AreEqual(1, _cycle.LastClosed.ExpenseLines.Count);
-            Assert.AreEqual("Aluguel", _cycle.LastClosed.ExpenseLines[0].Label);
+            Assert.AreEqual("Rent", _cycle.LastClosed.ExpenseLines[0].Label);
         }
 
         [Test]
@@ -154,7 +141,7 @@ namespace JapanMarket.Tests
             _clock.RequestEndOfDay();
 
             Assert.AreEqual(1, dayInsideReport,
-                "Virar antes faria as linhas do dia 1 serem registradas como dia 2.");
+                "Turning earlier would cause day 1 lines to be registered as day 2.");
             Assert.AreEqual(2, _clock.Day);
         }
 
@@ -185,10 +172,7 @@ namespace JapanMarket.Tests
         [Test]
         public void Fechar_duas_vezes_nao_cobra_o_aluguel_duas_vezes()
         {
-            // Este é o teste que pegou o pior defeito da fase: o AdvanceDay,
-            // chamado de dentro do próprio fechamento, rearmava a trava, e o
-            // segundo clique no botão "ir dormir" fechava o dia SEGUINTE às 6h
-            // da manhã — segundo aluguel, segundo relatório, no mesmo frame.
+
             _clock.RequestEndOfDay();
             _clock.RequestEndOfDay();
 
@@ -200,11 +184,7 @@ namespace JapanMarket.Tests
         [Test]
         public void Pular_o_dia_de_dentro_de_DayStarted_fecha_de_verdade()
         {
-            // Uma tela de resumo com "pular o dia" assina DayStarted e pede o
-            // fim do dia. A primeira versão ignorava a chamada reentrante, e o
-            // estrago era silencioso e permanente: o relógio marcava o dia novo
-            // como encerrado, ninguém encerrava, e a partir dali NENHUM dia
-            // fechava mais — o aluguel parava de ser cobrado para sempre.
+
             int skips = 0;
             using (_events.Subscribe<DayStarted>(_ =>
             {
@@ -214,11 +194,10 @@ namespace JapanMarket.Tests
                 _clock.RequestEndOfDay();
             }
 
-            Assert.AreEqual(2, _reports.ClosedReports.Count, "Dois dias, dois relatórios.");
-            Assert.AreEqual(Y(7800), _ledger.Balance, "Dois dias, dois aluguéis.");
+            Assert.AreEqual(2, _reports.ClosedReports.Count, "Two days, two reports.");
+            Assert.AreEqual(Y(7800), _ledger.Balance, "Two days, two rents.");
             Assert.AreEqual(3, _clock.Day);
 
-            // E o relógio continua funcionando depois disso.
             _clock.Tick(18f);
             Assert.AreEqual(3, _reports.ClosedReports.Count);
         }
@@ -226,9 +205,9 @@ namespace JapanMarket.Tests
         [Test]
         public void Dois_dias_seguidos_pelo_relogio_fecham_os_dois()
         {
-            // O caminho que o jogo realmente percorre, e que nenhum teste cobria.
-            _clock.Tick(18f);   // dia 1 → 24h
-            _clock.Tick(18f);   // dia 2 → 24h
+
+            _clock.Tick(18f);   
+            _clock.Tick(18f);   
 
             Assert.AreEqual(2, _reports.ClosedReports.Count);
             Assert.AreEqual(3, _clock.Day);
@@ -240,11 +219,8 @@ namespace JapanMarket.Tests
         [Test]
         public void Saida_com_motivo_desconhecido_entra_no_relatorio()
         {
-            // O Lose_Money legado registra com TransactionReason.Unknown. Se ele
-            // não entrar em Purchases, o relatório mostra um saldo final que não
-            // reconcilia com nenhuma linha — e a promessa de que relatório e
-            // saldo nunca discordam seria falsa.
-            _ledger.TryWithdraw(Y(3000), TransactionReason.Unknown, "compra antiga");
+
+            _ledger.TryWithdraw(Y(3000), TransactionReason.Unknown, "old purchase");
 
             Assert.AreEqual(Y(3000), _reports.Current.Purchases);
         }
@@ -252,16 +228,15 @@ namespace JapanMarket.Tests
         [Test]
         public void Despesa_do_dia_nao_e_contada_tambem_como_compra()
         {
-            // Mesmo registrando uma despesa com motivo de compra — uma licença,
-            // por exemplo — o iene não pode aparecer em Expenses E em Purchases.
+
             _expenses.Register(new FlatExpense(
-                "Licença", TransactionReason.LicensePurchase, Y(500)));
+                "License", TransactionReason.LicensePurchase, Y(500)));
 
             _clock.RequestEndOfDay();
 
             DailyReport closed = _cycle.LastClosed;
 
-            Assert.AreEqual(Y(600), closed.Expenses, "Aluguel 100 + licença 500.");
+            Assert.AreEqual(Y(600), closed.Expenses, "Rent 100 + license 500.");
             Assert.AreEqual(Money.Zero, closed.Purchases);
         }
 
@@ -269,21 +244,20 @@ namespace JapanMarket.Tests
         public void Caixa_e_lucro_sao_numeros_diferentes_e_ambos_corretos()
         {
             Sell(1000, 400, 5);
-            _ledger.TryWithdraw(Y(3000), TransactionReason.StockPurchase, "reposição");
+            _ledger.TryWithdraw(Y(3000), TransactionReason.StockPurchase, "restock");
 
             _clock.RequestEndOfDay();
             DailyReport closed = _cycle.LastClosed;
 
-            Assert.AreEqual(Y(500), closed.NetProfit, "1000 − 400 de custo − 100 de aluguel.");
-            Assert.AreEqual(Y(-2100), closed.CashFlow, "1000 − 3000 de compra − 100 de aluguel.");
+            Assert.AreEqual(Y(500), closed.NetProfit, "1000 - 400 cost - 100 rent.");
+            Assert.AreEqual(Y(-2100), closed.CashFlow, "1000 - 3000 purchase - 100 rent.");
             Assert.AreEqual(Y(5900), closed.ClosingBalance);
         }
 
         [Test]
         public void Pedir_o_fim_do_dia_de_dentro_do_proprio_fechamento_nao_reentra()
         {
-            // Um assinante de DayEnded que abre uma tela e pede o fim do dia de
-            // novo. Sem a trava, seria aluguel em dobro e relatório duplicado.
+
             using (_events.Subscribe<DayEnded>(_ => _clock.RequestEndOfDay()))
             {
                 _clock.RequestEndOfDay();
@@ -296,7 +270,7 @@ namespace JapanMarket.Tests
         [Test]
         public void O_dia_fecha_sozinho_quando_o_relogio_chega_na_hora()
         {
-            _clock.Tick(18f);   // 6h → 24h
+            _clock.Tick(18f);   
 
             Assert.AreEqual(1, _reports.ClosedReports.Count);
             Assert.AreEqual(Y(7900), _ledger.Balance);

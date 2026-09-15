@@ -3,13 +3,7 @@ using UnityEditor;
 
 namespace JapanMarket.EditorTools
 {
-    /// <summary>
-    /// Mantém o ItemCatalog em dia com os assets do projeto.
-    ///
-    /// É esta classe que faz "cadastrar um produto = criar um asset" ser verdade.
-    /// Sem ela, voltaríamos ao problema atual: seis listas arrastadas à mão que
-    /// podem divergir em silêncio.
-    /// </summary>
+
     public sealed class ItemCatalogPostprocessor : AssetPostprocessor
     {
         private static void OnPostprocessAllAssets(
@@ -19,16 +13,15 @@ namespace JapanMarket.EditorTools
             SyncNow(logWhenUnchanged: false);
         }
 
-        [MenuItem("Japan Market/Catálogo/Reconstruir produtos", priority = 100)]
+        [MenuItem("Japan Market/Catalog/Rebuild products", priority = 100)]
         public static void RebuildFromMenu() => SyncNow(logWhenUnchanged: true);
 
-        [MenuItem("Japan Market/Catálogo/Validar produtos", priority = 101)]
+        [MenuItem("Japan Market/Catalog/Validate products", priority = 101)]
         public static void ValidateFromMenu() => CatalogSync.Validate<ItemCatalog>();
 
         private static void SyncNow(bool logWhenUnchanged) =>
             CatalogSync.Sync<ItemCatalog, ItemDefinition>(logWhenUnchanged, CompareForDisplay);
 
-        /// <summary>Ordem de catálogo: categoria primeiro, nome depois.</summary>
         private static int CompareForDisplay(ItemDefinition a, ItemDefinition b)
         {
             int orderA = a.Category != null ? a.Category.SortOrder : int.MaxValue;

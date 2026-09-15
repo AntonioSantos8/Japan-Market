@@ -3,10 +3,7 @@ using UnityEngine;
 
 namespace JapanMarket.Core
 {
-    /// <summary>
-    /// Identidade estável de um móvel. Mesmo contrato do <see cref="ProductId"/>:
-    /// só para persistência, nunca como forma de "achar" o móvel em runtime.
-    /// </summary>
+
     [Serializable]
     public struct FurnitureId : IEquatable<FurnitureId>, IComparable<FurnitureId>
     {

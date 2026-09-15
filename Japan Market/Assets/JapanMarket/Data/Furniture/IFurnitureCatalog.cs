@@ -3,7 +3,7 @@ using JapanMarket.Core;
 
 namespace JapanMarket.Data
 {
-    /// <summary>Fonte única de verdade sobre quais modelos de móvel existem.</summary>
+
     public interface IFurnitureCatalog
     {
         IReadOnlyList<FurnitureDefinition> All { get; }

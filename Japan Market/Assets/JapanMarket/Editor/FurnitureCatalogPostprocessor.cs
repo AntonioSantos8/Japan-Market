@@ -3,7 +3,7 @@ using UnityEditor;
 
 namespace JapanMarket.EditorTools
 {
-    /// <summary>Mesma função do postprocessor de produtos, para móveis.</summary>
+
     public sealed class FurnitureCatalogPostprocessor : AssetPostprocessor
     {
         private static void OnPostprocessAllAssets(
@@ -13,10 +13,10 @@ namespace JapanMarket.EditorTools
             SyncNow(logWhenUnchanged: false);
         }
 
-        [MenuItem("Japan Market/Catálogo/Reconstruir móveis", priority = 102)]
+        [MenuItem("Japan Market/Catalog/Rebuild furniture", priority = 102)]
         public static void RebuildFromMenu() => SyncNow(logWhenUnchanged: true);
 
-        [MenuItem("Japan Market/Catálogo/Validar móveis", priority = 103)]
+        [MenuItem("Japan Market/Catalog/Validate furniture", priority = 103)]
         public static void ValidateFromMenu() => CatalogSync.Validate<FurnitureCatalog>();
 
         private static void SyncNow(bool logWhenUnchanged) =>

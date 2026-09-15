@@ -8,20 +8,11 @@ using UnityEngine;
 
 namespace JapanMarket.Tests
 {
-    /// <summary>
-    /// O registro é C# puro justamente para poder ser testado assim: sem cena,
-    /// sem Play Mode, sem prefab. Os casos abaixo são os da sua lista de
-    /// situações extremas — caixa removida com fila, móvel destruído durante uma
-    /// interação, consulta a uma capacidade que ninguém tem.
-    /// </summary>
+
     public sealed class FurnitureRegistryTests
     {
-        // Os dublês (FakeFurniture, FakeCheckoutStation, FakeCustomer) moram em
-        // Tests/Fakes e são compartilhados com os testes de checkout.
 
         private interface IDummyCapability : IFurnitureCapability { }
-
-        // ── testes ───────────────────────────────────────────────────────────
 
         [Test]
         public void Movel_registrado_aparece_em_All_e_por_id()
@@ -53,7 +44,7 @@ namespace JapanMarket.Tests
         {
             var registry = new FurnitureRegistry();
             registry.Register(new FakeFurniture().With<ICheckoutStation>(new FakeCheckoutStation()));
-            registry.Register(new FakeFurniture());   // sem capacidade nenhuma
+            registry.Register(new FakeFurniture());   
 
             Assert.AreEqual(1, registry.WithCapability<ICheckoutStation>().Count);
         }
@@ -65,16 +56,14 @@ namespace JapanMarket.Tests
 
             IReadOnlyList<IDummyCapability> none = registry.WithCapability<IDummyCapability>();
 
-            Assert.IsNotNull(none, "Nunca devolver null — quem consome faria foreach em null.");
+            Assert.IsNotNull(none, "Never return null — whoever consumes would foreach on null.");
             Assert.AreEqual(0, none.Count);
         }
 
         [Test]
         public void Removing_dispara_ANTES_de_a_capacidade_sair_do_indice()
         {
-            // Este é o coração do caso "caixa registradora sendo removida":
-            // quem reage ao aviso ainda precisa conseguir ler a estação para se
-            // desligar dela em ordem.
+
             var registry = new FurnitureRegistry();
             var furniture = new FakeFurniture().With<ICheckoutStation>(new FakeCheckoutStation());
             registry.Register(furniture);
@@ -85,7 +74,7 @@ namespace JapanMarket.Tests
 
             registry.Unregister(furniture);
 
-            Assert.AreEqual(1, visibleDuringEvent, "A estação ainda tinha que estar visível.");
+            Assert.AreEqual(1, visibleDuringEvent, "The station still had to be visible.");
             Assert.AreEqual(0, registry.WithCapability<ICheckoutStation>().Count);
         }
 
@@ -119,8 +108,7 @@ namespace JapanMarket.Tests
         [Test]
         public void TryFind_ignora_movel_morto()
         {
-            // O NPC pergunta "tem caixa disponível?" no mesmo frame em que o
-            // jogador arrancou a última. Não pode receber a morta.
+
             var registry = new FurnitureRegistry();
             var dead = new FakeFurniture().With<ICheckoutStation>(new FakeCheckoutStation());
             registry.Register(dead);

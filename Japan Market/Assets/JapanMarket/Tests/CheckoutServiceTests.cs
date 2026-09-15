@@ -6,12 +6,7 @@ using UnityEngine;
 
 namespace JapanMarket.Tests
 {
-    /// <summary>
-    /// O serviço é onde mora a política de escolha de caixa e o fecho da venda.
-    /// Como ele é C# puro, os casos extremos da sua lista — caixa removida com
-    /// fila, caixa lotada, caixa inalcançável, loja sem caixa — viram testes de
-    /// unidade em vez de tentativa e erro no Play Mode.
-    /// </summary>
+
     public sealed class CheckoutServiceTests
     {
         private static Money Y(long yen) => Money.FromYen(yen);
@@ -42,7 +37,6 @@ namespace JapanMarket.Tests
             return lines;
         }
 
-        /// <summary>Leva um cliente da fila até a venda aberta, como o AtCounterState faz.</summary>
         private static CheckoutSession Serve(FakeCheckoutStation station, ICustomer customer,
                                              PaymentMethod method, params long[] prices)
         {
@@ -51,8 +45,6 @@ namespace JapanMarket.Tests
                                                  out CheckoutSession session));
             return session;
         }
-
-        // ── escolha da estação ───────────────────────────────────────────────
 
         [Test]
         public void Loja_sem_caixa_devolve_falso()
@@ -70,14 +62,13 @@ namespace JapanMarket.Tests
 
             Assert.IsTrue(_service.TryFindBestStation(Vector3.zero, null,
                                                       out ICheckoutStation chosen));
-            Assert.AreSame(vazia, chosen, "Fila curta ganha mesmo estando mais longe.");
+            Assert.AreSame(vazia, chosen, "Short queue wins even if further away.");
         }
 
         [Test]
         public void Empate_de_fila_e_desempatado_pela_distancia()
         {
-            // Sem o desempate, TODO cliente escolhe a primeira do registro e a
-            // segunda caixa do jogador nunca é usada.
+
             FakeCheckoutStation longe = AddStation(new Vector3(0f, 0f, 40f));
             FakeCheckoutStation perto = AddStation(new Vector3(0f, 0f, 2f));
 
@@ -105,15 +96,15 @@ namespace JapanMarket.Tests
             station.TryJoinQueue(new FakeCustomer(), out _);
 
             Assert.IsFalse(_service.TryFindBestStation(Vector3.zero, null, out _),
-                "Não pode ser escolhida: mandaria o cliente levar um 'não' e voltar em loop.");
+                "Cannot be chosen: it would send the customer to get a 'no' and return in a loop.");
             Assert.IsTrue(station.IsOperational,
-                "Mas quem já está na fila continua sendo atendido.");
+                "But whoever is already in the queue continues to be served.");
         }
 
         [Test]
         public void Movel_morto_e_ignorado_mesmo_antes_do_Unregister()
         {
-            // A janela de um frame entre destruir o objeto e o registro reagir.
+
             var station = new FakeCheckoutStation();
             var furniture = new FakeFurniture().With<ICheckoutStation>(station);
             _registry.Register(furniture);
@@ -136,8 +127,6 @@ namespace JapanMarket.Tests
             Assert.AreSame(acessivel, chosen);
             Assert.AreNotSame(ilhada, chosen);
         }
-
-        // ── fecho da venda ───────────────────────────────────────────────────
 
         [Test]
         public void Nao_fecha_venda_com_item_por_passar()
@@ -179,8 +168,8 @@ namespace JapanMarket.Tests
 
             Assert.IsTrue(session.IsComplete);
             Assert.IsTrue(customer.Received(CustomerSignal.SaleFinished));
-            Assert.IsNull(station.CurrentSession, "O balcão tem que ficar livre.");
-            Assert.AreEqual(0, station.QueueLength, "E o cliente tem que sair da fila.");
+            Assert.IsNull(station.CurrentSession, "The desk must be freed.");
+            Assert.AreEqual(0, station.QueueLength, "And the customer must leave the queue.");
             Assert.AreEqual(CheckoutStationState.Idle, station.State);
         }
 
@@ -251,13 +240,10 @@ namespace JapanMarket.Tests
         [Test]
         public void Caixa_removida_no_meio_da_venda_nao_vira_venda()
         {
-            // O lado de SERVIÇO do caso "jogador arranca a registradora": nada
-            // é contabilizado. O que acontece dentro do balcão — quem é avisado,
-            // com o quê, quantas vezes — está em CheckoutDeskTests, sobre o
-            // mesmo CheckoutDesk que o componente usa.
+
             FakeCheckoutStation station = AddStation(Vector3.zero);
-            var atendido = new FakeCustomer("atendido");
-            var esperando = new FakeCustomer("esperando");
+            var atendido = new FakeCustomer("served");
+            var esperando = new FakeCustomer("waiting");
 
             CheckoutSession session = Serve(station, atendido, PaymentMethod.Cash, 730);
             station.TryJoinQueue(esperando, out _);
@@ -269,7 +255,7 @@ namespace JapanMarket.Tests
                 station.Shutdown();
             }
 
-            Assert.AreEqual(0, sales, "Ninguém pagou.");
+            Assert.AreEqual(0, sales, "Nobody paid.");
             Assert.IsTrue(atendido.Received(CustomerSignal.CheckoutLost));
             Assert.IsTrue(esperando.Received(CustomerSignal.CheckoutLost));
             Assert.IsFalse(atendido.Received(CustomerSignal.SaleFinished));
@@ -289,7 +275,7 @@ namespace JapanMarket.Tests
             Assert.IsNull(station.CurrentSession);
             Assert.AreEqual(0, station.QueueLength);
             Assert.IsFalse(customer.Received(CustomerSignal.CheckoutLost),
-                "Quem desistiu já sabe — avisá-lo o faria agir como se o caixa tivesse sumido.");
+                "Whoever gave up already knows — warning them would make them act as if the checkout disappeared.");
             Assert.IsFalse(customer.Received(CustomerSignal.SaleFinished));
         }
 
@@ -297,8 +283,8 @@ namespace JapanMarket.Tests
         public void Segundo_da_fila_nao_consegue_abrir_venda_na_frente_do_primeiro()
         {
             FakeCheckoutStation station = AddStation(Vector3.zero);
-            var primeiro = new FakeCustomer("primeiro");
-            var segundo = new FakeCustomer("segundo");
+            var primeiro = new FakeCustomer("first");
+            var segundo = new FakeCustomer("second");
 
             station.TryJoinQueue(primeiro, out _);
             station.TryJoinQueue(segundo, out _);

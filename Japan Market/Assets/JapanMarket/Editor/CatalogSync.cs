@@ -7,19 +7,10 @@ using UnityEngine;
 
 namespace JapanMarket.EditorTools
 {
-    /// <summary>
-    /// A mecânica compartilhada de manter um catálogo sincronizado com os assets.
-    ///
-    /// Existe para que produtos, móveis e — na Fase 7 — upgrades e expansões não
-    /// tenham três cópias quase idênticas de noventa linhas de código de editor.
-    /// Cada postprocessor concreto vira meia dúzia de linhas sobre isto.
-    /// </summary>
+
     internal static class CatalogSync
     {
-        /// <summary>
-        /// Localiza o único catálogo daquele tipo. Mais de um é erro de projeto,
-        /// e é melhor gritar do que sincronizar um e deixar o outro velho.
-        /// </summary>
+
         public static TCatalog FindSingle<TCatalog>() where TCatalog : ScriptableObject
         {
             string[] guids = AssetDatabase.FindAssets($"t:{typeof(TCatalog).Name}");
@@ -59,7 +50,7 @@ namespace JapanMarket.EditorTools
             if (catalog == null)
             {
                 if (logWhenUnchanged)
-                    Debug.LogWarning($"[Catálogo] Nenhum {typeof(TCatalog).Name} encontrado. " +
+                    Debug.LogWarning($"[Catalog] No {typeof(TCatalog).Name} found. " +
                                      "Crie um em Assets → Create → Japan Market.");
                 return;
             }
@@ -86,7 +77,7 @@ namespace JapanMarket.EditorTools
             TCatalog catalog = FindSingle<TCatalog>();
             if (catalog == null)
             {
-                Debug.LogWarning($"[Catálogo] Nenhum {typeof(TCatalog).Name} encontrado.");
+                Debug.LogWarning($"[Catalog] No {typeof(TCatalog).Name} found.");
                 return;
             }
 
@@ -101,21 +92,16 @@ namespace JapanMarket.EditorTools
 
             foreach (CatalogProblem problem in problems)
             {
-                // Qualificado: este arquivo importa System E UnityEngine, então
-                // 'Object' sozinho seria ambíguo.
+
                 UnityEngine.Object context = problem.Asset != null ? problem.Asset : catalog;
                 Debug.LogWarning($"[Catálogo] {catalog.CatalogName} · " +
                                  $"{problem.AssetName}: {problem.Message}", context);
             }
 
-            Debug.LogWarning($"[Catálogo] {catalog.CatalogName}: {problems.Count} problema(s).",
+            Debug.LogWarning($"[Catalog] {catalog.CatalogName}: {problems.Count} problem(s).",
                              catalog);
         }
 
-        /// <summary>
-        /// Só reconstrói quando algum .asset foi tocado — importar um PNG não
-        /// tem por que sujar o catálogo.
-        /// </summary>
         public static bool TouchesAssets(params string[][] pathSets)
         {
             foreach (string[] paths in pathSets)

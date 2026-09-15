@@ -4,10 +4,7 @@ using UnityEngine;
 
 namespace JapanMarket.Data
 {
-    /// <summary>
-    /// Catálogo de móveis. UM asset no projeto, populado pelo import — mesmo
-    /// contrato do <see cref="ItemCatalog"/>.
-    /// </summary>
+
     [CreateAssetMenu(fileName = "FurnitureCatalog",
         menuName = "Japan Market/Furniture Catalog", order = 3)]
     public sealed class FurnitureCatalog : ScriptableObject,
@@ -23,7 +20,7 @@ namespace JapanMarket.Data
             System.Array.Empty<FurnitureDefinition>();
 
         public IReadOnlyList<FurnitureDefinition> All => _items;
-        public string CatalogName => "Móveis";
+        public string CatalogName => "Furniture";
         public int EntryCount => _items.Count;
 
         public IReadOnlyList<FurnitureCategory> Categories
@@ -44,8 +41,8 @@ namespace JapanMarket.Data
             EnsureBuilt();
             if (_byId.TryGetValue(id, out FurnitureDefinition found)) return found;
 
-            Debug.LogError($"[FurnitureCatalog] Móvel '{id}' não existe no catálogo. " +
-                           "Save antigo ou asset deletado costuma ser a causa.");
+            Debug.LogError($"[FurnitureCatalog] Furniture '{id}' does not exist in the catalog. " +
+                           "Old save or deleted asset is usually the cause.");
             return null;
         }
 
@@ -89,8 +86,8 @@ namespace JapanMarket.Data
 
                 if (item.Id.IsValid && !_byId.TryAdd(item.Id, item))
                 {
-                    Debug.LogError($"[FurnitureCatalog] Id duplicado em '{item.name}' " +
-                                   $"({item.Id}). Regenere o id do duplicado.", item);
+                    Debug.LogError($"[FurnitureCatalog] Duplicated id in '{item.name}' " +
+                                   $"({item.Id}). Regenerate the id for the duplicate.", item);
                 }
 
                 if (item.Category == null) continue;
@@ -118,34 +115,34 @@ namespace JapanMarket.Data
 
                 if (item == null)
                 {
-                    problems.Add(new CatalogProblem(this, $"Entrada {i} está vazia."));
+                    problems.Add(new CatalogProblem(this, $"Entry {i} is empty."));
                     continue;
                 }
 
                 if (!item.Id.IsValid)
-                    problems.Add(new CatalogProblem(item, "Sem id. Reabra o asset para gerar um."));
+                    problems.Add(new CatalogProblem(item, "No id. Reopen the asset to generate one."));
                 else if (!seen.Add(item.Id))
-                    problems.Add(new CatalogProblem(item, $"Id duplicado: {item.Id}"));
+                    problems.Add(new CatalogProblem(item, $"Duplicated id: {item.Id}"));
 
                 if (item.DisplayName.IsEmpty)
-                    problems.Add(new CatalogProblem(item, "Sem nome em nenhum idioma."));
+                    problems.Add(new CatalogProblem(item, "No name in any language."));
 
                 if (item.Category == null)
-                    problems.Add(new CatalogProblem(item, "Sem categoria — não aparece no catálogo filtrado."));
+                    problems.Add(new CatalogProblem(item, "No category — won't appear in the filtered catalog."));
 
                 if (item.Prefab == null)
-                    problems.Add(new CatalogProblem(item, "Sem prefab — não pode ser colocado na loja."));
+                    problems.Add(new CatalogProblem(item, "No prefab — cannot be placed in the store."));
 
                 if (item.GhostPrefab == null)
-                    problems.Add(new CatalogProblem(item, "Sem ghost — o modo construção não tem o que mostrar."));
+                    problems.Add(new CatalogProblem(item, "No ghost — build mode has nothing to show."));
 
                 if (item.Price <= Money.Zero)
-                    problems.Add(new CatalogProblem(item, "Preço zero ou negativo."));
+                    problems.Add(new CatalogProblem(item, "Zero or negative price."));
 
                 if (item.ResaleValue > item.Price)
                     problems.Add(new CatalogProblem(item,
-                        $"Revenda ({item.ResaleValue}) maior que o preço ({item.Price}) — " +
-                        "o jogador lucra comprando e vendendo em loop."));
+                        $"Resale ({item.ResaleValue}) greater than price ({item.Price}) — " +
+                        "the player profits by buying and selling in a loop."));
             }
 
             return problems;

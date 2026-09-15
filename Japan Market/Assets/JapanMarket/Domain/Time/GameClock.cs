@@ -3,26 +3,15 @@ using JapanMarket.Core;
 
 namespace JapanMarket.Domain
 {
-    /// <summary>
-    /// Implementação padrão do relógio. Sem Unity, sem corrotina, sem
-    /// <c>Time.deltaTime</c> lido aqui dentro.
-    /// </summary>
+
     public sealed class GameClock : IGameClock
     {
         private readonly IEventBus _events;
 
-        /// <summary>Quanto o relógio precisa andar para valer um aviso de UI.</summary>
-        private const float NotifyStepHours = 1f / 60f;   // um minuto de jogo
+        private const float NotifyStepHours = 1f / 60f;
 
         private float _lastNotifiedTime;
 
-        /// <summary>
-        /// Último dia JÁ encerrado. A trava é o número do dia, e não um bool,
-        /// porque um bool precisa ser rearmado — e quem rearmava era o
-        /// AdvanceDay, chamado de dentro do próprio fechamento. Resultado: dois
-        /// pedidos seguidos de "encerrar o dia" fechavam DOIS dias e cobravam o
-        /// aluguel duas vezes, sem nada no console.
-        /// </summary>
         private int _lastClosedDay;
 
         public GameClock(IEventBus events, GameClockSettings settings = default)
@@ -48,16 +37,12 @@ namespace JapanMarket.Domain
         public event Action<int> EndOfDayReached;
         public event Action<IGameClock> TimeChanged;
 
-        // ── andamento ────────────────────────────────────────────────────────
-
         public void Tick(float deltaSeconds)
         {
             if (!IsRunning || deltaSeconds <= 0f) return;
 
             TimeOfDay += deltaSeconds * Settings.GameHoursPerRealSecond;
 
-            // A porta fecha sozinha no horário. Sem isto, o jogador que esquece
-            // a placa ligada recebe clientes de madrugada.
             if (StoreIsOpen && TimeOfDay >= Settings.ClosingHour) CloseStore();
 
             if (_lastClosedDay != Day && TimeOfDay >= Settings.EndOfDayHour) FireEndOfDay();
@@ -69,8 +54,6 @@ namespace JapanMarket.Domain
         }
 
         public void SetRunning(bool running) => IsRunning = running;
-
-        // ── porta ────────────────────────────────────────────────────────────
 
         public bool TryOpenStore()
         {
@@ -90,8 +73,6 @@ namespace JapanMarket.Domain
             _events?.Publish(new StoreOpenStateChanged(false));
         }
 
-        // ── virada do dia ────────────────────────────────────────────────────
-
         public void RequestEndOfDay()
         {
             if (_lastClosedDay == Day) return;
@@ -100,19 +81,13 @@ namespace JapanMarket.Domain
 
         private void FireEndOfDay()
         {
-            // Marcado ANTES de avisar: quem escuta pode pedir o fim do dia de
-            // novo por reentrância, e o MESMO dia não pode fechar duas vezes —
-            // seriam duas cobranças de aluguel.
+
             _lastClosedDay = Day;
 
             CloseStore();
             EndOfDayReached?.Invoke(Day);
         }
 
-        /// <summary>
-        /// Vira o dia. Só o <see cref="DayCycle"/> chama, e só depois de cobrar
-        /// as contas e fechar o relatório.
-        /// </summary>
         public void AdvanceDay()
         {
             Day++;
@@ -123,15 +98,12 @@ namespace JapanMarket.Domain
             TimeChanged?.Invoke(this);
         }
 
-        /// <summary>Restaura um save. Não dispara virada de dia.</summary>
         public void Restore(int day, float timeOfDay, bool storeOpen)
         {
             Day = day < 1 ? 1 : day;
             TimeOfDay = Math.Max(0f, timeOfDay);
             _lastNotifiedTime = TimeOfDay;
 
-            // Se o save foi feito depois do fim do expediente, o dia já estava
-            // encerrado; senão ainda está por encerrar.
             _lastClosedDay = TimeOfDay >= Settings.EndOfDayHour ? Day : Day - 1;
 
             StoreIsOpen = storeOpen && TimeOfDay < Settings.ClosingHour;
@@ -141,14 +113,10 @@ namespace JapanMarket.Domain
         {
             int hour = (int)TimeOfDay;
             int minute = (int)((TimeOfDay - hour) * 60f);
-            return $"Dia {Day}, {hour:00}:{minute:00}{(StoreIsOpen ? ", aberta" : "")}";
+            return $"Day {Day}, {hour:00}:{minute:00}{(StoreIsOpen ? ", open" : "")}";
         }
     }
 
-    /// <summary>
-    /// Configuração do relógio. Struct para poder ser serializada num
-    /// MonoBehaviour sem virar mais um ScriptableObject.
-    /// </summary>
     [Serializable]
     public struct GameClockSettings
     {
@@ -156,10 +124,6 @@ namespace JapanMarket.Domain
         public float ClosingHour;
         public float EndOfDayHour;
 
-        /// <summary>
-        /// Quantas horas de jogo passam por segundo real. 0,2 dá um dia de
-        /// 06h→24h em noventa segundos.
-        /// </summary>
         public float GameHoursPerRealSecond;
 
         public static GameClockSettings Default => new()
@@ -170,10 +134,6 @@ namespace JapanMarket.Domain
             GameHoursPerRealSecond = 0.2f,
         };
 
-        /// <summary>
-        /// Um struct default (tudo zero) faria o dia terminar no primeiro frame.
-        /// Este guarda troca zeros por valores utilizáveis.
-        /// </summary>
         public GameClockSettings OrDefault()
         {
             GameClockSettings fallback = Default;
@@ -181,9 +141,7 @@ namespace JapanMarket.Domain
             if (GameHoursPerRealSecond <= 0f) GameHoursPerRealSecond = fallback.GameHoursPerRealSecond;
             if (EndOfDayHour <= 0f) EndOfDayHour = fallback.EndOfDayHour;
             if (ClosingHour <= 0f || ClosingHour > EndOfDayHour) ClosingHour = Math.Min(fallback.ClosingHour, EndOfDayHour);
-            // `<= 0`, e não `< 0`: um struct vindo de uma cena salva antes
-            // desta fase chega com tudo zero, e zero aqui faria o dia começar à
-            // meia-noite em vez das seis.
+
             if (DayStartHour <= 0f || DayStartHour >= ClosingHour)
                 DayStartHour = Math.Min(fallback.DayStartHour, ClosingHour);
 

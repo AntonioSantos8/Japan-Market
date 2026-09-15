@@ -3,32 +3,20 @@ using UnityEngine;
 
 namespace JapanMarket.Data
 {
-    /// <summary>
-    /// Tudo o que o jogo sabe sobre um MODELO de móvel. Um asset por modelo.
-    ///
-    /// Note o que NÃO está aqui: nada sobre o que o móvel faz. Não há campo
-    /// "é prateleira", "é caixa", "capacidade de itens". Comportamento vem dos
-    /// componentes de capacidade no prefab, e é por isso que "Prateleira
-    /// Quádrupla", "Frigobar" e "Vitrine Refrigerada" são o mesmo código com
-    /// prefabs diferentes.
-    ///
-    /// Substitui o <c>FurnitureData</c> atual, que tinha um <c>FurnitureType</c>
-    /// enum de quatro valores e ainda referenciava um <c>AllIThingsData</c> —
-    /// dois assets descrevendo a mesma coisa, livres para divergir.
-    /// </summary>
+
     [CreateAssetMenu(fileName = "Furniture", menuName = "Japan Market/Furniture", order = 2)]
     public sealed class FurnitureDefinition : ScriptableObject
     {
-        [Header("Identidade")]
+        [Header("Identity")]
         [SerializeField, ReadOnlyField] private FurnitureId _id;
         [SerializeField] private LocalizedText _displayName;
         [SerializeField] private LocalizedText _description;
         [SerializeField] private FurnitureCategory _category;
 
-        [Header("Comércio")]
+        [Header("Trade")]
         [SerializeField] private Money _price;
 
-        [Tooltip("Quanto o jogador recebe ao vender de volta. Zero = não vendável.")]
+        [Tooltip("How much the player receives when selling it back. Zero = not sellable.")]
         [SerializeField] private Money _resaleValue;
 
         [Header("Prefabs")]
@@ -36,26 +24,26 @@ namespace JapanMarket.Data
         [SerializeField] private GameObject _ghostPrefab;
         [SerializeField] private Sprite _icon;
 
-        [Header("Posicionamento")]
-        [Tooltip("Espaço ocupado no grid da loja, em células.")]
+        [Header("Positioning")]
+        [Tooltip("Space occupied on the store grid, in cells.")]
         [SerializeField] private Vector2Int _footprint = Vector2Int.one;
 
-        [Tooltip("Altura da base em relação ao chão. Era o 'floorDistance' do legado.")]
+        [Tooltip("Base height relative to the floor. Was the legacy 'floorDistance'.")]
         [SerializeField] private float _floorOffset;
 
-        [Tooltip("Graus por passo de rotação. 90 = quatro orientações; 0 = não gira.")]
+        [Tooltip("Degrees per rotation step. 90 = four orientations; 0 = does not rotate.")]
         [SerializeField] private float _rotationStep = 90f;
 
-        [Tooltip("Pode ser encostado na parede? Usado pela validação de posicionamento.")]
+        [Tooltip("Can be placed against the wall? Used by positioning validation.")]
         [SerializeField] private bool _wallMounted;
 
-        [Header("Operação")]
-        [Tooltip("Custo diário de energia enquanto ligado. Zero = não consome. " +
-                 "O componente PowerConsumer no prefab lê este valor.")]
+        [Header("Operation")]
+        [Tooltip("Daily energy cost while turned on. Zero = consumes nothing. " +
+                 "The PowerConsumer component in the prefab reads this value.")]
         [SerializeField] private Money _dailyPowerCost;
 
-        [Header("Progressão")]
-        [Tooltip("Vazio = disponível desde o começo.")]
+        [Header("Progression")]
+        [Tooltip("Empty = available from the start.")]
         [SerializeField] private UnlockCondition _unlock;
 
         public FurnitureId Id => _id;

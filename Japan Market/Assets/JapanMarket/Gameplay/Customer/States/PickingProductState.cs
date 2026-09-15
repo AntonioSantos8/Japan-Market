@@ -3,14 +3,7 @@ using JapanMarket.Data;
 
 namespace JapanMarket.Gameplay
 {
-    /// <summary>
-    /// Parado na frente da prateleira, pegando unidades.
-    ///
-    /// Este é o estado em que o cliente fica imóvel por segundos — ou seja,
-    /// onde o jitter aparecia. Aqui ele para de verdade (Halt zera velocidade,
-    /// limpa o caminho e desliga o avoidance) e a única coisa que se move é a
-    /// rotação, uma vez, para encarar a prateleira.
-    /// </summary>
+
     public sealed class PickingProductState : CustomerStateBase
     {
         private int _unitsWanted;
@@ -25,7 +18,6 @@ namespace JapanMarket.Gameplay
             float duration = context.Profile != null ? context.Profile.RollBrowseDuration() : 2f;
             context.WaitUntil = duration;
 
-            // Pega as unidades espaçadas ao longo da pausa, não todas de uma vez.
             _nextPickAt = duration * 0.35f;
 
             if (context.TargetShelfLost) return;
@@ -53,8 +45,6 @@ namespace JapanMarket.Gameplay
             ItemDefinition product = context.TargetShelf.CurrentProduct;
             if (product == null) { _unitsTaken = _unitsWanted; return; }
 
-            // O preço é conferido de novo aqui: o jogador pode ter remarcado a
-            // etiqueta entre o cliente escolher a prateleira e chegar nela.
             if (!context.AcceptsPrice(product, out Money price))
             {
                 context.Frustrate(CustomerLeaveReason.PricesTooHigh);
@@ -64,7 +54,7 @@ namespace JapanMarket.Gameplay
 
             if (!context.TargetShelf.TryTakeOne(out ItemDefinition taken))
             {
-                _unitsTaken = _unitsWanted;   // esvaziou na mão dele
+                _unitsTaken = _unitsWanted;   
                 return;
             }
 
@@ -76,9 +66,7 @@ namespace JapanMarket.Gameplay
 
         public override void Exit(CustomerContext context)
         {
-            // Terminou com esta prateleira: libera o slot AQUI, no Exit, por
-            // qualquer caminho de saída. É isso que torna o vazamento de slot
-            // do FurnitureOccupancy impossível de reproduzir.
+
             context.ClearShelfTarget();
             context.ShelvesRemaining--;
         }

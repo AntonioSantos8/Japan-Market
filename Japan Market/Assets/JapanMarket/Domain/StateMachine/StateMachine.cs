@@ -3,24 +3,7 @@ using System.Collections.Generic;
 
 namespace JapanMarket.Domain
 {
-    /// <summary>
-    /// Máquina de estados com transições declaradas em tabela.
-    ///
-    /// Duas propriedades que o "roteiro em corrotina" do NpcTraject não tinha,
-    /// e que são a razão de existir desta classe:
-    ///
-    /// 1. **Transições globais.** Uma condição registrada com
-    ///    <see cref="AddAnyTransition"/> vale a partir de QUALQUER estado e é
-    ///    avaliada antes das demais. É assim que "a prateleira que eu ia usar
-    ///    sumiu" ou "a loja fechou" interrompem o que estiver acontecendo, em
-    ///    vez de esperar a corrotina chegar no próximo yield.
-    ///
-    /// 2. **Saída garantida.** Todo caminho para fora de um estado passa pelo
-    ///    Exit dele. Não há como sair sem liberar o que foi reservado.
-    ///
-    /// Genérica e sem Unity: a mesma classe serve ao NPC agora e aos objetivos
-    /// na Fase 8, e roda em teste de unidade.
-    /// </summary>
+
     public sealed class StateMachine<TContext>
     {
         private readonly TContext _context;
@@ -36,16 +19,12 @@ namespace JapanMarket.Domain
         public IState<TContext> CurrentState { get; private set; }
         public bool IsRunning => CurrentState != null;
 
-        /// <summary>(de, para) — para log e depuração.</summary>
         public event Action<Type, Type> StateChanged;
-
-        // ── montagem ─────────────────────────────────────────────────────────
 
         public StateMachine<TContext> Add<TState>(TState state) where TState : IState<TContext>
         {
             if (state == null) throw new ArgumentNullException(nameof(state));
-            // GetType() e não typeof(TState): assim registrar por uma variável
-            // tipada como IState<T> ainda indexa pela classe concreta.
+
             _states[state.GetType()] = state;
             return this;
         }
@@ -66,11 +45,6 @@ namespace JapanMarket.Domain
             return this;
         }
 
-        /// <summary>
-        /// Vale a partir de qualquer estado e tem prioridade sobre as demais.
-        /// Reserve para o que é emergência: recurso que sumiu, loja que fechou,
-        /// caminho que ficou impossível.
-        /// </summary>
         public StateMachine<TContext> AddAnyTransition<TTo>(Func<TContext, bool> when)
             where TTo : IState<TContext>
         {
@@ -78,8 +52,6 @@ namespace JapanMarket.Domain
             _anyTransitions.Add(new Transition(typeof(TTo), when));
             return this;
         }
-
-        // ── execução ─────────────────────────────────────────────────────────
 
         public void Start<TState>() where TState : IState<TContext> => Enter(typeof(TState));
 
@@ -93,14 +65,8 @@ namespace JapanMarket.Domain
             CurrentState?.Tick(_context, deltaTime);
         }
 
-        /// <summary>
-        /// Transição direta, decidida pelo próprio estado. Use quando a decisão
-        /// depende de algo que só o estado sabe; para condições observáveis de
-        /// fora, prefira declarar na tabela.
-        /// </summary>
         public void GoTo<TState>() where TState : IState<TContext> => Enter(typeof(TState));
 
-        /// <summary>Encerra a máquina chamando o Exit do estado corrente.</summary>
         public void Stop()
         {
             if (CurrentState == null) return;
@@ -110,11 +76,9 @@ namespace JapanMarket.Domain
             CurrentStateType = null;
         }
 
-        // ── internos ─────────────────────────────────────────────────────────
-
         private Type Evaluate()
         {
-            // Globais primeiro: uma emergência não espera a transição normal.
+
             for (int i = 0; i < _anyTransitions.Count; i++)
             {
                 Transition transition = _anyTransitions[i];
@@ -137,8 +101,8 @@ namespace JapanMarket.Domain
             if (!_states.TryGetValue(stateType, out IState<TContext> next))
             {
                 throw new InvalidOperationException(
-                    $"[StateMachine] Estado '{stateType.Name}' não foi registrado com Add(). " +
-                    "Uma transição aponta para um estado que não existe.");
+                    $"[StateMachine] State '{stateType.Name}' was not registered with Add(). " +
+                    "A transition points to a state that does not exist.");
             }
 
             Type previous = CurrentStateType;
@@ -148,11 +112,6 @@ namespace JapanMarket.Domain
             CurrentState = next;
             CurrentStateType = stateType;
 
-            // O aviso sai ANTES do Enter, de propósito. Quem escuta costuma
-            // estar zerando o cronômetro do estado — e se isso acontecesse
-            // depois, todo Enter leria o tempo do estado ANTERIOR. Um estado que
-            // decide "espero 5 segundos antes de desistir" começaria já vencido
-            // se viesse de um estado longo.
             StateChanged?.Invoke(previous, stateType);
 
             CurrentState.Enter(_context);

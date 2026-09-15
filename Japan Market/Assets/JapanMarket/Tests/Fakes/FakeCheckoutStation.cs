@@ -6,15 +6,7 @@ using UnityEngine;
 
 namespace JapanMarket.Tests
 {
-    /// <summary>
-    /// Uma estação de checkout sem cena.
-    ///
-    /// Repare que ela NÃO reimplementa nada: fila, venda e estado são um
-    /// <see cref="CheckoutDesk"/> de verdade, o mesmo que o
-    /// <c>CheckoutStation</c> usa. O dublê só fornece o que exige Unity — a
-    /// geometria — e o interruptor de operação. Foi por isso que o balcão saiu
-    /// do MonoBehaviour: um dublê que reimplementa a regra testa o dublê.
-    /// </summary>
+
     public sealed class FakeCheckoutStation : ICheckoutStation, IOwnedTestCapability
     {
         private readonly CheckoutDesk _desk;
@@ -29,7 +21,6 @@ namespace JapanMarket.Tests
             _desk.SessionClosed += (_, s, r) => SessionClosed?.Invoke(this, s, r);
         }
 
-        /// <summary>O móvel dono. O <c>FakeFurniture.With</c> preenche sozinho.</summary>
         public IFurniture Owner { get; set; }
 
         public bool Open { get; set; } = true;
@@ -76,7 +67,6 @@ namespace JapanMarket.Tests
         public void CloseSession(CheckoutSession session, SessionCloseReason reason) =>
             _desk.CloseSession(session, reason);
 
-        /// <summary>Equivalente ao OnDisable do componente.</summary>
         public void Shutdown()
         {
             ShuttingDown = true;

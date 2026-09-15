@@ -24,9 +24,7 @@ namespace JapanMarket.Tests
         [Test]
         public void Um_iene_a_mais_ou_a_menos_esta_errado()
         {
-            // O código atual compara com Mathf.Abs(diff) < 0.5f — uma tolerância
-            // que existe só para esconder erro de ponto flutuante, e que deixa
-            // passar troco errado. Com Money em inteiro, a comparação é exata.
+
             Assert.IsTrue(PaymentProcessor.IsChangeCorrect(Y(730), Y(1000), Y(270)));
             Assert.IsFalse(PaymentProcessor.IsChangeCorrect(Y(730), Y(1000), Y(271)));
             Assert.IsFalse(PaymentProcessor.IsChangeCorrect(Y(730), Y(1000), Y(269)));
@@ -42,7 +40,7 @@ namespace JapanMarket.Tests
         [Test]
         public void Cliente_entrega_a_menor_cedula_que_cobre()
         {
-            // Jogável: quem deve ¥730 entrega ¥1000, não ¥10000.
+
             Assert.AreEqual(Y(1000),
                 PaymentProcessor.RollTenderedAmount(Y(730),
                     PaymentProcessor.JapaneseDenominations));
@@ -70,7 +68,7 @@ namespace JapanMarket.Tests
             Money tendered = PaymentProcessor.RollTenderedAmount(
                 total, PaymentProcessor.JapaneseDenominations);
 
-            Assert.GreaterOrEqual(tendered.CompareTo(total), 0, "Nunca entregar menos que o total.");
+            Assert.GreaterOrEqual(tendered.CompareTo(total), 0, "Never deliver less than the total.");
             Assert.AreEqual(Y(30000), tendered);
         }
 

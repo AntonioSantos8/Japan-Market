@@ -6,43 +6,32 @@ using UnityEngine.AI;
 
 namespace JapanMarket.Gameplay
 {
-    /// <summary>
-    /// Traz clientes para a loja enquanto ela está aberta.
-    ///
-    /// Sobre o que mudou em relação ao NpcManager: o spawn não é mais uma
-    /// corrotina infinita com <c>while(true)</c> que consulta o MarketManager a
-    /// cada volta. Ele assina o evento de abrir/fechar e liga ou desliga um
-    /// temporizador — nada roda enquanto a loja está fechada.
-    ///
-    /// O ponto de saída também deixa de ser descoberto por tag dentro do NPC
-    /// (<c>GameObject.FindGameObjectWithTag("Exit")</c>, que lança se o objeto
-    /// não existir) e passa a ser entregue no spawn.
-    /// </summary>
+
     [DisallowMultipleComponent]
     public sealed class CustomerSpawner : MonoBehaviour
     {
-        [Header("Prefabs e perfis")]
+        [Header("Prefabs and profiles")]
         [SerializeField] private CustomerAgent[] _customerPrefabs;
 
-        [Tooltip("Sorteado por cliente. Vazio = usa o perfil do próprio prefab.")]
+        [Tooltip("Randomly chosen per customer. Empty = uses the prefab's own profile.")]
         [SerializeField] private CustomerProfileData[] _profiles;
 
-        [Header("Pontos")]
+        [Header("Points")]
         [SerializeField] private Transform _spawnPoint;
         [SerializeField] private Transform _entryPoint;
         [SerializeField] private Transform _exitPoint;
 
-        [Tooltip("Raio de dispersão no spawn, para não nascerem sobrepostos.")]
+        [Tooltip("Dispersion radius on spawn, so they don't spawn overlapping.")]
         [SerializeField] private float _spawnRadius = 0.6f;
 
-        [Header("Ritmo")]
+        [Header("Rhythm")]
         [SerializeField] private Vector2 _intervalSeconds = new(8f, 25f);
 
-        [Tooltip("Máximo de clientes vivos ao mesmo tempo. 0 = sem limite.")]
+        [Tooltip("Maximum live customers at the same time. 0 = unlimited.")]
         [Min(0)] [SerializeField] private int _maxAlive = 6;
 
-        [Header("Início")]
-        [Tooltip("Começa a spawnar sem esperar a loja abrir. Use na Sandbox.")]
+        [Header("Start")]
+        [Tooltip("Starts spawning without waiting for the store to open. Use in Sandbox.")]
         [SerializeField] private bool _autoStart;
 
         private readonly List<CustomerAgent> _alive = new();
@@ -50,26 +39,12 @@ namespace JapanMarket.Gameplay
         private float _nextSpawnAt;
         private bool _running;
 
-        // ── ciclo de vida ────────────────────────────────────────────────────
-
         private void OnEnable()
         {
             TrySubscribe();
             if (_autoStart) StartSpawning();
         }
 
-        /// <summary>
-        /// Assina o evento de abrir/fechar, se ainda não assinou.
-        ///
-        /// É chamado no OnEnable e de novo a cada Update porque o GameContext
-        /// pode não existir ainda: cena carregada de forma aditiva, spawner
-        /// instanciado antes do contexto, ou um contexto recriado depois de um
-        /// Teardown. Tentar uma vez só deixaria o spawner mudo para sempre,
-        /// sem nenhum erro no console.
-        ///
-        /// Guardar o IDisposable e descartá-lo no OnDisable é a regra que
-        /// elimina a categoria "esqueci de remover o listener".
-        /// </summary>
         private void TrySubscribe()
         {
             if (_openSubscription != null) return;
@@ -105,8 +80,6 @@ namespace JapanMarket.Gameplay
 
         public void StopSpawning() => _running = false;
 
-        // ── spawn ────────────────────────────────────────────────────────────
-
         private void Update()
         {
             TrySubscribe();
@@ -130,7 +103,7 @@ namespace JapanMarket.Gameplay
             if (!ValidateSetup()) { StopSpawning(); return; }
 
             CustomerAgent prefab = _customerPrefabs[Random.Range(0, _customerPrefabs.Length)];
-            if (prefab == null) return;   // slot vazio no Inspector
+            if (prefab == null) return;   
 
             if (!TryFindSpawnPosition(out Vector3 position)) return;
 
@@ -144,11 +117,6 @@ namespace JapanMarket.Gameplay
             _alive.Add(customer);
         }
 
-        /// <summary>
-        /// Espalha o ponto de nascimento e o projeta na NavMesh. Nascer fora da
-        /// malha deixa o agente inerte, e o cliente ficaria parado na porta sem
-        /// nenhum erro visível.
-        /// </summary>
         private bool TryFindSpawnPosition(out Vector3 position)
         {
             Vector2 offset = Random.insideUnitCircle * _spawnRadius;
@@ -170,13 +138,13 @@ namespace JapanMarket.Gameplay
         {
             if (_customerPrefabs == null || _customerPrefabs.Length == 0)
             {
-                Debug.LogError("[CustomerSpawner] Nenhum prefab de cliente atribuído.", this);
+                Debug.LogError("[CustomerSpawner] No customer prefab assigned.", this);
                 return false;
             }
 
             if (_spawnPoint == null || _entryPoint == null || _exitPoint == null)
             {
-                Debug.LogError("[CustomerSpawner] Faltam pontos de spawn, entrada ou saída.", this);
+                Debug.LogError("[CustomerSpawner] Missing spawn, entry or exit points.", this);
                 return false;
             }
 
@@ -191,8 +159,7 @@ namespace JapanMarket.Gameplay
             for (int i = 0; i < _alive.Count; i++) _alive[i].Notify(signal);
         }
 
-        /// <summary>Atalho para testar na Sandbox sem esperar o temporizador.</summary>
-        [ContextMenu("Spawnar um cliente agora")]
+        [ContextMenu("Spawn a customer now")]
         public void SpawnOneNow()
         {
             if (!Application.isPlaying) return;

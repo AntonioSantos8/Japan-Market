@@ -4,20 +4,7 @@ using JapanMarket.Core;
 
 namespace JapanMarket.Domain
 {
-    /// <summary>
-    /// Uma venda em andamento.
-    ///
-    /// Repare no que NÃO existe aqui: dois contadores independentes. O
-    /// CashRegister atual mantém <c>_totalExpected</c> e <c>_scannedCount</c>
-    /// separados, e eles só ficam consistentes porque a animação da sacola dura
-    /// 0,90 s enquanto os itens chegam a cada 0,20 s. Encurtar a animação
-    /// quebraria o checkout — o fecho da venda depende de uma constante de
-    /// tween.
-    ///
-    /// Aqui a sessão nasce com a lista completa de linhas. "Tudo passado" é
-    /// <c>ScannedCount &gt;= Lines.Count</c>: uma condição sobre o estado real,
-    /// que não depende da duração de nada.
-    /// </summary>
+
     public sealed class CheckoutSession
     {
         private readonly List<SaleLine> _lines;
@@ -39,10 +26,8 @@ namespace JapanMarket.Domain
         public IReadOnlyList<SaleLine> Scanned => _scanned;
         public PaymentMethod Method { get; }
 
-        /// <summary>Valor a cobrar. Fixo desde a abertura da sessão.</summary>
         public Money Total { get; }
 
-        /// <summary>Soma do que já foi passado pelo leitor.</summary>
         public Money ScannedTotal { get; private set; }
 
         public int ScannedCount => _scanned.Count;
@@ -50,16 +35,11 @@ namespace JapanMarket.Domain
         public bool AllScanned => _scanned.Count >= _lines.Count;
         public bool IsComplete { get; private set; }
 
-        /// <summary>Quanto o cliente entregou. Só faz sentido em dinheiro.</summary>
         public Money AmountTendered { get; private set; }
 
         public event Action<CheckoutSession, SaleLine> LineScanned;
         public event Action<CheckoutSession> AllLinesScanned;
 
-        /// <summary>
-        /// Registra que o jogador passou uma unidade pelo leitor.
-        /// Devolve false se não havia mais nada para passar.
-        /// </summary>
         public bool TryScanNext(out SaleLine line)
         {
             line = default;
@@ -77,7 +57,6 @@ namespace JapanMarket.Domain
 
         public void SetAmountTendered(Money amount) => AmountTendered = amount;
 
-        /// <summary>Troco devido. Zero se o cliente pagou exato ou com cartão.</summary>
         public Money ChangeDue => Method == PaymentMethod.Card
             ? Money.Zero
             : Money.Max(Money.Zero, AmountTendered - Total);
@@ -85,7 +64,7 @@ namespace JapanMarket.Domain
         internal void MarkComplete() => IsComplete = true;
 
         public override string ToString() =>
-            $"Venda de {_lines.Count} item(ns), {Total}, {Method}, " +
-            $"{(IsComplete ? "concluída" : $"{ScannedCount}/{_lines.Count} passados")}";
+            $"Sale of {_lines.Count} item(s), {Total}, {Method}, " +
+            $"{(IsComplete ? "completed" : $"{ScannedCount}/{_lines.Count} scanned")}";
     }
 }

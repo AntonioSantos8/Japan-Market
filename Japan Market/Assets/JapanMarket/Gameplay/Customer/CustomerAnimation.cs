@@ -2,17 +2,7 @@ using UnityEngine;
 
 namespace JapanMarket.Gameplay
 {
-    /// <summary>
-    /// Traduz a intenção da locomoção em parâmetros de Animator. Não toca o
-    /// transform, não lê o NavMeshAgent.
-    ///
-    /// O componente atual lê <c>agent.velocity.magnitude</c> contra um limiar
-    /// de 0,1 — e como o agente parado ainda recebe microcorreções, e como a
-    /// fila reinicia o destino de quem já chegou toda vez que alguém entra ou
-    /// sai, a animação fica alternando Idle/Walk. Ler a intenção com damping
-    /// elimina as duas causas de uma vez: intenção não tem ruído, e a suavização
-    /// absorve o transiente de partida e parada.
-    /// </summary>
+
     [RequireComponent(typeof(CustomerLocomotion))]
     [DisallowMultipleComponent]
     public sealed class CustomerAnimation : MonoBehaviour
@@ -27,7 +17,7 @@ namespace JapanMarket.Gameplay
                  "e parada sem deixar a animação lenta para reagir.")]
         [SerializeField] private float _speedDamping = 0.12f;
 
-        [Header("Idle de fila")]
+        [Header("Queue idle")]
         [Tooltip("Quantas variações de idle o Animator tem. O 'fidget' que hoje " +
                  "é feito com DOTween no transform vive aqui — onde não disputa " +
                  "a posição com o NavMeshAgent.")]
@@ -52,8 +42,6 @@ namespace JapanMarket.Gameplay
                 return;
             }
 
-            // Um Animator sem o parâmetro esperado gera um warning por frame no
-            // Unity. Conferir uma vez é mais barato que poluir o console.
             CacheParameters();
         }
 
@@ -85,7 +73,6 @@ namespace JapanMarket.Gameplay
             _nextVariantAt = Time.time + Random.Range(_idleVariantInterval.x, _idleVariantInterval.y);
         }
 
-        /// <summary>Chamado pela cesta quando o cliente pega ou larga produtos.</summary>
         public void SetCarrying(bool carrying)
         {
             if (_hasCarryingParameter) _animator.SetBool(CarryingHash, carrying);

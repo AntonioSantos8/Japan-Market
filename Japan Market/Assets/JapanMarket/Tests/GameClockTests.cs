@@ -4,10 +4,7 @@ using NUnit.Framework;
 
 namespace JapanMarket.Tests
 {
-    /// <summary>
-    /// O relógio é alimentado de fora justamente para isto: "o que acontece às
-    /// 22h" é uma linha de teste, não noventa segundos de Play Mode.
-    /// </summary>
+
     public sealed class GameClockTests
     {
         private static GameClockSettings Fast => new()
@@ -15,7 +12,7 @@ namespace JapanMarket.Tests
             DayStartHour = 6f,
             ClosingHour = 22f,
             EndOfDayHour = 24f,
-            GameHoursPerRealSecond = 1f,   // 1 s real = 1 h de jogo
+            GameHoursPerRealSecond = 1f,   
         };
 
         [Test]
@@ -31,9 +28,7 @@ namespace JapanMarket.Tests
         [Test]
         public void Configuracao_zerada_nao_termina_o_dia_no_primeiro_frame()
         {
-            // Um GameClockSettings default() vindo do inspetor tem tudo zero.
-            // Sem o OrDefault, EndOfDayHour = 0 faria o dia fechar já no Tick 1
-            // — e o aluguel seria cobrado a cada frame.
+
             var clock = new GameClock(new EventBus(), default);
 
             int endings = 0;
@@ -43,9 +38,6 @@ namespace JapanMarket.Tests
             Assert.AreEqual(0, endings);
             Assert.Greater(clock.EndOfDayHour, 0f);
 
-            // E o dia não pode começar à meia-noite: uma cena salva antes desta
-            // fase desserializa o struct inteiro zerado, e zero em DayStartHour
-            // passava pelo guard antigo (`< 0`) sem ser corrigido.
             Assert.AreEqual(6f, clock.TimeOfDay, 0.001f);
         }
 
@@ -85,10 +77,10 @@ namespace JapanMarket.Tests
         public void Nao_da_para_abrir_depois_do_horario()
         {
             var clock = new GameClock(new EventBus(), Fast);
-            clock.Tick(16f);   // 6h + 16h = 22h
+            clock.Tick(16f);   
 
             Assert.IsFalse(clock.TryOpenStore(),
-                "Abrir às 22h daria ao jogador um minuto de clientes.");
+                "Opening at 10 PM would give the player a minute of customers.");
         }
 
         [Test]
@@ -100,7 +92,7 @@ namespace JapanMarket.Tests
             clock.Tick(16.5f);
 
             Assert.IsFalse(clock.StoreIsOpen,
-                "Quem esquece a placa ligada não pode receber cliente de madrugada.");
+                "Whoever forgets the sign on cannot receive customers in the early morning.");
         }
 
         [Test]
@@ -111,10 +103,10 @@ namespace JapanMarket.Tests
             int endings = 0;
             clock.EndOfDayReached += _ => endings++;
 
-            clock.Tick(18f);   // 24h
-            clock.Tick(5f);    // continua andando
+            clock.Tick(18f);   
+            clock.Tick(5f);    
 
-            Assert.AreEqual(1, endings, "Duas viradas seriam dois aluguéis.");
+            Assert.AreEqual(1, endings, "Two turns would be two rents.");
         }
 
         [Test]
@@ -147,7 +139,7 @@ namespace JapanMarket.Tests
             Assert.AreEqual(6f, clock.TimeOfDay, 0.001f);
 
             clock.Tick(18f);
-            Assert.AreEqual(2, endings, "O dia 2 também precisa poder terminar.");
+            Assert.AreEqual(2, endings, "Day 2 also needs to be able to end.");
         }
 
         [Test]
@@ -187,7 +179,7 @@ namespace JapanMarket.Tests
             clock.Restore(day: 7, timeOfDay: 23f, storeOpen: true);
 
             Assert.AreEqual(7, clock.Day);
-            Assert.IsFalse(clock.StoreIsOpen, "23h já passou do horário de fechar.");
+            Assert.IsFalse(clock.StoreIsOpen, "11 PM is past closing time.");
             Assert.AreEqual(0, endings);
         }
     }

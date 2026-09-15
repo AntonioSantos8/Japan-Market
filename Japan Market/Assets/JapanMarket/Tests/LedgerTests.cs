@@ -28,13 +28,13 @@ namespace JapanMarket.Tests
         {
             Assert.AreEqual(Y(8000), _ledger.Balance);
             Assert.AreEqual(0, _ledger.Today.Count,
-                "Saldo de abertura não é movimentação — senão o dia 1 nasce com uma receita fantasma.");
+                "Opening balance is not a movement - otherwise day 1 is born with a phantom revenue.");
         }
 
         [Test]
         public void Deposito_soma_e_registra()
         {
-            _ledger.Deposit(Y(445), TransactionReason.ProductSale, "3 itens");
+            _ledger.Deposit(Y(445), TransactionReason.ProductSale, "3 items");
 
             Assert.AreEqual(Y(8445), _ledger.Balance);
             Assert.AreEqual(1, _ledger.Today.Count);
@@ -45,13 +45,12 @@ namespace JapanMarket.Tests
         [Test]
         public void Compra_sem_saldo_falha_sem_mexer_em_nada()
         {
-            // O contrato que o Lose_Money atual NÃO tem: ele devolve void e
-            // simplesmente não desconta, e quem chamou acha que comprou.
+
             bool ok = _ledger.TryWithdraw(Y(99999), TransactionReason.FurniturePurchase);
 
             Assert.IsFalse(ok);
             Assert.AreEqual(Y(8000), _ledger.Balance);
-            Assert.AreEqual(0, _ledger.Today.Count, "Tentativa recusada não vira linha.");
+            Assert.AreEqual(0, _ledger.Today.Count, "Refused attempt does not become a line.");
         }
 
         [Test]
@@ -64,9 +63,8 @@ namespace JapanMarket.Tests
         [Test]
         public void Cobranca_obrigatoria_deixa_o_saldo_negativo()
         {
-            // É assim que o jogador entra no vermelho e precisa do banco. Conta
-            // de luz não pergunta se dá.
-            _ledger.Charge(Y(12000), TransactionReason.Electricity, "Eletricidade");
+
+            _ledger.Charge(Y(12000), TransactionReason.Electricity, "Electricity");
 
             Assert.AreEqual(Y(-4000), _ledger.Balance);
             Assert.IsTrue(_ledger.Today[0].IsExpense);
@@ -87,8 +85,7 @@ namespace JapanMarket.Tests
         [Test]
         public void Saldo_ja_esta_atualizado_quando_o_evento_chega()
         {
-            // Quem desenha o número lê Balance no handler. Avisar antes de somar
-            // faria a tela mostrar sempre o valor anterior.
+
             Money seenInHandler = Money.Zero;
             using (_events.Subscribe<BalanceChanged>(_ => seenInHandler = _ledger.Balance))
             {
@@ -127,7 +124,7 @@ namespace JapanMarket.Tests
         [Test]
         public void Movimentacao_carrega_o_dia_em_que_aconteceu()
         {
-            _clock.AdvanceDay();               // dia 2
+            _clock.AdvanceDay();               
             _ledger.Deposit(Y(100), TransactionReason.ProductSale);
 
             Assert.AreEqual(2, _ledger.Today[0].Day);

@@ -3,55 +3,46 @@ using UnityEngine;
 
 namespace JapanMarket.Data
 {
-    /// <summary>
-    /// Personalidade de compra de um cliente. Um asset por arquétipo.
-    ///
-    /// Ter isto como dado, e não como campos no prefab do NPC, é o que permite
-    /// "cliente apressado", "cliente pechincha" e "cliente que compra muito"
-    /// serem três assets em vez de três prefabs quase idênticos que divergem
-    /// com o tempo.
-    /// </summary>
+
     [CreateAssetMenu(fileName = "CustomerProfile",
         menuName = "Japan Market/Customer Profile", order = 30)]
     public sealed class CustomerProfileData : ScriptableObject
     {
-        [Header("Compras")]
-        [Tooltip("Quantos móveis diferentes ele pretende visitar.")]
+        [Header("Shopping")]
+        [Tooltip("How many different furnitures they intend to visit.")]
         [SerializeField] private Vector2Int _shelvesToVisit = new(1, 4);
 
-        [Tooltip("Quantas unidades ele pega por prateleira.")]
+        [Tooltip("How many units they take per shelf.")]
         [SerializeField] private Vector2Int _unitsPerShelf = new(1, 3);
 
-        [Tooltip("Teto de itens na cesta, somando tudo.")]
+        [Tooltip("Maximum items in the basket, total sum.")]
         [Min(1)] [SerializeField] private int _basketCapacity = 6;
 
-        [Header("Tolerância")]
-        [Tooltip("Múltiplo do preço de mercado que ele aceita pagar. " +
-                 "1.5 = topa pagar até 50% acima da referência.")]
+        [Header("Tolerance")]
+        [Tooltip("Multiple of the market price they accept to pay. " +
+                 "1.5 = willing to pay up to 50% above the reference.")]
         [Min(1f)] [SerializeField] private float _priceToleranceMultiplier = 1.5f;
 
-        [Tooltip("Sujeiras ativas a partir das quais ele desiste e vai embora.")]
+        [Tooltip("Active dirtiness from which they give up and leave.")]
         [Min(1)] [SerializeField] private int _dirtTolerance = 12;
 
-        [Tooltip("Segundos esperando na fila antes de desistir. 0 = espera para sempre.")]
+        [Tooltip("Seconds waiting in line before giving up. 0 = wait forever.")]
         [Min(0f)] [SerializeField] private float _queuePatience = 90f;
 
-        [Header("Ritmo")]
-        [Tooltip("Segundos parado escolhendo, em cada prateleira.")]
+        [Header("Pacing")]
+        [Tooltip("Seconds standing while choosing, on each shelf.")]
         [SerializeField] private Vector2 _browseDuration = new(1.5f, 3.5f);
 
-        [Tooltip("Segundos parado logo após entrar, antes de começar a comprar.")]
+        [Tooltip("Seconds standing right after entering, before starting to shop.")]
         [SerializeField] private Vector2 _entryDelay = new(0.5f, 2f);
 
         [SerializeField] private float _moveSpeed = 2.6f;
         [SerializeField] private float _turnSpeedDegrees = 480f;
 
-        [Header("Pagamento")]
+        [Header("Payment")]
         [Range(0f, 1f)]
-        [Tooltip("Chance de pagar com cartão. O resto paga em dinheiro.")]
+        [Tooltip("Chance to pay by card. The rest pays in cash.")]
         [SerializeField] private float _cardPaymentChance = 0.5f;
-
-        // ── leitura ──────────────────────────────────────────────────────────
 
         public int BasketCapacity => _basketCapacity;
         public float PriceToleranceMultiplier => _priceToleranceMultiplier;
@@ -66,7 +57,6 @@ namespace JapanMarket.Data
         public float RollEntryDelay() => Random.Range(_entryDelay.x, _entryDelay.y);
         public bool RollPrefersCard() => Random.value < _cardPaymentChance;
 
-        /// <summary>Preço máximo que este cliente aceita por uma unidade.</summary>
         public Money MaxAcceptablePrice(Money marketPrice) =>
             marketPrice * _priceToleranceMultiplier;
 

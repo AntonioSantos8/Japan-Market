@@ -5,15 +5,7 @@ using NUnit.Framework;
 
 namespace JapanMarket.Tests
 {
-    /// <summary>
-    /// A máquina de estados é C# puro, então o comportamento do NPC pode ser
-    /// verificado sem abrir cena, sem NavMesh e sem Play Mode.
-    ///
-    /// Os dois testes que mais importam aqui são o da prioridade das transições
-    /// globais e o da saída garantida: são eles que descrevem, em código
-    /// executável, por que o NPC não fica mais preso quando uma prateleira some
-    /// no meio da compra, e por que ele nunca mais vaza uma reserva de slot.
-    /// </summary>
+
     public sealed class StateMachineTests
     {
         private sealed class Ctx
@@ -23,13 +15,6 @@ namespace JapanMarket.Tests
             public bool Emergency;
         }
 
-        /// <summary>
-        /// Base dos estados de teste: só anota o que aconteceu. Abstrata, e não
-        /// selada, porque as três subclasses abaixo existem apenas para dar
-        /// TIPOS distintos à máquina — ela indexa estados por
-        /// <c>GetType()</c>, então "A", "B" e "emergência" precisam ser classes
-        /// diferentes, não três instâncias da mesma.
-        /// </summary>
         private abstract class Recorder : IState<Ctx>
         {
             private readonly string _name;
@@ -84,8 +69,7 @@ namespace JapanMarket.Tests
         [Test]
         public void Transicao_global_tem_prioridade_sobre_a_normal()
         {
-            // O caso real: a prateleira sumiu enquanto o cliente caminhava até
-            // ela. A emergência precisa ganhar da transição normal do estado.
+
             var ctx = new Ctx { GoToB = true, Emergency = true };
             StateMachine<Ctx> machine = Build(ctx);
 
@@ -112,15 +96,13 @@ namespace JapanMarket.Tests
             machine.Tick(0.1f);
 
             CollectionAssert.DoesNotContain(ctx.Log, "enter:E",
-                "Condição ainda verdadeira não pode reiniciar o estado a cada frame.");
+                "Still true condition cannot restart the state every frame.");
         }
 
         [Test]
         public void Stop_chama_o_Exit_do_estado_corrente()
         {
-            // Esta é a garantia contra vazamento de reserva: seja qual for o
-            // motivo do fim — despawn, troca de cena, objeto destruído — o Exit
-            // roda, e é nele que o slot é liberado.
+
             var ctx = new Ctx();
             StateMachine<Ctx> machine = Build(ctx);
 
@@ -164,7 +146,7 @@ namespace JapanMarket.Tests
         {
             var ctx = new Ctx { GoToB = true };
             var machine = new StateMachine<Ctx>(ctx);
-            machine.Add(new StateA());                       // StateB de fora
+            machine.Add(new StateA());                       
             machine.AddTransition<StateA, StateB>(c => c.GoToB);
 
             machine.Start<StateA>();
@@ -194,7 +176,7 @@ namespace JapanMarket.Tests
             machine.StateChanged += (f, t) => { from = f; to = t; };
 
             machine.Start<StateA>();
-            Assert.IsNull(from, "Na entrada inicial não há estado anterior.");
+            Assert.IsNull(from, "At initial entry there is no previous state.");
             Assert.AreEqual(typeof(StateA), to);
 
             ctx.GoToB = true;

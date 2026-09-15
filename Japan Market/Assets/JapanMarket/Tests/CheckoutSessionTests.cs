@@ -9,12 +9,6 @@ namespace JapanMarket.Tests
     {
         private static Money Y(long yen) => Money.FromYen(yen);
 
-        /// <summary>
-        /// Linhas sem produto de propósito: o total é somado a partir do preço
-        /// que viajou na linha, e não consultado no ItemDefinition. Se algum dia
-        /// alguém trocar isso por uma consulta ao catálogo, estes testes quebram
-        /// — que é exatamente o que se quer.
-        /// </summary>
         private static List<SaleLine> Lines(params long[] prices)
         {
             var lines = new List<SaleLine>(prices.Length);
@@ -36,10 +30,7 @@ namespace JapanMarket.Tests
         [Test]
         public void Tudo_passado_e_uma_condicao_sobre_o_estado_e_nao_um_contador()
         {
-            // O CashRegister atual mantém _totalExpected e _scannedCount em
-            // paralelo, e eles só ficam consistentes porque a animação da sacola
-            // dura 0,90 s enquanto os itens chegam a cada 0,20 s. Encurtar a
-            // animação quebraria o fecho da venda.
+
             var session = new CheckoutSession(new FakeCustomer(), Lines(155, 200),
                                               PaymentMethod.Cash);
 
@@ -51,7 +42,7 @@ namespace JapanMarket.Tests
             Assert.IsTrue(session.AllScanned);
             Assert.AreEqual(Y(355), session.ScannedTotal);
 
-            Assert.IsFalse(session.TryScanNext(out _), "Não há o que passar depois do último.");
+            Assert.IsFalse(session.TryScanNext(out _), "There is nothing to scan after the last one.");
         }
 
         [Test]
@@ -65,7 +56,7 @@ namespace JapanMarket.Tests
 
             session.TryScanNext(out _);
             session.TryScanNext(out _);
-            session.TryScanNext(out _);   // recusada
+            session.TryScanNext(out _);   
 
             Assert.AreEqual(1, fired);
         }
@@ -80,7 +71,7 @@ namespace JapanMarket.Tests
             var card = new CheckoutSession(new FakeCustomer(), Lines(730), PaymentMethod.Card);
             card.SetAmountTendered(Y(1000));
             Assert.AreEqual(Money.Zero, card.ChangeDue,
-                "Cartão não devolve troco mesmo que alguém escreva um valor.");
+                "Card does not give change even if someone writes a value.");
         }
 
         [Test]
@@ -95,9 +86,7 @@ namespace JapanMarket.Tests
         [Test]
         public void Produto_apagado_do_projeto_nao_derruba_a_venda()
         {
-            // "Produto removido durante a partida", da lista de casos extremos:
-            // o preço viajou na linha, então o total continua correto e o custo
-            // é contabilizado como zero em vez de lançar.
+
             var session = new CheckoutSession(new FakeCustomer(), Lines(155),
                                               PaymentMethod.Cash);
 
