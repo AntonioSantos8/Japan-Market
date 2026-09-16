@@ -5,6 +5,7 @@ using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using NewFurnitureInstance = JapanMarket.Gameplay.FurnitureInstance;
 
 /// <summary>
 /// Cria a cena Sandbox: um ambiente mínimo para validar um sistema por vez.
@@ -175,7 +176,7 @@ public static class SandboxSceneBuilder
         counter.transform.localScale = new Vector3(2f, 1f, 1f);
         counter.isStatic = true;
 
-        counter.AddComponent<FurnitureInstance>();
+        counter.AddComponent<NewFurnitureInstance>();
         CheckoutStation station = counter.AddComponent<CheckoutStation>();
 
         // Os pontos ficam FORA do cubo, senão herdam a escala 2 × 1 × 1 dele e a
@@ -252,3 +253,4 @@ public static class SandboxSceneBuilder
         return marker.transform;
     }
 }
+

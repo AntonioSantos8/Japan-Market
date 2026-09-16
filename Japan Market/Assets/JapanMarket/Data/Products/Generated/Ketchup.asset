@@ -1,0 +1,48 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bd69aeb8ae469b74085b076febace177, type: 3}
+  m_Name: Ketchup
+  m_EditorClassIdentifier: JapanMarket.Data::JapanMarket.Data.ItemDefinition
+  _id:
+    _value: be39e0707f8e41f79b9c99639b57d78f
+  _displayName:
+    _entries:
+    - language: 1
+      text: Ketchup
+  _description:
+    _entries:
+    - language: 1
+      text: A really great ketchup mass.
+  _category: {fileID: 11400000, guid: 27432aad4211b4c4591e1119833db14c, type: 2}
+  _requiredStorage: {fileID: 11400000, guid: cca4ea609f8fb104cb8ab93116e24b0e, type: 2}
+  _baseCost:
+    _yen: 91
+  _marketPrice:
+    _yen: 155
+  _unitsPerBox: 8
+  _itemPrefab: {fileID: 2771454168300163697, guid: 072d7c333f03bbd45a290d162bfd177f, type: 3}
+  _boxPrefab: {fileID: 6977520262130461414, guid: 2ffe4ee4cc4c85741a3e495d9f141d2a, type: 3}
+  _icon: {fileID: 21300000, guid: 1c8ddb99f3ff60b478d4907261a12984, type: 3}
+  _shelfGrid:
+    _count: {x: 2, y: 1, z: 4}
+    _spacing: {x: 0.2, y: 0, z: 0.2}
+    _originOffset: {x: -0.1, y: 0.04, z: -0.3}
+    _itemRotation: {x: 0, y: 90, z: 0}
+    _itemScale: {x: 0.15, y: 0.14, z: 0.185}
+  _boxGrid:
+    _count: {x: 4, y: 1, z: 2}
+    _spacing: {x: 0.5, y: 0, z: 1}
+    _originOffset: {x: -0.75, y: 0.1, z: -0.5}
+    _itemRotation: {x: 0, y: 0, z: 0}
+    _itemScale: {x: 0.5, y: 0.6, z: 1.3}
+  _unlock: {fileID: 0}
+  _legacyEnumValue: 1

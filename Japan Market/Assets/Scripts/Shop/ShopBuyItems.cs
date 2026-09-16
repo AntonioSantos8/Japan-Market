@@ -73,6 +73,24 @@ public class ShopBuyItems : MonoBehaviour
     }
     public void BuyBox()
     {
+        var game = JapanMarket.Gameplay.GameContext.Current;
+        if (_sellingItemType == SellingItemType.Food && game != null)
+        {
+            if (!game.Services.TryResolve(out JapanMarket.Data.IItemCatalog catalog) ||
+                !game.Services.TryResolve(out JapanMarket.Domain.IMarketOrderService orders)) return;
+            JapanMarket.Data.ItemDefinition product = null;
+            foreach (var candidate in catalog.All)
+                if (candidate.LegacyEnumValue == (int)currentObj.Data.itemType) { product = candidate; break; }
+            if (product == null) { ServiceLocator.Get<Warnings>()?.ShowWarning("Produto ausente no catálogo.", false); return; }
+            var cart = new JapanMarket.Domain.MarketCart();
+            cart.AddBoxes(product, 1);
+            var result = orders.TryCheckout(cart, out var order);
+            if (result != JapanMarket.Domain.MarketOrderResult.Ok)
+            { ServiceLocator.Get<Warnings>()?.ShowWarning("Pedido recusado: " + result, false); return; }
+            ServiceLocator.Get<SoundManager>()?.Play(SFX.ComprarItemOuFurnitureComputador);
+            _tutorialManager?.BoughtItem(_sellingItemType);
+            return;
+        }
         float price = 0f;
 
         price = currentObj.Data.singleItemPrice;

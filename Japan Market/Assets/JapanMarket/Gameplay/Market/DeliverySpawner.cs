@@ -104,7 +104,10 @@ namespace JapanMarket.Gameplay
                 0f,
                 Random.Range(-_scatter.y, _scatter.y) * 0.5f);
 
-            _onFloor.Add(Object.Instantiate(product.BoxPrefab, position, Drop.rotation));
+            var box = Object.Instantiate(product.BoxPrefab, position, Drop.rotation);
+            foreach (var component in box.GetComponentsInChildren<MonoBehaviour>(true))
+                if (component is IStockDeliveryReceiver receiver) receiver.InitializeDelivery(product);
+            _onFloor.Add(box);
 
             if (_logDeliveries)
                 Debug.Log($"[Entrega] {product.name} — {_market.DeliveryQueue.PendingBoxes} " +

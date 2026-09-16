@@ -56,7 +56,18 @@ public class MarketManager : MonoBehaviour
             "Earn_Money/Lose_Money, ou ILedger.Deposit/TryWithdraw no código novo.", this);
     }
 
-    public bool Open { get => open; set => open = value; }
+    public bool Open
+    {
+        get => JapanMarket.Gameplay.GameContext.Current != null &&
+            JapanMarket.Gameplay.GameContext.Current.Services.TryResolve(out IGameClock clock) ? clock.StoreIsOpen : open;
+        set
+        {
+            open = value;
+            var game = JapanMarket.Gameplay.GameContext.Current;
+            if (game == null || !game.Services.TryResolve(out IGameClock clock)) return;
+            if (value) open = clock.TryOpenStore(); else clock.CloseStore();
+        }
+    }
     public float Clients { get => clients; set => clients = value; }
 
     private List<Transform> clientTransforms = new List<Transform>();
@@ -72,9 +83,15 @@ public class MarketManager : MonoBehaviour
 
     public void RegisterClient(Transform client)
     {
-        if (!clientTransforms.Contains(client)) clientTransforms.Add(client);
+        if (clientTransforms.Contains(client)) return;
+        clientTransforms.Add(client);
+        JapanMarket.Gameplay.GameContext.Current?.Events.Publish(new CustomerEntered(client.GetInstanceID(), client));
     }
-    public void UnregisterClient(Transform client) => clientTransforms.Remove(client);
+    public void UnregisterClient(Transform client)
+    {
+        if (!clientTransforms.Remove(client)) return;
+        JapanMarket.Gameplay.GameContext.Current?.Events.Publish(new CustomerLeft(client.GetInstanceID(), false, CustomerLeaveReason.NothingToBuy));
+    }
 
     void Start()
     {

@@ -1,0 +1,43 @@
+﻿═══ MIGRAÇÃO — EXECUTADA ═══
+
+── PRODUTO (10) ──
+  • Ice Cream   caixa ¥2000 ÷ 1 un = custo ¥2000/un · mercado ¥620/un
+      ⚠ Margem negativa ou zero: custo ¥2000 vs mercado ¥620.
+  • Mochi   caixa ¥5 ÷ 1 un = custo ¥5/un · mercado ¥7/un
+  • Cola   caixa ¥0 ÷ 1 un = custo ¥0/un · mercado ¥5/un
+  • Biscuits   caixa ¥650 ÷ 9 un = custo ¥72/un · mercado ¥140/un
+  • Buldak   caixa ¥1200 ÷ 6 un = custo ¥200/un · mercado ¥300/un
+  • Chocopie   caixa ¥850 ÷ 6 un = custo ¥142/un · mercado ¥180/un
+  • Ketchup   caixa ¥730 ÷ 8 un = custo ¥91/un · mercado ¥155/un
+  • Mostarda   caixa ¥730 ÷ 1 un = custo ¥730/un · mercado ¥155/un
+      ⚠ Margem negativa ou zero: custo ¥730 vs mercado ¥155.
+  • Pringles   caixa ¥900 ÷ 8 un = custo ¥113/un · mercado ¥250/un
+  • Yakisoba   caixa ¥800 ÷ 1 un = custo ¥800/un · mercado ¥180/un
+      ⚠ Margem negativa ou zero: custo ¥800 vs mercado ¥180.
+
+── MÓVEL (2) ──
+  • Freezer
+      ⚠ Referenciado por um FurnitureData — vira FurnitureDefinition na Fase 3.
+  • Shelf
+      ⚠ Referenciado por um FurnitureData — vira FurnitureDefinition na Fase 3.
+
+── EXPANSÃO (4) ──
+  • Expansion Store Four
+      ⚠ Vira ExpansionDefinition na Fase 7 — não é produto.
+  • Expansion Store One
+      ⚠ Vira ExpansionDefinition na Fase 7 — não é produto.
+  • Expansion Store Three
+      ⚠ Vira ExpansionDefinition na Fase 7 — não é produto.
+  • Expansion Store Two
+      ⚠ Vira ExpansionDefinition na Fase 7 — não é produto.
+
+── CONFERIR À MÃO DEPOIS ──
+  1. Categorias: todos entram como 'Sem categoria'. O legado não tinha esse dado.
+  2. Custo unitário é inferido (preço da caixa ÷ capacidade). Confira os números acima.
+  3. Nomes e descrições entram como inglês. Preencha o português no asset.
+  4. Traits de armazenamento vêm de 'allowedFurniture' — confira os congelados.
+
+Nenhum asset legado foi apagado. Nenhuma cena foi tocada.
+
+
+[Migração] 10 ItemDefinition criados, 0 atualizados. Agora rode: Japan Market → Catálogo → Reconstruir catálogo, e depois → Validar catálogo.

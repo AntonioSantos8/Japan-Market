@@ -3,8 +3,12 @@ using System.Collections.Generic;
 using DG.Tweening;
 using UnityEngine.UI;
 
-public class ItemBox : MonoBehaviour
+public class ItemBox : MonoBehaviour, JapanMarket.Gameplay.IStockDeliveryReceiver
 {
+    public void InitializeDelivery(JapanMarket.Data.ItemDefinition product)
+    {
+        if (product != null) InitializeBox((Items)product.LegacyEnumValue);
+    }
     [SerializeField] Items boxType;
     [SerializeField] FurnitureType allowedFurniture;
 
