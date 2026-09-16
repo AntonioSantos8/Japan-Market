@@ -5,8 +5,24 @@ using JapanMarket.Data;
 
 namespace JapanMarket.Domain
 {
+    /// <summary>
+    /// O carrinho do app Mercado. C# puro e sem estado de tela: a mesma classe
+    /// serve ao botão "+" da interface e a um teste que compra trinta produtos
+    /// numa linha.
+    ///
+    /// Substitui o <c>ShopBuyItems</c>, que misturava carrinho, layout de botão
+    /// e chamada de compra no mesmo MonoBehaviour — e por isso não existia
+    /// resposta para "quanto está o carrinho?" sem uma cena aberta.
+    /// </summary>
     public sealed class MarketCart
     {
+        /// <summary>
+        /// Teto por produto. Existe porque a quantidade vem de um campo de texto
+        /// e uma caixa por unidade era alocada na entrega: sem limite, um
+        /// 999999 digitado por engano congela a Unity.
+        /// </summary>
+        public const int MaxBoxesPerProduct = 999;
+
         private readonly Dictionary<ItemDefinition, int> _items = new();
 
         public IReadOnlyDictionary<ItemDefinition, int> Items => _items;
@@ -41,7 +57,7 @@ namespace JapanMarket.Domain
             if (product == null || boxes <= 0) return;
 
             _items.TryGetValue(product, out int current);
-            _items[product] = current + boxes;
+            _items[product] = Clamp(current + boxes);
         }
 
         public void RemoveBoxes(ItemDefinition product, int boxes)
@@ -65,8 +81,11 @@ namespace JapanMarket.Domain
             if (boxes <= 0)
                 _items.Remove(product);
             else
-                _items[product] = boxes;
+                _items[product] = Clamp(boxes);
         }
+
+        private static int Clamp(int boxes) =>
+            boxes > MaxBoxesPerProduct ? MaxBoxesPerProduct : boxes;
 
         public void Clear() => _items.Clear();
     }

@@ -5,6 +5,20 @@ using JapanMarket.Data;
 
 namespace JapanMarket.Domain
 {
+    /// <summary>
+    /// O app Banco: contratar empréstimo, pagar parcela, quitar antes.
+    ///
+    /// A parcela NÃO é cobrada por este serviço. Ele registra uma
+    /// <see cref="FlatExpense"/> e deixa o <c>ExpenseService</c> cobrar junto do
+    /// aluguel e da luz, no fechamento do dia. É por isso que a parcela aparece
+    /// como uma linha própria no relatório diário sem que o relatório conheça o
+    /// banco — e é a razão de o sistema de despesas existir com fontes
+    /// registráveis em vez de uma lista fixa.
+    ///
+    /// A contagem de parcelas acontece em <c>DayEnded</c>, que o
+    /// <see cref="DayCycle"/> publica DEPOIS de cobrar. A ordem importa: contar
+    /// antes faria a última parcela ser contada e nunca cobrada.
+    /// </summary>
     public sealed class BankService : IBankService, IDisposable
     {
         private readonly ILedger _ledger;
@@ -35,10 +49,51 @@ namespace JapanMarket.Domain
             }
         }
 
+        /// <summary>Soma das parcelas diárias de tudo o que está em aberto.</summary>
+        public Money DailyDebtService
+        {
+            get
+            {
+                Money total = Money.Zero;
+                for (int i = 0; i < _activeLoans.Count; i++)
+                    total += _activeLoans[i].DailyPayment;
+
+                return total;
+            }
+        }
+
+        /// <summary>Quanto falta pagar, somando todos os empréstimos abertos.</summary>
+        public Money TotalDebt
+        {
+            get
+            {
+                Money total = Money.Zero;
+                for (int i = 0; i < _activeLoans.Count; i++)
+                    total += _activeLoans[i].BalanceToPayOff;
+
+                return total;
+            }
+        }
+
+        /// <summary>
+        /// Quantos empréstimos podem estar abertos ao mesmo tempo.
+        ///
+        /// Existe porque o guard por instância de LoanDefinition não segurava
+        /// nada: bastava contratar todas as faixas de uma vez para transformar o
+        /// banco numa fonte infinita de dinheiro no primeiro dia.
+        /// </summary>
+        public int MaxConcurrentLoans { get; set; } = 1;
+
         public bool TryTakeLoan(LoanDefinition loan)
         {
             if (loan == null || _ledger == null) return false;
+
+            // Contrato inválido (prazo zero, parcela zero) seria dinheiro de
+            // graça: o ExpenseService filtra parcela não positiva, e prazo zero
+            // quita no primeiro fechamento.
+            if (!loan.IsValid) return false;
             if (!loan.IsUnlocked(_unlockContext)) return false;
+            if (MaxConcurrentLoans > 0 && _activeLoans.Count >= MaxConcurrentLoans) return false;
 
             for (int i = 0; i < _activeLoans.Count; i++)
             {
@@ -48,8 +103,10 @@ namespace JapanMarket.Domain
             var activeLoan = new ActiveLoan(loan);
             _activeLoans.Add(activeLoan);
 
-            _ledger.Deposit(loan.Principal, TransactionReason.LoanReceived, $"Loan: {loan.DisplayName.Value}");
-            var source = new FlatExpense($"Loan {loan.DisplayName.Value}", TransactionReason.LoanInstallment, loan.DailyPayment);
+            _ledger.Deposit(loan.Principal, TransactionReason.LoanReceived,
+                            $"Empréstimo: {loan.DisplayName.Value}");
+            var source = new FlatExpense($"Parcela — {loan.DisplayName.Value}",
+                                         TransactionReason.LoanInstallment, loan.DailyPayment);
             _loanSources[activeLoan] = source;
             _expenses?.Register(source);
 
@@ -63,7 +120,7 @@ namespace JapanMarket.Domain
 
             Money balance = loan.BalanceToPayOff;
 
-            if (!_ledger.TryWithdraw(balance, TransactionReason.LoanInstallment, $"Early Payoff: {loan.Definition.DisplayName.Value}"))
+            if (!_ledger.TryWithdraw(balance, TransactionReason.LoanInstallment, $"Quitação — {loan.Definition.DisplayName.Value}"))
             {
                 return false;
             }
@@ -72,6 +129,14 @@ namespace JapanMarket.Domain
             return true;
         }
 
+        /// <summary>
+        /// Uma parcela a menos por dia fechado.
+        ///
+        /// Itera uma cópia porque FinishLoan remove da lista, e roda depois do
+        /// ChargeDay (ver DayCycle): o empréstimo de N dias é cobrado
+        /// exatamente N vezes — a última cobrança e a última contagem acontecem
+        /// no mesmo fechamento, e aí a fonte de despesa sai do registro.
+        /// </summary>
         private void OnDayEnded(DayEnded e)
         {
             ActiveLoan[] loans = _activeLoans.ToArray();
@@ -99,6 +164,17 @@ namespace JapanMarket.Domain
             LoanPaidOff?.Invoke(loan);
         }
 
+        /// <summary>
+        /// Restaura um save.
+        ///
+        /// Contrato sem definição é DESCARTADO, e não restaurado pela metade: o
+        /// asset do empréstimo pode ter sido apagado do projeto entre uma versão
+        /// e outra, e aí o que volta do save é um <c>Definition</c> nulo. Ler o
+        /// nome dele para montar a linha de despesa derrubava o carregamento
+        /// inteiro — o jogador perdia a partida por causa de um empréstimo que
+        /// nem existe mais. Perdoar a dívida é o pior resultado aceitável;
+        /// perder o save não é.
+        /// </summary>
         public void Restore(IEnumerable<ActiveLoan> loans)
         {
             _activeLoans.Clear();
@@ -108,15 +184,17 @@ namespace JapanMarket.Domain
             }
             _loanSources.Clear();
 
-            if (loans != null)
+            if (loans == null) return;
+
+            foreach (var loan in loans)
             {
-                foreach (var loan in loans)
-                {
-                    _activeLoans.Add(loan);
-                    var source = new FlatExpense($"Loan {loan.Definition.DisplayName.Value}", TransactionReason.LoanInstallment, loan.DailyPayment);
-                    _loanSources[loan] = source;
-                    _expenses?.Register(source);
-                }
+                if (loan == null || loan.Definition == null) continue;
+
+                _activeLoans.Add(loan);
+                var source = new FlatExpense($"Parcela — {loan.Definition.DisplayName.Value}",
+                                             TransactionReason.LoanInstallment, loan.DailyPayment);
+                _loanSources[loan] = source;
+                _expenses?.Register(source);
             }
         }
 

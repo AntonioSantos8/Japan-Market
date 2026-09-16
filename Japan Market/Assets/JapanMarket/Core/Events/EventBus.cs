@@ -3,7 +3,26 @@ using System.Collections.Generic;
 
 namespace JapanMarket.Core
 {
-
+    /// <summary>
+    /// Implementação do <see cref="IEventBus"/>.
+    ///
+    /// Quatro decisões que valem explicar:
+    ///
+    /// 1. Cada tipo de evento tem seu próprio canal, com um snapshot de handlers.
+    ///    O snapshot só é reconstruído quando a lista muda, então publicar em
+    ///    regime normal não aloca nada.
+    ///
+    /// 2. Cancelar uma inscrição durante um despacho não remove do snapshot em
+    ///    uso — marca a inscrição como inativa. O despacho corrente pula handlers
+    ///    inativos, então um objeto destruído no meio do evento nunca é chamado.
+    ///
+    /// 3. Um handler que lança não impede os outros de rodar: um sistema
+    ///    quebrado não derruba a venda inteira. A exceção vai para o console.
+    ///
+    /// 4. A exceção do guard de recursão é a única que NÃO é engolida: ela é
+    ///    relançada para chegar a quem publicou. Sem isso, o guard viraria
+    ///    apenas mais uma linha no console e a recursão continuaria escondida.
+    /// </summary>
     public sealed class EventBus : IEventBus
     {
         private readonly Dictionary<Type, Channel> _channels = new();
@@ -31,7 +50,7 @@ namespace JapanMarket.Core
                     }
                     catch (EventBusRecursionException)
                     {
-
+                        // Erro de projeto — precisa chegar ao chamador, não ao console.
                         throw;
                     }
                     catch (Exception e)
@@ -72,6 +91,7 @@ namespace JapanMarket.Core
             return active;
         }
 
+        /// <summary>Descarta todas as inscrições. Chamado por quem criou o bus.</summary>
         public void Clear()
         {
             foreach (Channel channel in _channels.Values)
@@ -81,6 +101,8 @@ namespace JapanMarket.Core
             }
             _channels.Clear();
         }
+
+        // ── internos ─────────────────────────────────────────────────────────
 
         private sealed class Channel
         {
@@ -111,6 +133,8 @@ namespace JapanMarket.Core
                 Subscriptions.CopyTo(_snapshot, 0);
                 SnapshotCount = Subscriptions.Count;
 
+                // Sem isto, o array continuaria segurando inscrições descartadas
+                // — e, através delas, os MonoBehaviours destruídos que capturaram.
                 if (_snapshot.Length > SnapshotCount)
                     Array.Clear(_snapshot, SnapshotCount, _snapshot.Length - SnapshotCount);
 
@@ -139,6 +163,9 @@ namespace JapanMarket.Core
                 if (!IsActive) return;
                 IsActive = false;
 
+                // Remover só marca o canal como sujo. Se estivermos no meio de um
+                // despacho, o snapshot em uso continua válido e o guard IsActive
+                // impede que este handler seja chamado.
                 _channel?.Remove(this);
                 _channel = null;
             }

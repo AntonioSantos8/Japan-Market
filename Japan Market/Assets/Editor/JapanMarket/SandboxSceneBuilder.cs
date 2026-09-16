@@ -47,6 +47,7 @@ public static class SandboxSceneBuilder
         BuildContext();
         BuildMarkers();
         BuildCheckout();
+        BuildDelivery();
 
         if (!AssetDatabase.IsValidFolder(SceneFolder))
             AssetDatabase.CreateFolder("Assets", "Scenes");
@@ -62,6 +63,8 @@ public static class SandboxSceneBuilder
                   "  4. Colocar uma prateleira (FurnitureInstance + ProductStorage + CustomerSlots)\n" +
                   "\nO caixa já vem montado, com atendimento automático a cada 2 s " +
                   "(campo 'Sandbox' do CheckoutStation). Zere para atender à mão.\n" +
+                  "O depósito também: as caixas compradas aparecem em '— Depósito —' " +
+                  "quando o prazo vence (precisa de Box Prefab no asset do produto).\n" +
                   "O relógio roda a 0,2 h por segundo: o dia inteiro em ~90 s. " +
                   "Use o menu de contexto do GameClockRunner para abrir a loja, " +
                   "fechar, ou encerrar o dia na hora.");
@@ -193,6 +196,31 @@ public static class SandboxSceneBuilder
         serialized.FindProperty("_queueDirectionMarker").objectReferenceValue = queueEnd;
         serialized.FindProperty("_counterPoint").objectReferenceValue = counterTop;
         serialized.FindProperty("_autoServeSeconds").floatValue = 2f;
+        serialized.ApplyModifiedPropertiesWithoutUndo();
+    }
+
+    /// <summary>
+    /// A porta dos fundos: onde a mercadoria já paga aparece.
+    ///
+    /// Sem este objeto na cena, o ciclo de compra não fecha — o dinheiro sai, o
+    /// pedido entra na fila de entrega e a fila só enche, porque ninguém
+    /// materializa a caixa. Uma Sandbox em que comprar não entrega nada é uma
+    /// Sandbox que esconde exatamente o defeito que ela existe para revelar.
+    /// </summary>
+    private static void BuildDelivery()
+    {
+        // Lado -x, oposto ao caixa, para as caixas não caírem em cima da fila.
+        var dock = new GameObject("— Depósito —");
+        dock.transform.position = new Vector3(-8f, 0f, 6f);
+
+        DeliverySpawner spawner = dock.AddComponent<DeliverySpawner>();
+
+        Transform drop = CreateChild(dock.transform, "DropPoint",
+                                     new Vector3(-8f, 0.5f, 6f));
+
+        var serialized = new SerializedObject(spawner);
+        serialized.FindProperty("_dropPoint").objectReferenceValue = drop;
+        serialized.FindProperty("_logDeliveries").boolValue = true;
         serialized.ApplyModifiedPropertiesWithoutUndo();
     }
 

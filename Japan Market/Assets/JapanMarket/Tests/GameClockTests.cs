@@ -28,7 +28,9 @@ namespace JapanMarket.Tests
         [Test]
         public void Configuracao_zerada_nao_termina_o_dia_no_primeiro_frame()
         {
-
+            // Um GameClockSettings default() vindo do inspetor tem tudo zero.
+            // Sem o OrDefault, EndOfDayHour = 0 faria o dia fechar já no Tick 1
+            // — e o aluguel seria cobrado a cada frame.
             var clock = new GameClock(new EventBus(), default);
 
             int endings = 0;
@@ -38,7 +40,15 @@ namespace JapanMarket.Tests
             Assert.AreEqual(0, endings);
             Assert.Greater(clock.EndOfDayHour, 0f);
 
-            Assert.AreEqual(6f, clock.TimeOfDay, 0.001f);
+            // E o dia não pode começar à meia-noite: uma cena salva antes desta
+            // fase desserializa o struct inteiro zerado, e zero em DayStartHour
+            // passava pelo guard antigo (`< 0`) sem ser corrigido.
+            //
+            // A tolerância é de um frame, não de nada: o Tick acima JÁ andou
+            // 0,0032 h (16 ms × 0,2 h/s). Com 0,001 este teste falhava não por
+            // causa da hora de início, que está certa, mas por exigir que o
+            // relógio não tivesse andado — o contrário do que Tick faz.
+            Assert.AreEqual(6f, clock.TimeOfDay, 0.01f);
         }
 
         [Test]
@@ -121,6 +131,44 @@ namespace JapanMarket.Tests
             clock.RequestEndOfDay();
 
             Assert.AreEqual(1, endings);
+        }
+
+        [Test]
+        public void Dormir_de_novo_no_dia_que_acabou_de_comecar_e_o_mesmo_clique()
+        {
+            // O botão "ir dormir" encerra o dia 1, o relógio vira para o dia 2
+            // às 6h, e o segundo disparo do MESMO clique chega num dia em que
+            // nada aconteceu. Atender cobrava dois aluguéis e fechava dois
+            // relatórios no mesmo frame, sem nada no console.
+            var clock = new GameClock(new EventBus(), Fast);
+
+            int endings = 0;
+            clock.EndOfDayReached += _ => endings++;
+
+            Assert.IsTrue(clock.RequestEndOfDay());
+            clock.AdvanceDay();
+
+            Assert.IsFalse(clock.RequestEndOfDay(), "Dia recém-virado, relógio parado.");
+            Assert.AreEqual(1, endings);
+
+            // Mas dormir de novo CONTINUA sendo uma jogada válida — basta o dia
+            // ter começado de verdade. Recusar para sempre seria trocar um bug
+            // por outro.
+            clock.Tick(0.5f);
+
+            Assert.IsTrue(clock.RequestEndOfDay(), "Passou tempo: agora é decisão do jogador.");
+            Assert.AreEqual(2, endings);
+        }
+
+        [Test]
+        public void Partida_nova_pode_ir_dormir_na_hora()
+        {
+            // O dia 1 não nasceu de um fechamento: quem abre o jogo e decide
+            // pular o primeiro dia está tomando uma decisão, não repetindo um
+            // clique. Tratar todo dia recém-começado igual travaria isto.
+            var clock = new GameClock(new EventBus(), Fast);
+
+            Assert.IsTrue(clock.RequestEndOfDay());
         }
 
         [Test]

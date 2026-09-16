@@ -1,5 +1,8 @@
 # Japan Market — arquitetura
 
+> **Para montar na cena, veja o [SETUP.md](SETUP.md).** Este arquivo explica o
+> *porquê* de cada decisão; o outro é a lista de montagem.
+
 Código novo. O código legado continua em `Assets/Scripts/` e vai sendo aposentado
 fase a fase, sem que o jogo pare de rodar em nenhum momento.
 
@@ -210,9 +213,155 @@ livro-razão, e o efeito visual reage ao evento `BalanceChanged` em vez de ser
 disparado por quem chama. Consequência prática: uma venda fechada no caixa novo
 ganha a mesma animação sem conhecer o `MarketManager`.
 
-**Ainda não existe:** banco e empréstimos, salário de funcionário, e a tela de
-Estatísticas Diárias — o relatório existe como dado, falta desenhá-lo. Tudo isso
-é a Fase 7, junto com o computador.
+## Comprar, precificar, financiar (Fase 7)
+
+O computador da loja, sem o computador: as três regras existem em Domain e são
+testáveis sem abrir a Unity. A tela é casca por cima disto.
+
+| Peça | Camada | Responsabilidade |
+|---|---|---|
+| `MarketCart` | Domain | o carrinho, com teto por produto |
+| `MarketOrderService` | Domain | valida, cobra, cria o pedido, vence o prazo |
+| `MarketOrder` | Domain | um pedido pago. Imutável |
+| `DeliveryQueue` | Domain | o que já foi pago e ainda não apareceu |
+| `DeliverySpawner` | Gameplay | ONDE a caixa aparece. Só isso |
+| `PricingService` | Domain | preço de venda e histórico de custo |
+| `BankService` | Domain | empréstimos, como fonte de despesa diária |
+| `StoreLevelService` | Domain | XP e nível, a partir de `SaleCompleted` |
+
+Quatro coisas que valem ser ditas.
+
+**O prazo é em horas ABSOLUTAS, não em hora do dia.** Um pedido feito às 23h com
+duas horas de prazo chega "às 25h", e comparando hora do dia isso nunca acontece.
+Por isso `IGameClock.TotalHours` é um contador acumulado e não `(Dia−1)×24 + hora`:
+o dia só é simulado das 6h às 24h, então a fórmula presenteava seis horas por
+virada — e quem apertasse "dormir" às 9h ganhava vinte e uma. Na prática, dormir
+cancelava qualquer entrega.
+
+**O custo é registrado no PEDIDO, e pelo TOTAL.** No pedido porque é aí que o
+dinheiro sai, e é isso que "custo atual" significa na tela de Preços; esperar a
+entrega faria a tabela mentir durante o prazo. Pelo total porque o custo unitário
+é uma divisão arredondada: uma caixa de ¥100 com 3 unidades dá ¥33, e ¥33 × 3 =
+¥99 contra ¥100 debitados — um ien por caixa, acumulando. Hoje isso não acontece,
+porque `BoxCost` é derivado (custo unitário × unidades) e a divisão volta exata; a
+assinatura assume o total mesmo assim, porque a alternativa é um contrato que só
+está certo enquanto ninguém der preço próprio à caixa. Desconto por volume é o
+próximo pedido óbvio.
+
+Pelo mesmo motivo `PricingData` guarda `TotalSpent` e deriva a média dele — e esse
+aqui **mordia**: recalcular a média a partir da própria média já arredondada, com
+divisão inteira, não acumula erro devagar, ela *congela*. `(m·n + c) / (n+1)`
+volta a `m` sempre que `|c − m| < n+1`, então com treze unidades acumuladas a média
+parava de andar e a margem ficava errada para sempre.
+
+**Domain não instancia caixa na cena.** O serviço enfileira em `DeliveryQueue`
+quando o prazo vence; o `DeliverySpawner` consome a fila e instancia o prefab.
+Trocar o depósito de lugar não toca em regra nenhuma, e a compra inteira é
+testável sem cena. Sem um consumidor na cena, porém, o ciclo não fecha: a Sandbox
+já vem com um.
+
+**Desbloqueio é filtro de vitrine, não só de pagamento.** `AvailableProducts`
+devolve o que o nível atual permite comprar, para que a tela nem ofereça o que vai
+ser recusado. A validação no `TryCheckout` continua lá — uma tela é uma
+conveniência, não uma garantia — e nada é debitado quando ela falha.
+
+**Ainda não existe:** salário de funcionário e as telas (Mercado, Preços, Banco,
+Estatísticas Diárias). O relatório existe como dado, falta desenhá-lo.
+
+## Objetivos (Fase 8a)
+
+Criar um objetivo é criar um asset. Não existe lista para arrastar, número para
+cadastrar, nem `switch` para editar — e é isso que o `ObjectiveServiceTests`
+prova: cada teste monta a definição que quer e todos passam pelo mesmo caminho
+de código.
+
+| Peça | Camada | Responsabilidade |
+|---|---|---|
+| `ObjectiveCondition` | Data | uma coisa a contar, e quanto. Assina o barramento sozinha |
+| `ObjectiveDefinition` | Data | título, condições, recompensa, desbloqueio |
+| `ObjectiveCatalog` | Data | o catálogo, populado pelo import |
+| `ActiveObjective` | Domain | a instância em jogo: progresso desta partida |
+| `ObjectiveService` | Domain | ativa, avalia, paga, encadeia |
+| `ObjectiveRunner` | Gameplay | chama `Flush()` uma vez por frame |
+| `FlagUnlock` | Data | "só depois que a flag X for levantada" |
+
+Três decisões que valem ser ditas.
+
+**Ninguém pergunta "que tipo de objetivo é esse?".** O serviço chama
+`condition.Watch(bus, progress)` e espera o número chegar. Um tipo novo de
+objetivo é uma classe nova herdando de `ObjectiveCondition` — nenhum arquivo
+existente muda. É o mesmo formato do `UnlockCondition`, que já tinha resolvido
+este problema para desbloqueios; a alternativa era um `switch` no gerente, e aí
+todo objetivo novo edita o gerente.
+
+A consequência, e ela é intencional: uma condição só enxerga o que passa pelo
+barramento. Um objetivo sobre algo que não é publicado começa publicando o
+evento. Foi assim que o `StoreLevelChanged` nasceu — Data não pode enxergar
+Domain, então "chegue ao nível 5" exigia o nível no barramento.
+
+**A conclusão é adiada de propósito.** O progresso é anotado DENTRO do despacho
+de um evento. Pagar ali publicaria um evento de dinheiro de dentro de um handler
+de dinheiro, e o `EventBus` tem guarda de recursão por tipo — ele **lança**. Não
+é teoria: um objetivo que ouve `TransactionRecorded` e paga em dinheiro é
+exatamente essa combinação, e existe um teste que a provoca. Por isso o serviço
+anota durante o evento e paga no `Flush()`, que o `ObjectiveRunner` chama no
+`LateUpdate`.
+
+**A cadeia não é uma estrutura, é uma consequência.** O objetivo A levanta a flag
+`primeira_venda` ao concluir; o objetivo B tem um `FlagUnlock` apontando para ela.
+Nenhum dos dois assets referencia o outro, e o serviço não sabe que existe
+cadeia. O mesmo `FlagUnlock` serve para produto, móvel e faixa de empréstimo —
+tudo que já usava `UnlockCondition` ganhou "liberado por objetivo" de graça.
+
+**Ainda não existe:** a tela de objetivos, e a persistência de verdade — o
+`Snapshot()`/`Restore()` já estão prontos e testados, falta o arquivo de save
+(Fase 8d) chamá-los.
+
+## Lixo, ferramentas e save (Fase 8b–8d)
+
+| Peça | Camada | Responsabilidade |
+|---|---|---|
+| `TrashBag` | Domain | o saco: capacidade, e a trava de categoria |
+| `ITrashReceptacle` | Domain | capacidade de móvel: a lixeira |
+| `TrashService` | Domain | a doca dos fundos. É uma fonte de receita diária |
+| `IDailyIncomeSource` | Domain | receita apurada no fechamento, antes do relatório |
+| `ToolBelt` / `ToolSlot` | Domain | a roda: seleção, superfícies, desgaste |
+| `CleanlinessService` | Domain | quanta sujeira existe. Implementa `IStoreCleanliness` |
+| `GameSave` | Domain | o save como dado puro, sem uma linha de Unity |
+| `SaveService` | Gameplay | tira e repõe a fotografia da partida |
+
+Quatro decisões que valem ser ditas.
+
+**O saco trava na categoria do primeiro item.** É a regra inteira do sistema de
+lixo. A alternativa — lixeira com categoria fixa no Inspector, como o `TrashBin`
+legado — empurra a decisão para o momento de construir a loja, e depois disso o
+jogo joga sozinho: cada lixo tem exatamente um destino possível e não sobra
+escolha nenhuma. Com a trava, o jogador decide a que destinar cada saco, e errar
+custa uma viagem.
+
+**O caminhão é o fechamento do dia.** `TrashService` é um `IDailyIncomeSource`
+registrado no `DayCycle`, e não um assinante de `DayEnded`. A diferença é que o
+`DayCycle` publica `DayEnded` DEPOIS de fechar o relatório: assinando o evento, o
+dinheiro do caminhão cairia no relatório do dia seguinte e o jogador veria um dia
+que rendeu menos do que rendeu.
+
+**A esponja não limpa vidro, e isso não é um `if`.** A ferramenta declara em que
+superfícies trabalha, a sujeira declara em que superfície está, e o cinto cruza
+os dois — mesmo truque do `StorageTrait` entre produto e móvel. Errar a
+superfície não consome durabilidade: senão o custo do erro vira dinheiro em vez
+de tempo, e o jogador quebra a esponja esfregando janela.
+
+**O desgaste não mora no asset.** Um `ScriptableObject` é compartilhado e gravado
+dentro do projeto: uma esponja que perdesse durabilidade no asset voltaria gasta
+na sessão seguinte, e no build chegaria gasta de fábrica para todo mundo. Mesma
+divisão de `LoanDefinition`/`ActiveLoan` e de objetivo/objetivo ativo.
+
+**Sobre o save:** só tipos que o `JsonUtility` entende, dinheiro em `long` de
+ienes, e referência a asset sempre por id ou chave — nunca por referência. Um
+asset apagado do projeto entre duas versões vira uma linha descartada com aviso
+no console, nunca uma exceção no carregamento. O `SaveFormatTests` existe porque
+o `JsonUtility` falha em SILÊNCIO: ele não lança ao encontrar uma propriedade em
+vez de um campo, um `Dictionary` ou uma interface — só não grava.
 
 ## Regras que valem para todo código novo
 

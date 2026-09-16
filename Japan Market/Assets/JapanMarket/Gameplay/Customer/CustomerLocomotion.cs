@@ -3,15 +3,29 @@ using UnityEngine.AI;
 
 namespace JapanMarket.Gameplay
 {
-
+    /// <summary>
+    /// O ÚNICO componente autorizado a escrever no transform do cliente.
+    ///
+    /// Essa frase é a correção inteira do jitter. Hoje três donos disputam a
+    /// mesma posição: o NavMeshAgent (que continua ativo e aplicando desvio de
+    /// obstáculo mesmo com isStopped = true, porque isStopped desliga o
+    /// seguimento de caminho e não o avoidance), o DOMoveY do bob de fila e o
+    /// DORotateQuaternion do fidget. Os três escrevem por frame, e o NPC treme
+    /// parado.
+    ///
+    /// Aqui ninguém mais toca posição nem rotação. A animação lê a INTENÇÃO
+    /// (<see cref="DesiredSpeed"/>) em vez de medir a velocidade real do agente,
+    /// que é ruidosa por natureza. E o "fidget" de fila sai do transform e vira
+    /// variação de idle no Animator, onde não disputa nada.
+    /// </summary>
     [RequireComponent(typeof(NavMeshAgent))]
     [DisallowMultipleComponent]
     public sealed class CustomerLocomotion : MonoBehaviour
     {
-        [Tooltip("Slack added to stoppingDistance to consider that it has arrived.")]
+        [Tooltip("Folga somada ao stoppingDistance para considerar que chegou.")]
         [SerializeField] private float _arrivalTolerance = 0.12f;
 
-        [Tooltip("Degrees per second when turning to face something while stationary.")]
+        [Tooltip("Graus por segundo ao virar para encarar algo estando parado.")]
         [SerializeField] private float _turnSpeedDegrees = 480f;
 
         [Tooltip("Segundos sem progresso antes de declarar o caminho impossível. " +
@@ -27,6 +41,13 @@ namespace JapanMarket.Gameplay
         private float _stuckTimer;
         private float _lastRemainingDistance;
 
+        /// <summary>
+        /// Velocidade que este componente PRETENDE ter. É o que a animação lê.
+        ///
+        /// Ler agent.velocity, como o NpcAnimationManager faz hoje, capta o
+        /// ruído das microcorreções e faz a animação piscar entre Idle e Walk.
+        /// A intenção não tem ruído: ou estamos indo a algum lugar, ou não.
+        /// </summary>
         public float DesiredSpeed { get; private set; }
 
         public bool IsHalted { get; private set; } = true;
@@ -35,6 +56,12 @@ namespace JapanMarket.Gameplay
 
         public bool HasPath => !IsHalted && _agent.hasPath;
 
+        /// <summary>
+        /// Chegou ao destino. Exige as três condições porque cada uma sozinha
+        /// mente: pathPending deixa remainingDistance em Infinity, hasPath
+        /// continua true por um frame depois de chegar, e velocity leva alguns
+        /// frames para zerar.
+        /// </summary>
         public bool HasArrived
         {
             get
@@ -48,11 +75,17 @@ namespace JapanMarket.Gameplay
             }
         }
 
+        // ── ciclo de vida ────────────────────────────────────────────────────
+
         private void Awake()
         {
             _agent = GetComponent<NavMeshAgent>();
             _agent.autoBraking = true;
 
+            // A rotação é assumida já no Awake, e não só no Configure: um
+            // cliente colocado à mão na cena nunca chama Configure, e ficaria
+            // com o agente E o TickTravelFacing escrevendo rotação — o conflito
+            // que esta classe existe para eliminar.
             _agent.updateRotation = false;
             _agent.angularSpeed = 0f;
         }
@@ -65,11 +98,16 @@ namespace JapanMarket.Gameplay
             _turnSpeedDegrees = turnSpeedDegrees;
         }
 
+        // ── comandos ─────────────────────────────────────────────────────────
+
+        /// <summary>Vai até o ponto. Devolve false se o destino é inalcançável.</summary>
         public bool MoveTo(Vector3 destination)
         {
             if (!_agent.isOnNavMesh)
             {
-
+                // Sem esta guarda, SetDestination num agente fora da NavMesh
+                // apenas emite um warning e não faz nada — e o estado fica
+                // esperando por uma chegada que nunca acontece.
                 PathFailed = true;
                 return false;
             }
@@ -91,10 +129,22 @@ namespace JapanMarket.Gameplay
             return false;
         }
 
+        /// <summary>
+        /// Para de verdade.
+        ///
+        /// Cada linha resolve um jeito diferente de o NPC continuar se mexendo:
+        /// ResetPath tira o caminho (sem caminho não há recálculo), velocity
+        /// zerada mata o resíduo, isStopped desliga o seguimento, e
+        /// NoObstacleAvoidance é o que impede o agente de ser empurrado pelo
+        /// próprio cálculo de desvio quando outro cliente passa do lado.
+        /// </summary>
         public void Halt()
         {
             if (_agent == null) return;
 
+            // Tudo o que mexe no agente fica dentro da guarda: o setter de
+            // velocity exige um agente posicionado na malha e loga erro fora
+            // dela — e Halt() roda no OnEnable de todo cliente que nasce.
             if (_agent.isOnNavMesh)
             {
                 _agent.ResetPath();
@@ -109,6 +159,7 @@ namespace JapanMarket.Gameplay
             _stuckTimer = 0f;
         }
 
+        /// <summary>Vira para uma direção. Só tem efeito enquanto parado.</summary>
         public void FaceTowards(Vector3 worldDirection)
         {
             worldDirection.y = 0f;
@@ -120,6 +171,7 @@ namespace JapanMarket.Gameplay
 
         public void FacePoint(Vector3 worldPoint) => FaceTowards(worldPoint - transform.position);
 
+        /// <summary>Existe um caminho completo até lá? Não move o cliente.</summary>
         public bool CanReach(Vector3 destination)
         {
             if (!_agent.isOnNavMesh) return false;
@@ -135,6 +187,8 @@ namespace JapanMarket.Gameplay
             else transform.position = position;
         }
 
+        // ── atualização ──────────────────────────────────────────────────────
+
         private void Update()
         {
             if (IsHalted) { TickFacing(); return; }
@@ -143,6 +197,7 @@ namespace JapanMarket.Gameplay
             TickTravelFacing();
         }
 
+        /// <summary>Girar parado. É a única escrita em rotação do projeto inteiro.</summary>
         private void TickFacing()
         {
             if (!_isFacing) return;
@@ -154,6 +209,7 @@ namespace JapanMarket.Gameplay
             if (Quaternion.Angle(transform.rotation, target) < 0.5f) _isFacing = false;
         }
 
+        /// <summary>Em movimento, o corpo aponta para onde o agente está indo.</summary>
         private void TickTravelFacing()
         {
             Vector3 velocity = _agent.velocity;
@@ -165,6 +221,14 @@ namespace JapanMarket.Gameplay
                 transform.rotation, target, _turnSpeedDegrees * Time.deltaTime);
         }
 
+        /// <summary>
+        /// Detecta caminho impossível e travamento.
+        ///
+        /// O código antigo resolvia isso com dois timeouts de 15 segundos que
+        /// simplesmente desistiam de esperar, sem dizer por quê. Aqui o
+        /// resultado é um sinal — PathFailed — que a máquina de estados lê como
+        /// transição global, e o cliente reage no mesmo frame.
+        /// </summary>
         private void TickPathHealth()
         {
             if (_agent.pathPending) return;

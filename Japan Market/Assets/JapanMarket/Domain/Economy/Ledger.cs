@@ -4,7 +4,9 @@ using JapanMarket.Core;
 
 namespace JapanMarket.Domain
 {
-
+    /// <summary>
+    /// Implementação padrão do livro-razão. C# puro.
+    /// </summary>
     public sealed class Ledger : ILedger, IDisposable
     {
         private readonly IEventBus _events;
@@ -20,6 +22,8 @@ namespace JapanMarket.Domain
 
             Balance = openingBalance;
 
+            // O dia zera sozinho quando o relógio vira. Deixar isso a cargo de
+            // quem vira o dia significaria um lugar a mais para esquecer.
             if (_events != null)
                 _daySubscription = _events.Subscribe<DayStarted>(_ => _today.Clear());
         }
@@ -61,6 +65,8 @@ namespace JapanMarket.Domain
             var transaction = new Transaction(delta, reason, _clock?.Day ?? 0, note);
             _today.Add(transaction);
 
+            // O saldo já está atualizado antes de qualquer aviso: quem reage
+            // lendo Balance nunca vê o valor de antes.
             Recorded?.Invoke(transaction);
 
             if (_events == null) return;
@@ -69,6 +75,7 @@ namespace JapanMarket.Domain
             _events.Publish(new TransactionRecorded(delta, reason, transaction.Day));
         }
 
+        /// <summary>Restaura um save sem gerar movimentação nem evento.</summary>
         public void Restore(Money balance, IReadOnlyList<Transaction> today = null)
         {
             Balance = balance;

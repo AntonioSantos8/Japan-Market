@@ -4,7 +4,21 @@ using UnityEngine;
 
 namespace JapanMarket.Core
 {
-
+    /// <summary>
+    /// Valor monetário em ienes inteiros.
+    ///
+    /// Por que não <c>float</c>: o projeto atual compara troco com
+    /// <c>Mathf.Abs(giving - change) &lt; 0.5f</c> — essa tolerância existe só para
+    /// esconder erro de ponto flutuante acumulado. Com um inteiro, a comparação é
+    /// exata e a tolerância deixa de ser necessária.
+    ///
+    /// Por que o iene cabe num inteiro simples: o iene não tem subunidade decimal
+    /// em circulação, então 1 unidade = ¥1. Nada de centavos, nada de escala.
+    ///
+    /// A struct é imutável pela API (nenhum método muda o próprio valor), mas o
+    /// campo não é <c>readonly</c> porque a serialização do Unity não enxerga
+    /// campos readonly — e precisamos que <c>Money</c> apareça no Inspector.
+    /// </summary>
     [Serializable]
     public struct Money : IEquatable<Money>, IComparable<Money>, IFormattable
     {
@@ -18,6 +32,7 @@ namespace JapanMarket.Core
 
         public static Money FromYen(long yen) => new(yen);
 
+        /// <summary>Arredonda meio-para-cima. Usado em desconto e multiplicador.</summary>
         public static Money FromYen(double yen) =>
             new((long)Math.Round(yen, MidpointRounding.AwayFromZero));
 
@@ -27,6 +42,7 @@ namespace JapanMarket.Core
         public bool IsNegative => _yen < 0;
         public Money Abs => new(Math.Abs(_yen));
 
+        // ── aritmética ───────────────────────────────────────────────────────
         public static Money operator +(Money a, Money b) => new(a._yen + b._yen);
         public static Money operator -(Money a, Money b) => new(a._yen - b._yen);
         public static Money operator -(Money a) => new(-a._yen);
@@ -35,6 +51,7 @@ namespace JapanMarket.Core
         public static Money operator *(Money a, float factor) => FromYen(a._yen * (double)factor);
         public static Money operator *(float factor, Money a) => FromYen(a._yen * (double)factor);
 
+        /// <summary>Razão entre dois valores. Devolve 0 se o divisor for zero.</summary>
         public static float Ratio(Money numerator, Money denominator) =>
             denominator._yen == 0 ? 0f : (float)((double)numerator._yen / denominator._yen);
 
@@ -42,6 +59,7 @@ namespace JapanMarket.Core
         public static Money Min(Money a, Money b) => a._yen <= b._yen ? a : b;
         public static Money Clamp(Money v, Money min, Money max) => Max(min, Min(max, v));
 
+        // ── comparação ───────────────────────────────────────────────────────
         public bool Equals(Money other) => _yen == other._yen;
         public override bool Equals(object obj) => obj is Money other && Equals(other);
         public override int GetHashCode() => _yen.GetHashCode();
@@ -54,8 +72,11 @@ namespace JapanMarket.Core
         public static bool operator <=(Money a, Money b) => a._yen <= b._yen;
         public static bool operator >=(Money a, Money b) => a._yen >= b._yen;
 
+        // ── texto ────────────────────────────────────────────────────────────
+        /// <summary>"¥1,234" — separador de milhar, sem decimais.</summary>
         public override string ToString() => ToString(null, CultureInfo.InvariantCulture);
 
+        /// <summary>Formatos: "G" ¥1,234 · "N" 1,234 · "C" ¥1,234 · "K" ¥1.2k</summary>
         public string ToString(string format, IFormatProvider provider)
         {
             provider ??= CultureInfo.InvariantCulture;
@@ -67,6 +88,11 @@ namespace JapanMarket.Core
             }
         }
 
+        /// <summary>
+        /// "¥1.23k" / "¥3.4m" — para HUD onde não cabe o número inteiro.
+        /// A cultura é fixada explicitamente: sem isso, a interpolação usaria
+        /// CurrentCulture e um jogador em pt-BR veria "¥1,23k".
+        /// </summary>
         public string ToCompactString(IFormatProvider provider = null)
         {
             provider ??= CultureInfo.InvariantCulture;
@@ -84,6 +110,14 @@ namespace JapanMarket.Core
             return sign + Symbol + abs.ToString(provider);
         }
 
+        /// <summary>
+        /// Lê um valor digitado pelo jogador (teclado da etiqueta de preço,
+        /// maquininha de cartão). Aceita "¥", separador de milhar e espaços.
+        ///
+        /// Ponto e vírgula são tratados como separador de milhar, não como
+        /// decimal: em pt-BR "1.234" significa mil duzentos e trinta e quatro,
+        /// e o iene não tem subunidade decimal para desambiguar.
+        /// </summary>
         public static bool TryParse(string text, out Money money)
         {
             money = Zero;
