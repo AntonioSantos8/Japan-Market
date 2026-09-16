@@ -46,6 +46,20 @@ public static class MainSetupBuilder
 
     static T[] All<T>() where T : Object => AssetDatabase.FindAssets("t:" + typeof(T).Name)
         .Select(AssetDatabase.GUIDToAssetPath).Select(AssetDatabase.LoadAssetAtPath<T>).Where(x => x != null).ToArray();
+    public static void RepairDeliveryImports()
+    {
+        var paths = All<ItemDefinition>().Where(p => p.BoxPrefab != null)
+            .SelectMany(p => p.BoxPrefab.GetComponentsInChildren<MeshFilter>(true))
+            .Where(m => m.sharedMesh != null && !m.sharedMesh.isReadable)
+            .Select(m => AssetDatabase.GetAssetPath(m.sharedMesh)).Distinct().ToArray();
+        foreach (string path in paths)
+        {
+            if (!(AssetImporter.GetAtPath(path) is ModelImporter importer)) continue;
+            importer.isReadable = true;
+            importer.SaveAndReimport();
+            Debug.Log("[Setup] Read/Write habilitado para o contorno da caixa: " + path);
+        }
+    }
     static T Asset<T>(string name) where T : ScriptableObject
     {
         string path = Root + "/" + name + ".asset";

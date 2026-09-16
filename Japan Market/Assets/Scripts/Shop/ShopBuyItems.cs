@@ -68,7 +68,7 @@ public class ShopBuyItems : MonoBehaviour
         currentItemBox = at.itemBoxPrefab;
         nameText.text = at.name;
         descriptionText.text = at.description;
-        singlePriceText.text = "¥" + Mathf.RoundToInt(at.singleItemPrice);
+        singlePriceText.text = BoxPriceText(at);
         
     }
     public void BuyBox()
@@ -193,7 +193,7 @@ public class ShopBuyItems : MonoBehaviour
                     
                     nameText.text = at.name;
                     descriptionText.text = at.description;
-                    singlePriceText.text = "¥" + Mathf.RoundToInt(at.singleItemPrice);
+                    singlePriceText.text = BoxPriceText(at);
                 
 
 
@@ -221,6 +221,15 @@ public class ShopBuyItems : MonoBehaviour
     public void RefreshCurrentItem()
     {
         ChangeItem(currentIndex);
+    }
+    private string BoxPriceText(AllIThingsData data)
+    {
+        var game = JapanMarket.Gameplay.GameContext.Current;
+        if (_sellingItemType == SellingItemType.Food && game != null &&
+            game.Services.TryResolve(out JapanMarket.Data.IItemCatalog catalog))
+            foreach (var product in catalog.All)
+                if (product.LegacyEnumValue == (int)data.itemType) return "¥" + product.BoxCost.Yen;
+        return "¥" + Mathf.RoundToInt(data.singleItemPrice);
     }
     public void UpdateComputerTexts(ComputerStats stats) 
     {

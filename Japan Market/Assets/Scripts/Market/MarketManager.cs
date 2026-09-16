@@ -87,10 +87,12 @@ public class MarketManager : MonoBehaviour
         clientTransforms.Add(client);
         JapanMarket.Gameplay.GameContext.Current?.Events.Publish(new CustomerEntered(client.GetInstanceID(), client));
     }
-    public void UnregisterClient(Transform client)
+    public void UnregisterClient(Transform client) => UnregisterClient(client, CustomerLeaveReason.NothingToBuy);
+
+    public void UnregisterClient(Transform client, CustomerLeaveReason reason)
     {
         if (!clientTransforms.Remove(client)) return;
-        JapanMarket.Gameplay.GameContext.Current?.Events.Publish(new CustomerLeft(client.GetInstanceID(), false, CustomerLeaveReason.NothingToBuy));
+        JapanMarket.Gameplay.GameContext.Current?.Events.Publish(new CustomerLeft(client.GetInstanceID(), reason == CustomerLeaveReason.Purchased, reason));
     }
 
     void Start()

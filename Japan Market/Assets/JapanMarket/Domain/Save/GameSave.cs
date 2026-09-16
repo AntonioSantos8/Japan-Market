@@ -34,7 +34,9 @@ namespace JapanMarket.Domain
         /// Versão do FORMATO. Sobe quando um campo muda de significado, não
         /// quando um campo novo aparece — campo novo já chega vazio sozinho.
         /// </summary>
-        public int Version = CurrentVersion;
+        // Zero identifies JSON without a save version. SaveService.Capture sets
+        // CurrentVersion explicitly when producing a real save.
+        public int Version;
 
         public const int CurrentVersion = 1;
 

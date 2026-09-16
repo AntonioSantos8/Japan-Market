@@ -32,7 +32,20 @@ public class StoreSign : InteractableBase
     {
         if (isRotating) return;
 
+        if (warnings == null) warnings = ServiceLocator.Get<Warnings>();
+        if (marketManager == null) marketManager = ServiceLocator.Get<MarketManager>();
+        if (npcManager == null) npcManager = ServiceLocator.Get<NpcManager>();
+        if (warnings == null || marketManager == null || npcManager == null) return;
+        isOpen = marketManager.Open;
+
         if (warnings.IsWarningActive) return;
+        var game = JapanMarket.Gameplay.GameContext.Current;
+        if (!isOpen && game != null && game.Services.TryResolve(out JapanMarket.Domain.IGameClock clock)
+            && clock.TimeOfDay >= clock.ClosingHour)
+        {
+            warnings.ShowWarning("O horário de abertura de hoje terminou.", false);
+            return;
+        }
 
         if (isOpen)
         {
@@ -61,6 +74,7 @@ public class StoreSign : InteractableBase
             isRotating = false;
             isOpen = !isOpen;
             marketManager.Open = isOpen;
+            isOpen = marketManager.Open;
             ServiceLocator.Get<SoundManager>().Play(SFX.LojaAbertaFechada);
             if (isOpen)
                 npcManager.StartSpawning();

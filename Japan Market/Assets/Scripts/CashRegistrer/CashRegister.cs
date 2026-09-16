@@ -596,7 +596,7 @@ public class CashRegister : InteractableBase
             game.Events.Publish(new JapanMarket.Core.SaleCompleted(id, default,
                 JapanMarket.Core.Money.FromYen((double)earned), _saleCost, _totalExpected,
                 GetCurrentPaymentType() == PaymentType.Card ? JapanMarket.Core.PaymentMethod.Card : JapanMarket.Core.PaymentMethod.Cash));
-            game.Events.Publish(new JapanMarket.Core.CustomerLeft(id, true, JapanMarket.Core.CustomerLeaveReason.Purchased));
+            ServiceLocator.Get<MarketManager>()?.UnregisterClient(npcQueue[0].transform, JapanMarket.Core.CustomerLeaveReason.Purchased);
         }
         else ServiceLocator.Get<MarketManager>()?.Earn_Money(earned);
         if (_inCardMachineMode) ExitCardMachineMode();

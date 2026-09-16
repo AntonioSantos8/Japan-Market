@@ -172,15 +172,22 @@ namespace JapanMarket.Tests
             service.ObjectiveCompleted += _ => completions++;
 
             Sell(1);
+            int xpBeforeReward = _level.CurrentXP;
 
             service.Flush();
+            Assert.AreEqual(xpBeforeReward + 40, _level.CurrentXP,
+                "A recompensa soma 40 ao XP que a venda já concedeu.");
+            int xpAfterReward = _level.CurrentXP;
             service.Flush();
+            Assert.AreEqual(xpAfterReward, _level.CurrentXP, "Flush repetido não paga outra recompensa.");
             Sell(5);
+            int xpAfterSecondSale = _level.CurrentXP;
             service.Flush();
 
             Assert.AreEqual(1, completions);
             Assert.AreEqual(Money.FromYen(1500), _ledger.Balance);
-            Assert.AreEqual(40, _level.CurrentXP);
+            Assert.AreEqual(xpAfterSecondSale, _level.CurrentXP,
+                "Vendas posteriores continuam dando XP, sem repetir a recompensa do objetivo.");
             Assert.AreEqual(1, _context.RaiseCount);
             Assert.IsTrue(_context.HasFlag("primeira_venda"));
         }
