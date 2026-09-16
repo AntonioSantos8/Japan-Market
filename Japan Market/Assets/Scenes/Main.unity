@@ -367,7 +367,6 @@ GameObject:
   - component: {fileID: 27485952}
   - component: {fileID: 27485951}
   - component: {fileID: 27485950}
-  - component: {fileID: 27485949}
   m_Layer: 0
   m_Name: Point Light (1)
   m_TagString: Untagged
@@ -375,18 +374,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &27485949
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 27485948}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5c8bca95f7c947b4db5fb152a0d693d8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: com.cqf.urpvolumetricfog.runtime::VolumetricAdditionalLight
 --- !u!114 &27485950
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6323,6 +6310,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 897570828890904621, guid: 6570000121465ce44909f6c67cd8478f, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1203729044539837638, guid: 6570000121465ce44909f6c67cd8478f, type: 3}
       propertyPath: m_TargetTexture
       value: 
@@ -6845,6 +6836,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 3879432245105764073, guid: 6570000121465ce44909f6c67cd8478f, type: 3}
       insertIndex: 0
       addedObject: {fileID: 463722241}
+    - targetCorrespondingSourceObject: {fileID: 3879432245105764073, guid: 6570000121465ce44909f6c67cd8478f, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 258853829}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 3094870548308460522, guid: 6570000121465ce44909f6c67cd8478f, type: 3}
       insertIndex: -1
@@ -19798,7 +19792,6 @@ GameObject:
   - component: {fileID: 176571108}
   - component: {fileID: 176571107}
   - component: {fileID: 176571106}
-  - component: {fileID: 176571105}
   m_Layer: 0
   m_Name: Point Light (3)
   m_TagString: Untagged
@@ -19806,18 +19799,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &176571105
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 176571104}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5c8bca95f7c947b4db5fb152a0d693d8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: com.cqf.urpvolumetricfog.runtime::VolumetricAdditionalLight
 --- !u!114 &176571106
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -31409,6 +31390,56 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 4579454407841743219, guid: 5de0f67337b3e984c8cf11dec33157c4, type: 3}
+--- !u!1 &258853828
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 258853829}
+  - component: {fileID: 258853830}
+  m_Layer: 0
+  m_Name: Tool Wheel
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &258853829
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 258853828}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 819568078}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &258853830
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 258853828}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5083ff8704f76f34abe33985d832f425, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: JapanMarket.UI::JapanMarket.UI.ToolWheelView
+  _slotSize: 64
+  _hideWhenEmpty: 1
 --- !u!1 &260206024
 GameObject:
   m_ObjectHideFlags: 0
@@ -37043,7 +37074,6 @@ GameObject:
   - component: {fileID: 293167471}
   - component: {fileID: 293167470}
   - component: {fileID: 293167469}
-  - component: {fileID: 293167468}
   m_Layer: 0
   m_Name: Point Light (6)
   m_TagString: Untagged
@@ -37051,18 +37081,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &293167468
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 293167467}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5c8bca95f7c947b4db5fb152a0d693d8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: com.cqf.urpvolumetricfog.runtime::VolumetricAdditionalLight
 --- !u!114 &293167469
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -67653,6 +67671,104 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1001 &685851642
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 1647299389}
+    m_Modifications:
+    - target: {fileID: 3586242620186018701, guid: 270f1eeb6e1c35944943f597604e56a1, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 2.1798735
+      objectReference: {fileID: 0}
+    - target: {fileID: 3586242620186018701, guid: 270f1eeb6e1c35944943f597604e56a1, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 2.1798735
+      objectReference: {fileID: 0}
+    - target: {fileID: 3586242620186018701, guid: 270f1eeb6e1c35944943f597604e56a1, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 2.1798735
+      objectReference: {fileID: 0}
+    - target: {fileID: 3586242620186018701, guid: 270f1eeb6e1c35944943f597604e56a1, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 13.630005
+      objectReference: {fileID: 0}
+    - target: {fileID: 3586242620186018701, guid: 270f1eeb6e1c35944943f597604e56a1, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -8.117138
+      objectReference: {fileID: 0}
+    - target: {fileID: 3586242620186018701, guid: 270f1eeb6e1c35944943f597604e56a1, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 3.099996
+      objectReference: {fileID: 0}
+    - target: {fileID: 3586242620186018701, guid: 270f1eeb6e1c35944943f597604e56a1, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3586242620186018701, guid: 270f1eeb6e1c35944943f597604e56a1, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3586242620186018701, guid: 270f1eeb6e1c35944943f597604e56a1, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3586242620186018701, guid: 270f1eeb6e1c35944943f597604e56a1, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3586242620186018701, guid: 270f1eeb6e1c35944943f597604e56a1, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3586242620186018701, guid: 270f1eeb6e1c35944943f597604e56a1, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3586242620186018701, guid: 270f1eeb6e1c35944943f597604e56a1, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5006529855140656873, guid: 270f1eeb6e1c35944943f597604e56a1, type: 3}
+      propertyPath: m_Size.x
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 5006529855140656873, guid: 270f1eeb6e1c35944943f597604e56a1, type: 3}
+      propertyPath: m_Size.y
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 5006529855140656873, guid: 270f1eeb6e1c35944943f597604e56a1, type: 3}
+      propertyPath: m_Size.z
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 5006529855140656873, guid: 270f1eeb6e1c35944943f597604e56a1, type: 3}
+      propertyPath: m_Center.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5006529855140656873, guid: 270f1eeb6e1c35944943f597604e56a1, type: 3}
+      propertyPath: m_Center.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5006529855140656873, guid: 270f1eeb6e1c35944943f597604e56a1, type: 3}
+      propertyPath: m_Center.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6762915824658767895, guid: 270f1eeb6e1c35944943f597604e56a1, type: 3}
+      propertyPath: m_Name
+      value: "DoorAutomatic \u2014 Entrada"
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 270f1eeb6e1c35944943f597604e56a1, type: 3}
+--- !u!4 &685851643 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 3586242620186018701, guid: 270f1eeb6e1c35944943f597604e56a1, type: 3}
+  m_PrefabInstance: {fileID: 685851642}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &688275894
 GameObject:
   m_ObjectHideFlags: 0
@@ -68938,7 +69054,6 @@ GameObject:
   - component: {fileID: 737432425}
   - component: {fileID: 737432424}
   - component: {fileID: 737432423}
-  - component: {fileID: 737432422}
   m_Layer: 0
   m_Name: Point Light (4)
   m_TagString: Untagged
@@ -68946,18 +69061,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &737432422
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 737432421}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5c8bca95f7c947b4db5fb152a0d693d8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: com.cqf.urpvolumetricfog.runtime::VolumetricAdditionalLight
 --- !u!114 &737432423
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -88383,7 +88486,6 @@ GameObject:
   - component: {fileID: 909881428}
   - component: {fileID: 909881427}
   - component: {fileID: 909881426}
-  - component: {fileID: 909881425}
   m_Layer: 0
   m_Name: Point Light (5)
   m_TagString: Untagged
@@ -88391,18 +88493,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &909881425
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 909881424}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5c8bca95f7c947b4db5fb152a0d693d8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: com.cqf.urpvolumetricfog.runtime::VolumetricAdditionalLight
 --- !u!114 &909881426
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -118185,7 +118275,6 @@ GameObject:
   - component: {fileID: 1107913552}
   - component: {fileID: 1107913551}
   - component: {fileID: 1107913550}
-  - component: {fileID: 1107913549}
   m_Layer: 0
   m_Name: Directional Light (2)
   m_TagString: Untagged
@@ -118193,18 +118282,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1107913549
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1107913548}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5c8bca95f7c947b4db5fb152a0d693d8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: com.cqf.urpvolumetricfog.runtime::VolumetricAdditionalLight
 --- !u!114 &1107913550
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -164939,7 +165016,6 @@ GameObject:
   - component: {fileID: 1385887535}
   - component: {fileID: 1385887534}
   - component: {fileID: 1385887533}
-  - component: {fileID: 1385887532}
   m_Layer: 0
   m_Name: Point Light (2)
   m_TagString: Untagged
@@ -164947,18 +165023,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1385887532
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1385887531}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5c8bca95f7c947b4db5fb152a0d693d8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: com.cqf.urpvolumetricfog.runtime::VolumetricAdditionalLight
 --- !u!114 &1385887533
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -182242,6 +182306,7 @@ Transform:
   - {fileID: 566081776}
   - {fileID: 499462661}
   - {fileID: 1808730702}
+  - {fileID: 685851643}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1647926207
@@ -183471,7 +183536,6 @@ GameObject:
   - component: {fileID: 1689110054}
   - component: {fileID: 1689110053}
   - component: {fileID: 1689110052}
-  - component: {fileID: 1689110051}
   m_Layer: 0
   m_Name: Point Light
   m_TagString: Untagged
@@ -183479,18 +183543,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 0
---- !u!114 &1689110051
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1689110050}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5c8bca95f7c947b4db5fb152a0d693d8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: com.cqf.urpvolumetricfog.runtime::VolumetricAdditionalLight
 --- !u!114 &1689110052
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -231621,10 +231673,35 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 208679296}
     m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 832904198982489974, guid: 1c0e10b6914ed6e43886c7e757e4eceb, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7834607054474078551}
     - targetCorrespondingSourceObject: {fileID: 5771273654721309517, guid: 1c0e10b6914ed6e43886c7e757e4eceb, type: 3}
       insertIndex: -1
       addedObject: {fileID: 484932394}
   m_SourcePrefab: {fileID: 100100000, guid: 1c0e10b6914ed6e43886c7e757e4eceb, type: 3}
+--- !u!1 &7834607054474078550 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 832904198982489974, guid: 1c0e10b6914ed6e43886c7e757e4eceb, type: 3}
+  m_PrefabInstance: {fileID: 7834607054474078549}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &7834607054474078551
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7834607054474078550}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 12f765fc2f832704dbde6716fe953fd3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: JapanMarket.UI::JapanMarket.UI.ComputerAppHost
+  _market: 1
+  _pricing: 1
+  _bank: 1
+  _report: 1
+  _objectives: 1
 --- !u!224 &7930759909019859370 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 195244149723353343, guid: 1c0e10b6914ed6e43886c7e757e4eceb, type: 3}

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using DG.Tweening;
 
@@ -13,27 +14,60 @@ public class AutomaticDoor : MonoBehaviour
     [SerializeField] float doorCloseTime = 2f;
     [SerializeField] Ease easeType = Ease.OutCubic;
     Tween leftTween;
-   Tween rightTween;
-   bool playerInside;
-   bool isOpen;
-   float closeTimer;
+    Tween rightTween;
+    readonly HashSet<Collider> occupants = new();
+    bool isOpen;
+    float closeTimer;
 
-   TutorialManager _tutorialManager;
+    TutorialManager _tutorialManager;
 
-    void Start()
+    void Awake()
     {
-        _tutorialManager = ServiceLocator.Get<TutorialManager>();
+        if (doorleft == null || doorRigth == null)
+        {
+            Debug.LogError("[AutomaticDoor] As duas folhas da porta precisam estar configuradas.", this);
+            enabled = false;
+            return;
+        }
+
+        // Os valores antigos do prefab foram gravados em coordenadas de mundo,
+        // mas o tween usa espaço local. Conservamos apenas o deslocamento de
+        // abertura (que continua correto) e usamos a posição local real como o
+        // estado fechado. Isso também permite reposicionar o prefab sem a porta
+        // saltar de volta para a cena em que foi criada.
+        Vector3 leftTravel = leftOpenPos - leftClosedPos;
+        Vector3 rightTravel = rightOpenPos - rightClosedPos;
+
+        leftClosedPos = doorleft.localPosition;
+        rightClosedPos = doorRigth.localPosition;
+
+        if (leftTravel.sqrMagnitude < 0.01f || leftTravel.sqrMagnitude > 25f)
+            leftTravel = Vector3.right * 1.25f;
+        if (rightTravel.sqrMagnitude < 0.01f || rightTravel.sqrMagnitude > 25f)
+            rightTravel = Vector3.left * 1.25f;
+
+        leftOpenPos = leftClosedPos + leftTravel;
+        rightOpenPos = rightClosedPos + rightTravel;
     }
+
+    void Start() => ResolveTutorial();
+
+    void ResolveTutorial()
+    {
+        if (_tutorialManager == null)
+            _tutorialManager = ServiceLocator.Get<TutorialManager>();
+    }
+
     private void Update()
     {
-        if (!playerInside)
+        occupants.RemoveWhere(collider => collider == null);
+
+        if (isOpen && occupants.Count == 0)
         {
             closeTimer += Time.deltaTime;
 
-            if (closeTimer <= doorCloseTime)
-            {
+            if (closeTimer >= doorCloseTime)
                 CloseDoors();
-            }
         }
     }
 
@@ -41,9 +75,9 @@ public class AutomaticDoor : MonoBehaviour
     {
         if (other.CompareTag("Player") || other.CompareTag("NPC"))
         {
-            playerInside = true;
+            occupants.Add(other);
             closeTimer = 0f;
-            OpenDoors();
+            OpenDoors(other.CompareTag("Player"));
         }
     }
 
@@ -51,23 +85,31 @@ public class AutomaticDoor : MonoBehaviour
     {
         if (other.CompareTag("Player") || other.CompareTag("NPC"))
         {
-            playerInside = false;
+            occupants.Remove(other);
             closeTimer = 0f;
         }
     }
 
-    private void OpenDoors()
+    private void OpenDoors(bool playerEntered)
     {
-
-        if(_tutorialManager)
-        _tutorialManager.NotifyGameEvent("EnteredStore");
+        if (playerEntered)
+        {
+            ResolveTutorial();
+            _tutorialManager?.NotifyGameEvent("EnteredStore");
+        }
 
         // Só toca o som na transição fechada -> aberta, não a cada vez que
         // alguém entra no trigger com a porta já aberta.
         if (!isOpen)
         {
             isOpen = true;
-            ServiceLocator.Get<SoundManager>().Play(SFX.PortaAutomaticaAbrir);
+
+            // `?.` e não chamada direta. O ServiceLocator devolve null quando o
+            // serviço não está registrado, e esta linha roda ANTES dos tweens:
+            // sem SoundManager, a NullReferenceException acontecia aqui e a
+            // porta simplesmente nunca se movia — sem nenhuma pista de que o
+            // problema era o som.
+            ServiceLocator.Get<SoundManager>()?.Play(SFX.PortaAutomaticaAbrir);
         }
 
         leftTween?.Kill();
@@ -79,6 +121,8 @@ public class AutomaticDoor : MonoBehaviour
 
     private void CloseDoors()
     {
+        if (!isOpen) return;
+
         isOpen = false;
 
         leftTween?.Kill();
@@ -86,5 +130,12 @@ public class AutomaticDoor : MonoBehaviour
 
         leftTween = doorleft.DOLocalMove(leftClosedPos, speed).SetEase(Ease.InCubic);
         rightTween = doorRigth.DOLocalMove(rightClosedPos, speed).SetEase(Ease.InCubic);
+    }
+
+    private void OnDisable()
+    {
+        leftTween?.Kill();
+        rightTween?.Kill();
+        occupants.Clear();
     }
 }

@@ -273,14 +273,55 @@ entra no save como mais um bloco.
 
 ---
 
-## 8. O que ainda falta, e por que não está feito
+## 8. Telas
+
+Elas se MONTAM sozinhas. Não existe hierarquia para você construir no Inspector,
+nem prefab para arrastar — cada tela constrói os próprios widgets a partir do
+serviço que ela mostra.
+
+### 8.1 O computador
+
+No objeto que o `Computer` legado liga e desliga (o campo `computerScreen` dele),
+adicione o componente **ComputerAppHost**. Só isso.
+
+Ele monta a barra de apps, o saldo e o relógio, e cria os cinco apps: Mercado,
+Preços, Objetivos, Banco e Estatísticas. Os checkboxes no Inspector escondem um
+app que você não quiser agora.
+
+> O objeto precisa estar dentro de um **Canvas**. Se o `computerScreen` já for um
+> filho do Canvas da tela do PC, está pronto.
+
+O que cada app faz:
+
+| App | Lê de | O que dá para fazer |
+|---|---|---|
+| Mercado | `IMarketOrderService` | escolher caixas, ver o total, pedir, acompanhar o que vem |
+| Preços | `IPricingService` | ajustar preço em degraus de ¥10, voltar ao de mercado |
+| Objetivos | `IObjectiveService` | ver progresso de cada meta e a recompensa |
+| Banco | `IBankService` + `ILoanCatalog` | contratar faixa, ver dívida, quitar antes |
+| Estatísticas | `IDailyReportService` | o dia de hoje linha a linha, e o histórico |
+
+### 8.2 A barra de ferramentas
+
+No Canvas do HUD, um GameObject vazio com **ToolWheelView**. Também só isso.
+
+Ela mostra os cinco slots com número, nome, barrinha de desgaste e o travado
+escrito. Os atalhos 1–5 e o botão direito continuam vindo do `SetupToolInput`, que
+já está no jogador — a barra só desenha.
+
+### 8.3 Se a tela aparecer em branco
+
+Quase sempre é fonte: `Window → TextMeshPro → Import TMP Essential Resources`. O
+`UIKit` avisa uma vez no console quando o projeto não tem fonte padrão.
+
+## 9. O que ainda falta, e por que não está feito
 
 Sendo direto, porque isto muda o que você pode esperar do projeto hoje:
 
-**As telas.** Mercado, Preços, Banco, Objetivos, Estatísticas Diárias e a roda de
-ferramentas existem como serviço e como dado, não como interface. Todos expõem
-o que a tela precisa (listas, eventos de mudança, motivos de recusa) e são
-testáveis sem cena — mas ninguém desenhou nenhuma delas ainda.
+**A arte das telas.** As seis telas existem e funcionam (seção 8), mas são
+cinzas e quadradas de propósito. Os controladores são ligados aos DADOS, não ao
+layout: trocar o `UIKit` por prefabs desenhados depois não toca em nenhuma regra
+nem em nenhum app.
 
 **Colocação de móveis (Fase 3b).** O `PlacementController` e a geração dos
 `FurnitureDefinition` ficaram para depois porque dependem de escolhas suas na
