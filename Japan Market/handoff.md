@@ -1,12 +1,20 @@
 # Handoff — sistemas montados na Main
 
-Atualizado em 16/09/2026. Projeto Unity 6000.2.7f2.
+Atualizado em 18/09/2026. Projeto Unity 6000.2.7f2.
 
 ## Estado atual
 
 A montagem baseada em `C:\Users\Ariele\Downloads\SETUP.md` foi gravada em `Assets/Scenes/Main.unity` e `Assets/Scenes/Sandbox.unity`. O usuário confirmou que Main é a cena de jogo e pediu este handoff e um README de funcionalidades e uso.
 
-**Validação automática concluída: 277/277 testes EditMode aprovados; 18 checks em cada cena aprovados em Play, com zero erros.** Isso não equivale à aprovação manual do fluxo inteiro pelo jogador: posicionamento/arte e operações completas de computador, abastecimento e caixa ainda precisam de revisão manual.
+**Validação automática concluída: 287/287 testes EditMode aprovados; 18 checks em cada cena e 5 regressões específicas aprovados em Play, com zero erros.** Isso não equivale à aprovação manual do fluxo inteiro pelo jogador: arte, sensação da porta e operações completas de computador, abastecimento e caixa ainda precisam de revisão manual.
+
+## Correções concluídas em 18/09
+
+- A porta provisória foi removida. O gatilho agora anima `Market/LojaCartoon/Doors/Window/Cube.010`, o segmento central do modelo já posicionado, e continua enviando `EnteredStore` ao tutorial.
+- A tela do computador exibe cinco abas: Mercado, Preços, Objetivos, Banco e Estatísticas. O layout foi corrigido para manter cabeçalho em 44 px, abas em 40 px e o corpo ocupando o restante.
+- O Price Display pode iniciar oculto/inativo e é reativado por `ShowDisplay`, evitando o travamento da etapa `HasPutPrice`.
+- As teclas 1–5 agora alternam a ferramenta: pressionar novamente o mesmo número guarda o item. A tecla 0 continua esvaziando as mãos.
+- O setup idempotente está em `Assets/Editor/JapanMarket/MainSetupFinisher.cs`; a regressão automatizada está em `RegressionDiagnostics.cs`.
 
 O guia de uso está no [README.md](README.md). A arquitetura anterior está em [Assets/JapanMarket/README.md](Assets/JapanMarket/README.md).
 
@@ -17,10 +25,10 @@ O guia de uso está no [README.md](README.md). A arquitetura anterior está em [
 | Assets e catálogos | Cinco catálogos configurados; produtos migrados dos dados legados; quatro categorias/resíduos; saco e lixeira; três superfícies; cinco ferramentas/cinto; sete objetivos; três empréstimos. |
 | Main | GameContext/GameClockRunner, depósito, doca, TrashSpawner, lixeira nova, sujeiras de exemplo e ToolUser/SetupToolInput no jogador. TrashSystem legado desativado para evitar geração simultânea dos dois sistemas. |
 | Sandbox | Cliente simples, NavMesh gerada, prateleira com estoque inicial, caixa automático e sistemas configurados. |
-| Computador | Compra de alimentos passa pelo MarketOrderService. Texto de preço usa BoxCost, igual ao valor cobrado. Compra de móveis continua no fluxo legado. |
+| Computador | Cinco abas funcionais montadas no Canvas existente. Compra de alimentos passa pelo MarketOrderService. Compra de móveis continua no fluxo legado. |
 | Entrega | DeliverySpawner inicializa o produto no ItemBox por IStockDeliveryReceiver. Corrigida a importação das malhas da caixa para QuickOutline. |
 | Reciclagem | TrashBinInteraction conecta retirada de saco ao InteractableBase. Resíduos e sacos usam Rigidbody, Collider, HoldableItem, Outline e camada Interactive. |
-| Ferramentas | 1–5 selecionam, 0 desequipa, botão direito usa na mira. Esponja: chão/balcão; rodo: chão/vidro. Cursor livre, pausa e objeto carregado bloqueiam uso. |
+| Ferramentas | 1–5 selecionam e o mesmo número desequipa; 0 também desequipa; botão direito usa na mira. Cursor livre, pausa e objeto carregado bloqueiam uso. |
 | Relógio/placa | MarketManager consulta/alimenta o relógio novo. Placa relê o estado ao interagir, resolve referências tardias e recusa abertura após o horário. |
 | Caixa/objetivos | SaleCompleted publica receita, custo, quantidade e forma de pagamento. SalesAccountant credita uma vez. Pagamentos bloqueiam confirmação repetida durante animação. |
 | Clientes/relatórios | Registro de clientes publica CustomerEntered. Cliente atendido é removido da lista com Purchased; a remoção posterior não o conta como perdido. |
@@ -62,7 +70,9 @@ Os checks de objetivos usam eventos e os de save usam memória. Não foram testa
 
 ### EditMode
 
-`Logs/setup-editmode.xml`: **277 testes; 277 passaram; 0 falhas; 0 ignorados**, encerrado em 16/09/2026 09:31:03 UTC. Filtro `JapanMarket.Tests`.
+`Logs/editmode-four-fixes.xml`: **287 testes; 287 passaram; 0 falhas** em 18/09/2026.
+
+`Logs/regression-diagnostics.txt`: **5/5 PASS** para alternância de ferramenta, movimento do modelo real da porta, reativação do Price Display, altura do cabeçalho e presença/layout das cinco abas.
 
 A primeira execução encontrou duas falhas e ambas foram corrigidas: default de versão do save e expectativa de XP no teste de recompensa. A regra de XP por venda não foi alterada.
 
@@ -73,7 +83,7 @@ A primeira execução encontrou duas falhas e ambas foram corrigidas: default de
 1. **Revisão manual/visual na Main**: confirmar posições, acessibilidade, chão, colisões, alcance, outline e pickup. O montador usou aproximadamente `(25, 0.1, 5)` como referência do depósito/doca; respeitar ajustes manuais posteriores.
 2. **Fluxo completo pela interface**: comprar alimento → esperar entrega → pegar caixa → abastecer prateleira → atender cliente com dinheiro/cartão → confirmar crédito único, recompensa e relatório correto.
 3. **Placa e relógio**: testar fechamento automático enquanto a placa anima ou o jogador interage. A placa relê o estado no clique, mas seu visual não tem sincronização contínua dedicada com fechamento automático.
-4. **Objetivos/banco/ferramentas**: construir interfaces completas e apresentação de progresso, contratos, motivos de recusa, conserto/reposição, ícones e roda visual. Serviços/assets estão configurados.
+4. **Polimento de objetivos/banco/ferramentas**: revisar textos, motivos de recusa, conserto/reposição, ícones e arte final. As telas e a barra já estão funcionais.
 5. **Arte**: substituir modelos provisórios de resíduos, saco, lixeira, ferramentas e manchas; posicionar sujeira de vidro em uma superfície visual adequada.
 6. **Tablet, engradado e taco**: implementar ações próprias. Hoje só são selecionáveis e exibidos na mão.
 7. **Migração futura descrita no item 8 do SETUP**: prateleiras/NPCs restantes, colocação de móveis, save das posições/conteúdos legados e remoção gradual do legado. Não remover ServiceLocator/Items/AllIThingsData sem migrar consumidores.
@@ -92,7 +102,7 @@ As execuções corrigidas desativam save/load apenas na cópia de teste, sem sal
 
 ## Como retomar tecnicamente
 
-- Skills usadas: `.agents/skills/unity-cli/SKILL.md` e `.agents/skills/initialize-ai-navigation/SKILL.md`.
+- Skills usadas: `.agents/skills/unity-cli/SKILL.md`, `.agents/skills/ui-ugui/SKILL.md` e `.agents/skills/initialize-ai-navigation/SKILL.md`.
 - Editor: `C:\Program Files\Unity\Hub\Editor\6000.2.7f2\Editor\Unity.exe`.
 - Unity CLI instalado na primeira sessão: `C:\Users\Ariele\AppData\Local\Unity\bin\unity.exe`, versão 1.0.0-beta.9. Pode não estar no PATH da shell.
 - Não foi instalado com.unity.pipeline. As cenas e assets foram modificados por C# no Editor; não editar YAML com um Editor conectado.

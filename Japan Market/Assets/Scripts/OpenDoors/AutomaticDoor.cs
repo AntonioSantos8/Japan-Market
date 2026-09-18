@@ -10,6 +10,9 @@ public class AutomaticDoor : MonoBehaviour
     [SerializeField] Vector3 leftOpenPos;
     [SerializeField] Vector3 rightClosedPos;
     [SerializeField] Vector3 rightOpenPos;
+    [SerializeField] bool useWorldOffsets;
+    [SerializeField] Vector3 leftOpenWorldOffset;
+    [SerializeField] Vector3 rightOpenWorldOffset;
     [SerializeField] float speed = 1f;
     [SerializeField] float doorCloseTime = 2f;
     [SerializeField] Ease easeType = Ease.OutCubic;
@@ -23,10 +26,23 @@ public class AutomaticDoor : MonoBehaviour
 
     void Awake()
     {
-        if (doorleft == null || doorRigth == null)
+        if (doorleft == null)
         {
-            Debug.LogError("[AutomaticDoor] As duas folhas da porta precisam estar configuradas.", this);
+            Debug.LogError("[AutomaticDoor] A folha principal da porta precisa estar configurada.", this);
             enabled = false;
+            return;
+        }
+
+        if (useWorldOffsets)
+        {
+            leftClosedPos = doorleft.position;
+            leftOpenPos = leftClosedPos + leftOpenWorldOffset;
+
+            if (doorRigth != null)
+            {
+                rightClosedPos = doorRigth.position;
+                rightOpenPos = rightClosedPos + rightOpenWorldOffset;
+            }
             return;
         }
 
@@ -39,15 +55,25 @@ public class AutomaticDoor : MonoBehaviour
         Vector3 rightTravel = rightOpenPos - rightClosedPos;
 
         leftClosedPos = doorleft.localPosition;
-        rightClosedPos = doorRigth.localPosition;
+        if (doorRigth != null) rightClosedPos = doorRigth.localPosition;
 
         if (leftTravel.sqrMagnitude < 0.01f || leftTravel.sqrMagnitude > 25f)
             leftTravel = Vector3.right * 1.25f;
-        if (rightTravel.sqrMagnitude < 0.01f || rightTravel.sqrMagnitude > 25f)
+        if (doorRigth != null && (rightTravel.sqrMagnitude < 0.01f || rightTravel.sqrMagnitude > 25f))
             rightTravel = Vector3.left * 1.25f;
 
         leftOpenPos = leftClosedPos + leftTravel;
-        rightOpenPos = rightClosedPos + rightTravel;
+        if (doorRigth != null) rightOpenPos = rightClosedPos + rightTravel;
+    }
+
+    public void ConfigureWorldDoor(Transform primaryLeaf, Transform secondaryLeaf,
+                                   Vector3 primaryOpenOffset, Vector3 secondaryOpenOffset)
+    {
+        doorleft = primaryLeaf;
+        doorRigth = secondaryLeaf;
+        useWorldOffsets = true;
+        leftOpenWorldOffset = primaryOpenOffset;
+        rightOpenWorldOffset = secondaryOpenOffset;
     }
 
     void Start() => ResolveTutorial();
@@ -115,8 +141,13 @@ public class AutomaticDoor : MonoBehaviour
         leftTween?.Kill();
         rightTween?.Kill();
 
-        leftTween = doorleft.DOLocalMove(leftOpenPos, speed).SetEase(easeType);
-        rightTween = doorRigth.DOLocalMove(rightOpenPos, speed).SetEase(easeType);
+        leftTween = useWorldOffsets
+            ? doorleft.DOMove(leftOpenPos, speed).SetEase(easeType)
+            : doorleft.DOLocalMove(leftOpenPos, speed).SetEase(easeType);
+        if (doorRigth != null)
+            rightTween = useWorldOffsets
+                ? doorRigth.DOMove(rightOpenPos, speed).SetEase(easeType)
+                : doorRigth.DOLocalMove(rightOpenPos, speed).SetEase(easeType);
     }
 
     private void CloseDoors()
@@ -128,8 +159,13 @@ public class AutomaticDoor : MonoBehaviour
         leftTween?.Kill();
         rightTween?.Kill();
 
-        leftTween = doorleft.DOLocalMove(leftClosedPos, speed).SetEase(Ease.InCubic);
-        rightTween = doorRigth.DOLocalMove(rightClosedPos, speed).SetEase(Ease.InCubic);
+        leftTween = useWorldOffsets
+            ? doorleft.DOMove(leftClosedPos, speed).SetEase(Ease.InCubic)
+            : doorleft.DOLocalMove(leftClosedPos, speed).SetEase(Ease.InCubic);
+        if (doorRigth != null)
+            rightTween = useWorldOffsets
+                ? doorRigth.DOMove(rightClosedPos, speed).SetEase(Ease.InCubic)
+                : doorRigth.DOLocalMove(rightClosedPos, speed).SetEase(Ease.InCubic);
     }
 
     private void OnDisable()

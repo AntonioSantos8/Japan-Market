@@ -101,40 +101,84 @@ public static class MainSetupFinisher
 
     static AutomaticDoor EnsureEntranceDoor(Scene scene)
     {
-        AutomaticDoor existing = Object.FindFirstObjectByType<AutomaticDoor>(FindObjectsInactive.Include);
-        if (existing != null) return existing;
-
-        GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(DoorPrefab);
-        if (prefab == null) throw new FileNotFoundException("Prefab da porta automática não encontrado.", DoorPrefab);
-
-        GameObject instance = (GameObject)PrefabUtility.InstantiatePrefab(prefab, scene);
-        instance.name = "DoorAutomatic — Entrada";
-
         Transform market = FindSceneTransform(scene, "Market");
         Transform store = FindSceneTransform(scene, "LojaCartoon");
+        Transform doors = store != null
+            ? store.GetComponentsInChildren<Transform>(true)
+                .FirstOrDefault(candidate => candidate.name == "Doors")
+            : null;
+        Transform realLeaf = doors != null
+            ? doors.GetComponentsInChildren<Transform>(true)
+                .FirstOrDefault(candidate => candidate.name == "Cube.010")
+            : null;
 
-        // O modelo novo conservou o mesmo espaço local do LojaCartoon antigo.
-        // Este é o centro da entrada usado pela porta que o commit do novo
-        // modelo removeu. Calculá-lo pelo Transform mantém a porta no lugar se
-        // o Market inteiro for movido ou escalado depois.
-        Vector3 entrance = store != null
-            ? store.TransformPoint(new Vector3(-0.32f, 0.83f, 28.37f))
-            : new Vector3(27.82f, 0f, -5.16f);
+        if (realLeaf == null)
+            throw new InvalidOperationException(
+                "O segmento Cube.010 do modelo Market/LojaCartoon/Doors não foi encontrado.");
 
-        float floorY = store != null ? store.TransformPoint(Vector3.zero).y : 0f;
+        // Remove only the temporary prefab introduced by the earlier setup.
+        // The actual model under LojaCartoon is kept and animated in place.
+        foreach (AutomaticDoor candidate in Object.FindObjectsByType<AutomaticDoor>(
+                     FindObjectsInactive.Include, FindObjectsSortMode.None))
+        {
+            if (candidate.gameObject.scene != scene) continue;
+
+            GameObject root = PrefabUtility.GetOutermostPrefabInstanceRoot(candidate.gameObject);
+            string prefabPath = root != null
+                ? PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(root)
+                : string.Empty;
+            if (candidate.name != "DoorAutomatic — Entrada" && prefabPath != DoorPrefab) continue;
+
+            Object.DestroyImmediate(root != null ? root : candidate.gameObject);
+        }
+
+        const string triggerName = "Automatic Door Trigger — Entrada";
+        Transform triggerTransform = scene.GetRootGameObjects()
+            .SelectMany(root => root.GetComponentsInChildren<Transform>(true))
+            .FirstOrDefault(candidate => candidate.name == triggerName);
+
+        GameObject instance;
+        if (triggerTransform != null)
+        {
+            instance = triggerTransform.gameObject;
+        }
+        else
+        {
+            instance = new GameObject(triggerName);
+            SceneManager.MoveGameObjectToScene(instance, scene);
+            if (market != null) instance.transform.SetParent(market, true);
+        }
+
+        Renderer leafRenderer = realLeaf.GetComponent<Renderer>();
+        if (leafRenderer == null)
+            throw new InvalidOperationException("O segmento Cube.010 não possui Renderer.");
+
+        Bounds leafBounds = leafRenderer.bounds;
         instance.transform.SetPositionAndRotation(
-            new Vector3(entrance.x, floorY + 1.1f, entrance.z),
+            new Vector3(leafBounds.center.x, leafBounds.min.y + 1.5f, leafBounds.center.z),
             Quaternion.identity);
-
-        if (market != null) instance.transform.SetParent(market, true);
+        instance.transform.localScale = Vector3.one;
 
         BoxCollider trigger = instance.GetComponent<BoxCollider>();
         if (trigger == null) trigger = instance.AddComponent<BoxCollider>();
         trigger.isTrigger = true;
         trigger.center = Vector3.zero;
-        trigger.size = new Vector3(4f, 3f, 4f);
+        Vector3 scale = instance.transform.lossyScale;
+        trigger.size = new Vector3(
+            Mathf.Max(3f, leafBounds.size.x + 0.5f) / Mathf.Max(0.001f, Mathf.Abs(scale.x)),
+            3f / Mathf.Max(0.001f, Mathf.Abs(scale.y)),
+            4f / Mathf.Max(0.001f, Mathf.Abs(scale.z)));
 
-        return instance.GetComponent<AutomaticDoor>();
+        AutomaticDoor door = instance.GetComponent<AutomaticDoor>();
+        if (door == null) door = instance.AddComponent<AutomaticDoor>();
+
+        // Cube.010 is the existing central shutter. Lift it by its own height so
+        // the opening clears fully while all side/frame segments remain fixed.
+        door.ConfigureWorldDoor(realLeaf, null,
+                                Vector3.up * (leafBounds.size.y + 0.2f), Vector3.zero);
+        GameObjectUtility.SetStaticEditorFlags(realLeaf.gameObject, 0);
+
+        return door;
     }
 
     static int EnsureComputerApps(Scene scene)

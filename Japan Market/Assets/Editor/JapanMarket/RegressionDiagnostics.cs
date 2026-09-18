@@ -3,6 +3,8 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using JapanMarket.Domain;
+using JapanMarket.Gameplay;
 using JapanMarket.UI;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -17,6 +19,8 @@ public static class RegressionDiagnostics
     const string PhaseKey = "JapanMarket.RegressionDiagnostics.Phase";
     const string ReportPath = "Logs/regression-diagnostics.txt";
     static double started;
+    static float doorStartY;
+    static int failures;
 
     static RegressionDiagnostics()
     {
@@ -27,6 +31,7 @@ public static class RegressionDiagnostics
     {
         SessionState.SetBool(ActiveKey, true);
         SessionState.SetInt(PhaseKey, 0);
+        failures = 0;
         File.WriteAllText(ReportPath, string.Empty);
         EditorSceneManager.OpenScene("Assets/Scenes/Main.unity", OpenSceneMode.Single);
         Capture("EDIT");
@@ -60,12 +65,36 @@ public static class RegressionDiagnostics
         {
             Capture("PLAY BEFORE COMPUTER");
             Object.FindFirstObjectByType<Computer>()?.Interact();
+
+            ValidateToolToggle();
+
+            AutomaticDoor door = Object.FindFirstObjectByType<AutomaticDoor>();
+            Transform leaf = GetConfiguredDoorLeaf(door);
+            if (door != null && leaf != null)
+            {
+                doorStartY = leaf.position.y;
+                var probe = new GameObject("Door Validation Player");
+                probe.tag = "Player";
+                Collider collider = probe.AddComponent<BoxCollider>();
+                door.SendMessage("OnTriggerEnter", collider, SendMessageOptions.RequireReceiver);
+            }
+            else
+            {
+                Require(false, "porta real e folha Cube.010 existem");
+            }
+
+            PriceDisplayUI price = Object.FindFirstObjectByType<PriceDisplayUI>(
+                FindObjectsInactive.Include);
+            if (price != null) price.ShowDisplay(100f, 120f);
+            else Require(false, "Price Display existe");
+
             SessionState.SetInt(PhaseKey, 1);
             started = EditorApplication.timeSinceStartup;
             return;
         }
 
         Capture("PLAY AFTER COMPUTER");
+        ValidateFourFixes();
         EditorApplication.ExitPlaymode();
     }
 
@@ -74,8 +103,72 @@ public static class RegressionDiagnostics
         if (state == PlayModeStateChange.EnteredPlayMode) started = EditorApplication.timeSinceStartup;
         if (state != PlayModeStateChange.EnteredEditMode) return;
         SessionState.SetBool(ActiveKey, false);
-        EditorApplication.Exit(0);
+        File.AppendAllText(ReportPath, $"FOUR FIXES FAILURES={failures}\n");
+        EditorApplication.Exit(failures == 0 ? 0 : 1);
     }
+
+    static void ValidateToolToggle()
+    {
+        ToolUser user = Object.FindFirstObjectByType<ToolUser>();
+        IToolBelt belt = GameContext.Current?.Services.Resolve<IToolBelt>();
+        if (user == null || belt == null)
+        {
+            Require(false, "ToolUser e ToolBelt existem");
+            return;
+        }
+
+        user.Deselect();
+        bool selected = user.ToggleSelection(0);
+        bool deselected = user.ToggleSelection(0);
+        Require(selected && deselected && belt.SelectedIndex == -1,
+                "pressionar o mesmo slot duas vezes guarda a ferramenta");
+    }
+
+    static void ValidateFourFixes()
+    {
+        AutomaticDoor door = Object.FindFirstObjectByType<AutomaticDoor>();
+        Transform leaf = GetConfiguredDoorLeaf(door);
+        Require(leaf != null && leaf.position.y > doorStartY + 1f,
+                "a porta move o segmento real Cube.010");
+
+        PriceDisplayUI price = Object.FindFirstObjectByType<PriceDisplayUI>(
+            FindObjectsInactive.Include);
+        Require(price != null && price.gameObject.activeInHierarchy
+                              && price.transform.localScale.x > 0.9f,
+                "Price Display inativo volta a aparecer");
+
+        ComputerAppHost host = Object.FindFirstObjectByType<ComputerAppHost>();
+        Transform header = host != null ? host.transform.Find("Fundo/Tela/Cabeçalho") : null;
+        Transform tabs = host != null ? host.transform.Find("Fundo/Tela/Apps") : null;
+        Require(header is RectTransform headerRect && Mathf.Abs(headerRect.rect.height - 44f) < 0.1f,
+                "cabeçalho do computador mantém 44 px");
+        Require(tabs is RectTransform tabsRect && Mathf.Abs(tabsRect.rect.height - 40f) < 0.1f
+                                             && tabs.childCount == 5,
+                "cinco abas do computador aparecem em 40 px");
+    }
+
+    static void Require(bool condition, string description)
+    {
+        if (condition)
+        {
+            File.AppendAllText(ReportPath, "PASS " + description + "\n");
+            return;
+        }
+
+        failures++;
+        File.AppendAllText(ReportPath, "FAIL " + description + "\n");
+    }
+
+    static Transform FindTransform(string name) =>
+        Object.FindObjectsByType<Transform>(FindObjectsInactive.Include,
+                FindObjectsSortMode.None)
+            .FirstOrDefault(candidate => candidate.name == name);
+
+    static Transform GetConfiguredDoorLeaf(AutomaticDoor door) =>
+        door != null
+            ? typeof(AutomaticDoor).GetField("doorleft",
+                  BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(door) as Transform
+            : null;
 
     static void Capture(string phase)
     {

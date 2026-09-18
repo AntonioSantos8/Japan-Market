@@ -4,19 +4,19 @@ Abra o projeto com **Unity 6000.2.7f2**. A cena de jogo é `Assets/Scenes/Main.u
 
 Este guia descreve a montagem feita a partir do SETUP.md. O estado da validação e as pendências estão em [handoff.md](handoff.md). A arquitetura dos serviços já existentes está em [Assets/JapanMarket/README.md](Assets/JapanMarket/README.md).
 
-Validação automática em 16/09/2026: **277 testes EditMode aprovados** e **18 checks em cada cena aprovados em Play, com zero erros**. A revisão manual de posicionamento e dos fluxos completos pela interface ainda está pendente.
+Validação automática em 18/09/2026: **287 testes EditMode aprovados**, **18 checks em cada cena aprovados em Play** e **5 regressões de interface/gameplay aprovadas**, com zero erros. A revisão manual de arte, posicionamento e do fluxo completo jogado ainda está pendente.
 
 ## O que foi adicionado ou conectado
 
 | Sistema | Disponível nesta montagem |
 |---|---|
 | Contexto e relógio | GameContext com cinco catálogos, cinto de ferramentas e GameClockRunner nas cenas. Abertura da loja ligada ao relógio. |
-| Compras de alimentos | O computador existente cria pedidos com prazo; o depósito materializa as caixas e informa o produto ao ItemBox legado. |
+| Computador | Cinco abas funcionais: Mercado, Preços, Objetivos, Banco e Estatísticas. A compra cria pedidos com prazo; o depósito materializa as caixas. |
 | Reciclagem | Quatro categorias, resíduos físicos, lixeira, saco carregável e doca. Pagamento pelo serviço no fechamento do dia. |
 | Limpeza | Três superfícies, esponja e rodo, seleção por teclado, uso na mira, desgaste e sujeiras de exemplo. |
 | Objetivos | Sete objetivos configurados, recompensas de dinheiro/XP e uma sequência liberada pela primeira venda. |
 | Caixa | Vendas legadas notificam objetivos e contabilidade; o crédito é centralizado para evitar pagamento duplicado. |
-| Banco | Três faixas de empréstimo configuradas nos serviços. Ainda sem tela de contratação. |
+| Banco | Três faixas de empréstimo configuradas e tela de contratação/quitação no computador. |
 | Save | Configurado para salvar ao fechar o dia; carregamento automático inicialmente desligado. |
 | Sandbox | Cliente de teste, navegação, prateleira com estoque inicial, caixa automático e sistemas montados. |
 
@@ -25,14 +25,15 @@ Os serviços centrais de economia, objetivos, banco e save já existiam. Esta en
 ## Começar na Main
 
 1. Abra `Assets/Scenes/Main.unity` e entre em Play.
-2. Use a placa existente para abrir a loja.
-3. Compre alimentos no computador existente. A cobrança acontece no pedido e a entrega chega depois do prazo configurado.
-4. Procure `— Depósito —` na Hierarchy para localizar o ponto de entrega. Pegue a caixa pelo sistema de interação existente e abasteça as prateleiras.
-5. Atenda no caixa normalmente. A finalização da venda alimenta o saldo e os objetivos.
+2. Entre pela porta de madeira existente: o segmento central sobe automaticamente e libera a primeira etapa do tutorial.
+3. Use a placa existente para abrir a loja.
+4. Abra o computador e use as abas no topo. A cobrança de Mercado acontece no pedido e a entrega chega depois do prazo configurado.
+5. Procure `— Depósito —` na Hierarchy para localizar o ponto de entrega. Pegue a caixa pelo sistema de interação existente e abasteça as prateleiras.
+6. Atenda no caixa normalmente. A finalização da venda alimenta o saldo e os objetivos.
 
 No objeto `— Game Context —`, os campos Opening Balance, Daily Rent e Delivery Hours controlam saldo inicial, aluguel e prazo. Para testar entrega imediata, mude temporariamente Delivery Hours para 0 **antes de Play**. Evite gravar esse ajuste na cena se quiser manter o prazo normal.
 
-A compra de móveis continua usando o fluxo anterior. As interfaces novas completas de Mercado, Preços, Banco, Objetivos e Relatórios ainda não foram desenhadas.
+A compra de móveis continua usando o fluxo anterior. As interfaces de Mercado, Preços, Banco, Objetivos e Estatísticas estão funcionais e montadas por código; o visual ainda é uma base técnica que pode receber arte final depois.
 
 ## Ferramentas
 
@@ -46,9 +47,9 @@ A compra de móveis continua usando o fluxo anterior. As interfaces novas comple
 | 0 | Mãos vazias | Desequipa a ferramenta. |
 | Botão direito | Usar | Aplica a ferramenta na sujeira sob a mira, até 3 metros. |
 
-É necessário estar controlando o jogador com o cursor capturado. A seleção fica bloqueada em menus ou durante pausa; carregar um objeto desequipa a ferramenta. O botão esquerdo continua reservado à interação existente.
+Pressionar novamente a tecla da ferramenta selecionada também a guarda (por exemplo, `1` seleciona a esponja e `1` novamente volta às mãos vazias). É necessário estar controlando o jogador com o cursor capturado. A seleção fica bloqueada em menus ou durante pausa; carregar um objeto desequipa a ferramenta. O botão esquerdo continua reservado à interação existente.
 
-Esponja e rodo foram configurados com 100 usos. Uma tentativa em superfície incompatível não deve gastar usos. Ainda não existe interface de conserto ou reposição; para desenvolvimento, o serviço `IToolBelt.TryRepair(slot)` restaura a ferramenta. Não há roda visual nesta montagem e os ícones ainda precisam ser fornecidos.
+Esponja e rodo foram configurados com 100 usos. Uma tentativa em superfície incompatível não deve gastar usos. Ainda não existe interface de conserto ou reposição; para desenvolvimento, o serviço `IToolBelt.TryRepair(slot)` restaura a ferramenta. A barra visual mostra seleção, bloqueio e desgaste; arte/ícones finais ainda podem ser substituídos.
 
 Configuração: `Assets/JapanMarket/Setup/ToolBeltLayout.asset`, `Esponja.asset`, `Rodo.asset` e `Superficie_*.asset`. ToolUser fica no jogador; Tool Hand fica sob a câmera.
 
@@ -79,7 +80,7 @@ As chaves de categorias, resíduos e empréstimos participam do save: mantenha-a
 | Fature mil ienes | Faturar ¥1.000 após a liberação pela primeira venda. |
 | Chegue ao nível dois | Chegar ao nível 2 da loja. |
 
-Cada objetivo foi configurado com recompensa de ¥100 e 25 XP. O GameContext limita a quantidade simultaneamente ativa; por padrão, 3. Progresso e recompensas existem nos serviços, mas ainda não há painel novo de objetivos para o jogador.
+Cada objetivo foi configurado com recompensa de ¥100 e 25 XP. O GameContext limita a quantidade simultaneamente ativa; por padrão, 3. Progresso e recompensas aparecem na aba **Objetivos** do computador.
 
 Assets: `Assets/JapanMarket/Setup/ObjectiveCatalog.asset` e os pares de objetivo/condição na mesma pasta. Ao criar novos objetivos, use o menu de criação em vez de duplicar IDs existentes.
 
@@ -91,7 +92,7 @@ Assets: `Assets/JapanMarket/Setup/ObjectiveCatalog.asset` e os pares de objetivo
 | Médio | ¥5.000 | ¥600 | 10 dias | Nível 3 |
 | Alto | ¥10.000 | ¥1.200 | 10 dias | Nível 6 |
 
-Os assets estão em `Assets/JapanMarket/Setup/Emprestimo_*.asset`. O limite inicial é um contrato simultâneo. Ainda não existe botão/tela para contratar: uma futura interface deve chamar `IBankService.TryTakeLoan(LoanDefinition)` e mostrar a recusa, saldo, parcelas e dívida antes da contratação. Os valores são de balanceamento do jogo.
+Os assets estão em `Assets/JapanMarket/Setup/Emprestimo_*.asset`. O limite inicial é um contrato simultâneo. A aba **Banco** permite contratar as faixas disponíveis, mostra dívida/parcelas e permite quitar antes. Os valores são de balanceamento do jogo.
 
 ## Relógio e save no Editor
 
@@ -122,4 +123,4 @@ Execute SetupValidation com gráficos ativos, sem `-nographics`: a Main usa URP 
 
 ## Pendências conhecidas
 
-As telas novas, roda de ferramentas, ações de tablet/engradado/taco, arte final, migração integral das prateleiras/NPCs, colocação e save de móveis continuam pendentes. Os testes e a revisão visual da Main estão documentados em [handoff.md](handoff.md); não presumir que todos os fluxos estejam aprovados apenas porque os componentes estão montados.
+Ações de tablet/engradado/taco, arte final das interfaces, migração integral das prateleiras/NPCs, colocação e save de móveis continuam pendentes. A porta, as cinco abas, a barra de ferramentas e o Price Display estão automatizados e testados; ainda faça uma passada manual completa na Main. Os detalhes estão em [handoff.md](handoff.md).

@@ -72,6 +72,23 @@ namespace JapanMarket.Gameplay
 
         public bool Select(int slotIndex) => TryResolve() && _belt.TrySelect(slotIndex);
 
+        /// <summary>
+        /// Selects a slot, or puts its tool away when that same slot is already
+        /// selected. The belt's TrySelect remains idempotent for non-input callers.
+        /// </summary>
+        public bool ToggleSelection(int slotIndex)
+        {
+            if (!TryResolve()) return false;
+
+            if (_belt.SelectedIndex == slotIndex)
+            {
+                _belt.Deselect();
+                return true;
+            }
+
+            return _belt.TrySelect(slotIndex);
+        }
+
         public void Deselect()
         {
             if (TryResolve()) _belt.Deselect();

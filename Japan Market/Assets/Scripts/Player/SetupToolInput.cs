@@ -19,7 +19,7 @@ public sealed class SetupToolInput : MonoBehaviour
         if (!input.enabled || Time.timeScale == 0f || Cursor.lockState != CursorLockMode.Locked) return;
         if (interaction != null && interaction.HeldItem != null) { tools.Deselect(); return; }
         for (int slot = 0; slot < 5; slot++)
-            if (Input.GetKeyDown((KeyCode)((int)KeyCode.Alpha1 + slot))) tools.Select(slot);
+            if (Input.GetKeyDown((KeyCode)((int)KeyCode.Alpha1 + slot))) tools.ToggleSelection(slot);
         if (Input.GetKeyDown(KeyCode.Alpha0)) tools.Deselect();
         if (Input.GetMouseButtonDown(1)) tools.UseOnAim();
     }

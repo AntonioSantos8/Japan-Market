@@ -142,6 +142,10 @@ namespace JapanMarket.UI
             var size = rect.gameObject.AddComponent<LayoutElement>();
             size.minHeight = height;
             size.preferredHeight = height;
+            // Rows inside a VerticalLayoutGroup must not consume the parent's
+            // spare height. Without this, Unity stretches the 44 px header and
+            // 40 px tab bar to hundreds of pixels, pushing the app body away.
+            size.flexibleHeight = 0f;
 
             return rect;
         }
