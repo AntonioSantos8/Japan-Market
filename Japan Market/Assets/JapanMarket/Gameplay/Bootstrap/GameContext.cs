@@ -189,6 +189,16 @@ namespace JapanMarket.Gameplay
 
         private void Start()
         {
+            if (SaveSession.TryConsumeStartRequest(out SaveStartMode startMode))
+            {
+                if (startMode == SaveStartMode.LoadGame)
+                    TryLoadNow();
+                else if (startMode == SaveStartMode.NewGame)
+                    SaveNow();
+
+                return;
+            }
+
             if (_loadOnStart) TryLoadNow();
         }
 
@@ -198,7 +208,7 @@ namespace JapanMarket.Gameplay
         {
             if (_save == null) return false;
 
-            return SaveFile.TryWrite(_save.Capture());
+            return SaveFile.TryWrite(_save.Capture(), SaveSession.CurrentFileName);
         }
 
         /// <summary>
@@ -210,14 +220,14 @@ namespace JapanMarket.Gameplay
         public bool TryLoadNow()
         {
             if (_save == null) return false;
-            if (!SaveFile.TryRead(out GameSave data)) return false;
+            if (!SaveFile.TryRead(out GameSave data, SaveSession.CurrentFileName)) return false;
 
             _save.Apply(data);
             return true;
         }
 
         [ContextMenu("Save/Apagar o arquivo")]
-        public void DeleteSave() => SaveFile.TryDelete();
+        public void DeleteSave() => SaveFile.TryDelete(SaveSession.CurrentFileName);
 
         /// <summary>
         /// Os objetivos são construídos DEPOIS da economia porque pagam em

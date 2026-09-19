@@ -19,6 +19,7 @@ public sealed class MarketFurnitureCardView : MonoBehaviour
     private FurnitureData furniture;
     private Action<FurnitureData, int> addAction;
     private int quantity = 1;
+    private int maxQuantity = MarketCart.MaxBoxesPerProduct;
 
     private void Awake()
     {
@@ -27,11 +28,13 @@ public sealed class MarketFurnitureCardView : MonoBehaviour
         addToCartButton?.onClick.AddListener(AddToCart);
     }
 
-    public void Bind(FurnitureData data, Action<FurnitureData, int> onAdd)
+    public void Bind(FurnitureData data, Action<FurnitureData, int> onAdd,
+        int quantityLimit = MarketCart.MaxBoxesPerProduct)
     {
         furniture = data;
         addAction = onAdd;
         quantity = 1;
+        maxQuantity = Mathf.Max(1, quantityLimit);
 
         titleText.text = string.IsNullOrWhiteSpace(data.furnitureName) ? data.name : data.furnitureName;
         typeText.text = "Tipo: " + data.type;
@@ -48,7 +51,7 @@ public sealed class MarketFurnitureCardView : MonoBehaviour
         : 0f);
 
     private void Decrease() { quantity = Mathf.Max(1, quantity - 1); RefreshQuantity(); }
-    private void Increase() { quantity = Mathf.Min(MarketCart.MaxBoxesPerProduct, quantity + 1); RefreshQuantity(); }
+    private void Increase() { quantity = Mathf.Min(maxQuantity, quantity + 1); RefreshQuantity(); }
     private void AddToCart() { if (furniture != null) addAction?.Invoke(furniture, quantity); }
 
     private void RefreshQuantity()

@@ -86,6 +86,7 @@ public sealed class ComputerMarketView : MonoBehaviour
 
         market.GetAvailableProducts(availableProducts);
         ItemManager itemManager = ServiceLocator.Get<ItemManager>();
+        bool tutorialActive = IsTutorialActive();
 
         for (int i = 0; i < availableProducts.Count; i++)
         {
@@ -93,6 +94,9 @@ public sealed class ComputerMarketView : MonoBehaviour
             AllIThingsData legacy = itemManager != null
                 ? itemManager.GetItemData((Items)product.LegacyEnumValue)
                 : null;
+
+            if (tutorialActive && (legacy == null || legacy.allowedFurniture != FurnitureType.Shelf))
+                continue;
 
             MarketProductCardView card = Instantiate(productCardPrefab, productsGrid);
             card.gameObject.SetActive(true);
@@ -103,15 +107,17 @@ public sealed class ComputerMarketView : MonoBehaviour
     private void BuildFurniture()
     {
         if (furnitureGrid == null || furnitureCardPrefab == null) return;
+        bool tutorialActive = IsTutorialActive();
 
         for (int i = 0; i < furnitureCatalog.Count; i++)
         {
             FurnitureData furniture = furnitureCatalog[i];
             if (furniture == null) continue;
+            if (tutorialActive && furniture.type != FurnitureType.Shelf) continue;
 
             MarketFurnitureCardView card = Instantiate(furnitureCardPrefab, furnitureGrid);
             card.gameObject.SetActive(true);
-            card.Bind(furniture, AddFurnitureToCart);
+            card.Bind(furniture, AddFurnitureToCart, tutorialActive ? 1 : MarketCart.MaxBoxesPerProduct);
         }
     }
 
@@ -125,8 +131,11 @@ public sealed class ComputerMarketView : MonoBehaviour
     private void AddFurnitureToCart(FurnitureData furniture, int quantity)
     {
         if (furniture == null || quantity <= 0) return;
+        if (IsTutorialActive() && furniture.type != FurnitureType.Shelf) return;
+
         furnitureCart.TryGetValue(furniture, out int current);
-        furnitureCart[furniture] = Mathf.Clamp(current + quantity, 1, MarketCart.MaxBoxesPerProduct);
+        int maximum = IsTutorialActive() ? 1 : MarketCart.MaxBoxesPerProduct;
+        furnitureCart[furniture] = Mathf.Clamp(current + quantity, 1, maximum);
         feedbackText.text = string.Empty;
         RefreshCart();
     }
@@ -143,7 +152,8 @@ public sealed class ComputerMarketView : MonoBehaviour
         if (!furnitureCart.TryGetValue(furniture, out int current)) return;
         int next = current + delta;
         if (next <= 0) furnitureCart.Remove(furniture);
-        else furnitureCart[furniture] = Mathf.Min(next, MarketCart.MaxBoxesPerProduct);
+        else furnitureCart[furniture] = Mathf.Min(next,
+            IsTutorialActive() ? 1 : MarketCart.MaxBoxesPerProduct);
         RefreshCart();
     }
 
@@ -220,6 +230,15 @@ public sealed class ComputerMarketView : MonoBehaviour
         int itemLines = productCart.Items.Count + furnitureCart.Count;
         if (itemLines == 0) return;
 
+        if (IsTutorialActive() && !IsTutorialCartValid())
+        {
+            SetFeedback("No tutorial, compre somente uma prateleira e produtos de prateleira.", false);
+            return;
+        }
+
+        bool boughtFood = productCart.TotalBoxes > 0;
+        bool boughtFurniture = furnitureCart.Count > 0;
+
         Money furnitureTotal = FurnitureSubtotal();
         Money shipping = Money.FromYen(fixedShippingFeeYen);
         Money grandTotal = ProductSubtotal() + furnitureTotal + shipping;
@@ -294,8 +313,45 @@ public sealed class ComputerMarketView : MonoBehaviour
 
         productCart.Clear();
         furnitureCart.Clear();
+
+        TutorialManager tutorial = ServiceLocator.Get<TutorialManager>();
+        if (tutorial != null && !tutorial.IsTutorialFinished)
+        {
+            if (boughtFurniture) tutorial.BoughtItem(SellingItemType.Furniture);
+            if (boughtFood) tutorial.BoughtItem(SellingItemType.Food);
+        }
+
         ServiceLocator.Get<SoundManager>()?.Play(SFX.ComprarItemOuFurnitureComputador);
         RefreshCart();
+    }
+
+    private bool IsTutorialCartValid()
+    {
+        int shelfCount = 0;
+        foreach (KeyValuePair<FurnitureData, int> entry in furnitureCart)
+        {
+            if (entry.Key == null || entry.Key.type != FurnitureType.Shelf) return false;
+            shelfCount += entry.Value;
+        }
+
+        if (shelfCount > 1) return false;
+
+        ItemManager itemManager = ServiceLocator.Get<ItemManager>();
+        foreach (KeyValuePair<ItemDefinition, int> entry in productCart.Items)
+        {
+            AllIThingsData legacy = itemManager != null
+                ? itemManager.GetItemData((Items)entry.Key.LegacyEnumValue)
+                : null;
+            if (legacy == null || legacy.allowedFurniture != FurnitureType.Shelf) return false;
+        }
+
+        return true;
+    }
+
+    private static bool IsTutorialActive()
+    {
+        TutorialManager tutorial = ServiceLocator.Get<TutorialManager>();
+        return tutorial != null && !tutorial.IsTutorialFinished;
     }
 
     private void DeliverFurniture(FurnitureManager manager)
