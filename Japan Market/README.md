@@ -4,7 +4,7 @@ Abra o projeto com **Unity 6000.2.7f2**. A cena de jogo é `Assets/Scenes/Main.u
 
 Este guia descreve a montagem feita a partir do SETUP.md. O estado da validação e as pendências estão em [handoff.md](handoff.md). A arquitetura dos serviços já existentes está em [Assets/JapanMarket/README.md](Assets/JapanMarket/README.md).
 
-Validação automática em 18/09/2026: **292 testes EditMode aprovados**, **18 checks em cada cena aprovados em Play**, **5 regressões de interface/gameplay aprovadas** e as hierarquias da HUD de objetivos e do fluxo de fim do dia validadas, com zero erros. A revisão manual de arte, posicionamento e do fluxo completo jogado ainda está pendente.
+Validação automática em 18/09/2026: **292 testes EditMode aprovados**, **2 testes PlayMode específicos do fluxo diário aprovados**, **18 checks em cada cena aprovados em Play**, **5 regressões de interface/gameplay aprovadas** e as hierarquias da HUD de objetivos e do fluxo de fim do dia validadas, com zero erros. A revisão manual de arte, posicionamento e do fluxo completo jogado ainda está pendente.
 
 ## O que foi adicionado ou conectado
 
@@ -39,9 +39,9 @@ A compra de móveis continua usando o fluxo anterior. As interfaces de Mercado, 
 
 O primeiro dia não pode mais acabar por horário nem pelo comando manual enquanto o tutorial aguarda clientes. O relógio visível para um minuto antes do fechamento, mas o tempo absoluto continua avançando para não travar entregas. Cada venda concluída conta como um cliente atendido; na terceira venda o dia fecha automaticamente no frame seguinte, mesmo que ainda seja cedo. O limite fica no componente **Tutorial Manager**, campo **Customers To End First Day**, e pode ser alterado sem mexer em código.
 
-A UI completa já está montada em `Player/Canvas/Day Flow UI`, com `GraphicRaycaster`, `EventSystem`, referências e botões ligados. No primeiro dia ela pula a decisão das 21h: o tutorial mantém prioridade e, após a terceira venda, abre diretamente o resumo.
+A UI completa já está montada em `Player/Canvas/Day Flow UI`, com `GraphicRaycaster`, `EventSystem`, referências e botões ligados. No primeiro dia, às 21h ela mostra **TUTORIAL EM ANDAMENTO**, o progresso de clientes e **Continuar tutorial**; **Finalizar dia** fica visível, porém bloqueado. Assim há retorno visual sem permitir que o horário quebre o tutorial. Após a terceira venda, o primeiro dia fecha e abre diretamente o resumo.
 
-Nos dias normais o fluxo é:
+Nos dias normais, depois do primeiro tutorial, o fluxo é:
 
 1. Às **21:00**, o relógio e o jogo pausam e aparece **ENCERRAR O DIA?**.
 2. **FINALIZAR DIA** fecha a porta, processa receitas e despesas, fecha o relatório e abre o resumo imediatamente.

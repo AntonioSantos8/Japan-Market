@@ -12,6 +12,45 @@ namespace JapanMarket.Tests.PlayMode
     public sealed class DayFlowPlayModeTests
     {
         [UnityTest, Timeout(120000)]
+        public IEnumerator Primeiro_dia_mostra_aviso_as_21h_sem_liberar_fechamento()
+        {
+            LogAssert.ignoreFailingMessages = true;
+            AsyncOperation load = SceneManager.LoadSceneAsync("Main", LoadSceneMode.Single);
+            while (!load.isDone) yield return null;
+            yield return null;
+            LogAssert.ignoreFailingMessages = false;
+
+            GameContext context = Object.FindFirstObjectByType<GameContext>(
+                FindObjectsInactive.Include);
+            GameClock clock = context?.Clock as GameClock;
+            DayEndDecisionView decision = Object.FindFirstObjectByType<DayEndDecisionView>(
+                FindObjectsInactive.Include);
+            Assert.That(clock, Is.Not.Null);
+            Assert.That(decision, Is.Not.Null);
+            Assert.That(clock.IsEndOfDayLocked, Is.True);
+
+            GameObject panel = decision.transform.Find("Decision Panel")?.gameObject;
+            UnityEngine.UI.Button finish = decision.transform
+                .Find("Decision Panel/Decision Window/Finish Day Button")
+                ?.GetComponent<UnityEngine.UI.Button>();
+            Assert.That(panel, Is.Not.Null);
+            Assert.That(finish, Is.Not.Null);
+
+            AdvanceTo(clock, clock.EndDayPromptHour);
+            yield return null;
+
+            Assert.That(panel.activeSelf, Is.True,
+                "A proteção do tutorial não pode resultar em silêncio às 21h.");
+            Assert.That(finish.interactable, Is.False,
+                "O aviso deve aparecer, mas não pode encerrar o tutorial antes dos clientes.");
+            Assert.That(clock.Day, Is.EqualTo(1));
+
+            decision.ContinueOpen();
+            Assert.That(panel.activeSelf, Is.False);
+            Assert.That(clock.IsRunning, Is.True);
+        }
+
+        [UnityTest, Timeout(120000)]
         public IEnumerator Main_permite_continuar_ate_meia_noite_e_finalizar_o_dia_seguinte()
         {
             // A Main já emite erros conhecidos do QuickOutline ao carregar

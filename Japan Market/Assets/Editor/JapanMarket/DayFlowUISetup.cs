@@ -150,12 +150,14 @@ public static class DayFlowUISetup
 
         UnityEngine.UI.Button continueButton = MakeButton(window, "Continue Open Button", font,
             "CONTINUAR ABERTO", Card, PrimaryText);
+        TextMeshProUGUI continueLabel = continueButton.GetComponentInChildren<TextMeshProUGUI>(true);
         Place((RectTransform)continueButton.transform, new Vector2(0.5f, 0f),
             new Vector2(0.5f, 0f), new Vector2(-180f, 52f), new Vector2(310f, 70f),
             new Vector2(0.5f, 0f));
 
         UnityEngine.UI.Button finishButton = MakeButton(window, "Finish Day Button", font,
             "FINALIZAR DIA", Accent, new Color(0.02f, 0.08f, 0.075f, 1f));
+        TextMeshProUGUI finishLabel = finishButton.GetComponentInChildren<TextMeshProUGUI>(true);
         Place((RectTransform)finishButton.transform, new Vector2(0.5f, 0f),
             new Vector2(0.5f, 0f), new Vector2(180f, 52f), new Vector2(310f, 70f),
             new Vector2(0.5f, 0f));
@@ -168,6 +170,8 @@ public static class DayFlowUISetup
         Set(serialized, "_timeText", time);
         Set(serialized, "_titleText", title);
         Set(serialized, "_messageText", message);
+        Set(serialized, "_finishDayLabel", finishLabel);
+        Set(serialized, "_continueOpenLabel", continueLabel);
         serialized.ApplyModifiedPropertiesWithoutUndo();
 
         panel.gameObject.SetActive(false);

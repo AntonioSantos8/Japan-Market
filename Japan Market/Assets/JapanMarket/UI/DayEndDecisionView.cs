@@ -8,8 +8,8 @@ namespace JapanMarket.UI
     /// Oferece uma única decisão às 21h: encerrar agora ou continuar aberto.
     /// Recusar não fecha a porta e não repete o aviso; o relógio encerra o dia
     /// automaticamente à meia-noite. Durante o tutorial obrigatório a janela
-    /// nunca aparece, porque o próprio tutorial decide quando o primeiro dia
-    /// pode terminar.
+    /// ainda aparece, mas explica a proteção, mostra o progresso e bloqueia o
+    /// encerramento antecipado do primeiro dia.
     /// </summary>
     [DisallowMultipleComponent]
     public sealed class DayEndDecisionView : MonoBehaviour
@@ -23,11 +23,15 @@ namespace JapanMarket.UI
         [SerializeField] private TMPro.TextMeshProUGUI _timeText;
         [SerializeField] private TMPro.TextMeshProUGUI _titleText;
         [SerializeField] private TMPro.TextMeshProUGUI _messageText;
+        [SerializeField] private TMPro.TextMeshProUGUI _finishDayLabel;
+        [SerializeField] private TMPro.TextMeshProUGUI _continueOpenLabel;
 
         private IGameClock _clock;
+        private ITutorialStatus _tutorial;
         private int _handledDay;
         private bool _visible;
         private bool _decisionInProgress;
+        private bool _tutorialProtected;
         private float _previousTimeScale = 1f;
         private bool _previousClockRunning = true;
         private CursorLockMode _previousCursorLock;
@@ -37,6 +41,14 @@ namespace JapanMarket.UI
         {
             if (_panel != null) _panel.SetActive(false);
 
+            // Mantém cenas já abertas/serializadas antes destes dois campos
+            // compatíveis com a atualização: o texto é encontrado no botão em
+            // runtime e o setup pode gravar a referência na próxima montagem.
+            if (_finishDayLabel == null && _finishDayButton != null)
+                _finishDayLabel = _finishDayButton.GetComponentInChildren<TMPro.TextMeshProUGUI>(true);
+            if (_continueOpenLabel == null && _continueOpenButton != null)
+                _continueOpenLabel = _continueOpenButton.GetComponentInChildren<TMPro.TextMeshProUGUI>(true);
+
             _finishDayButton?.onClick.AddListener(FinishDay);
             _continueOpenButton?.onClick.AddListener(ContinueOpen);
 
@@ -45,6 +57,8 @@ namespace JapanMarket.UI
             Set(_messageText,
                 "Você já pode encerrar o expediente e ver o resumo do dia. " +
                 "Se continuar aberto, a loja funcionará normalmente até 00:00.");
+            Set(_finishDayLabel, "FINALIZAR DIA");
+            Set(_continueOpenLabel, "CONTINUAR ABERTO");
         }
 
         private void Update()
@@ -57,7 +71,7 @@ namespace JapanMarket.UI
 
             if (_visible || _decisionInProgress || _handledDay == _clock.Day)
                 return;
-            if (!_clock.IsRunning || _clock.IsEndOfDayLocked)
+            if (!_clock.IsRunning)
                 return;
             if (_clock.TimeOfDay < _clock.EndDayPromptHour
                 || _clock.TimeOfDay >= _clock.EndOfDayHour)
@@ -70,6 +84,34 @@ namespace JapanMarket.UI
         {
             _visible = true;
             _handledDay = _clock.Day;
+            ServiceContainer.Current.TryResolve(out _tutorial);
+            _tutorialProtected = _clock.IsEndOfDayLocked;
+
+            if (_tutorialProtected)
+            {
+                int served = _tutorial?.FirstDayCustomersServed ?? 0;
+                int target = _tutorial?.FirstDayCustomerTarget ?? 0;
+                Set(_titleText, "TUTORIAL EM ANDAMENTO");
+                Set(_messageText, target > 0
+                    ? $"O primeiro dia não pode terminar antes dos clientes do tutorial.\n" +
+                      $"Clientes atendidos: {served}/{target}"
+                    : "O primeiro dia está protegido pelo tutorial. " +
+                      "Conclua os atendimentos para encerrar o expediente.");
+                Set(_finishDayLabel, "FINALIZAR DIA");
+                Set(_continueOpenLabel, "CONTINUAR TUTORIAL");
+            }
+            else
+            {
+                Set(_titleText, "ENCERRAR O DIA?");
+                Set(_messageText,
+                    "Você já pode encerrar o expediente e ver o resumo do dia.\n" +
+                    "Se continuar aberto, a loja funcionará normalmente até 00:00.");
+                Set(_finishDayLabel, "FINALIZAR DIA");
+                Set(_continueOpenLabel, "CONTINUAR ABERTO");
+            }
+
+            if (_finishDayButton != null)
+                _finishDayButton.interactable = !_tutorialProtected;
 
             _previousTimeScale = Time.timeScale;
             _previousClockRunning = _clock.IsRunning;
@@ -93,7 +135,8 @@ namespace JapanMarket.UI
         /// <summary>Botão principal: fecha porta, relatório e dia agora.</summary>
         public void FinishDay()
         {
-            if (!_visible || _decisionInProgress || _clock == null) return;
+            if (!_visible || _decisionInProgress || _clock == null
+                || _tutorialProtected) return;
 
             _decisionInProgress = true;
             HideAndRestore();

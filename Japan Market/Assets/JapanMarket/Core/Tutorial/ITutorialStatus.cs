@@ -9,6 +9,9 @@ namespace JapanMarket.Core
     public interface ITutorialStatus
     {
         bool IsFinished { get; }
+        bool IsFirstDayProtected { get; }
+        int FirstDayCustomersServed { get; }
+        int FirstDayCustomerTarget { get; }
         event Action Completed;
     }
 }

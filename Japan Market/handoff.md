@@ -6,7 +6,7 @@ Atualizado em 18/09/2026. Projeto Unity 6000.2.7f2.
 
 A montagem baseada em `C:\Users\Ariele\Downloads\SETUP.md` foi gravada em `Assets/Scenes/Main.unity` e `Assets/Scenes/Sandbox.unity`. O usuário confirmou que Main é a cena de jogo e pediu este handoff e um README de funcionalidades e uso.
 
-**Validação automática concluída: 292/292 testes EditMode aprovados; 18 checks em cada cena e 5 regressões específicas aprovados em Play, com zero erros. As hierarquias da HUD de objetivos e do fluxo de fim do dia também passaram nas validações dedicadas.** Isso não equivale à aprovação manual do fluxo inteiro pelo jogador: arte, sensação da porta e operações completas de computador, abastecimento e caixa ainda precisam de revisão manual.
+**Validação automática concluída: 292/292 testes EditMode aprovados; 2/2 testes PlayMode do fluxo diário aprovados; 18 checks em cada cena e 5 regressões específicas aprovados em Play, com zero erros. As hierarquias da HUD de objetivos e do fluxo de fim do dia também passaram nas validações dedicadas.** Isso não equivale à aprovação manual do fluxo inteiro pelo jogador: arte, sensação da porta e operações completas de computador, abastecimento e caixa ainda precisam de revisão manual.
 
 ## Correções concluídas em 18/09
 
@@ -14,7 +14,7 @@ A montagem baseada em `C:\Users\Ariele\Downloads\SETUP.md` foi gravada em `Asset
 - `ITutorialStatus` mantém a UI desacoplada das etapas concretas do tutorial. O montador idempotente e sua validação estão em `Assets/Editor/JapanMarket/ObjectiveHudSetup.cs`.
 - O primeiro dia agora fica protegido contra fechamento automático/manual até três vendas concluídas (quantidade configurável no `TutorialManager`). A terceira venda agenda o fechamento para o frame seguinte, depois que o caixa termina de remover o cliente da fila.
 - O relógio visível para antes do fechamento durante essa proteção, mas `TotalHours` continua avançando para entregas. Dias posteriores oferecem a decisão às 21h e encerram obrigatoriamente às 00h.
-- `Player/Canvas/Day Flow UI` contém a decisão modal das 21h e o resumo completo. **Finalizar dia** fecha imediatamente; **Continuar aberto** mantém porta/clientes até 00h sem repetir o modal; meia-noite fecha e mostra o relatório. `DaySummaryView` consome `ReportClosed` e `DayEndDecisionView` coordena a decisão, pausa e cursor.
+- `Player/Canvas/Day Flow UI` contém a decisão modal das 21h e o resumo completo. No primeiro dia protegido, o modal mostra progresso do tutorial, mantém **Finalizar dia** bloqueado e oferece **Continuar tutorial**. Nos dias normais, **Finalizar dia** fecha imediatamente; **Continuar aberto** mantém porta/clientes até 00h sem repetir o modal; meia-noite fecha e mostra o relatório. `DaySummaryView` consome `ReportClosed` e `DayEndDecisionView` coordena a decisão, pausa e cursor.
 - O montador idempotente e a validação estão em `Assets/Editor/JapanMarket/DayFlowUISetup.cs`; a cena ficou com um único EventSystem e três botões ligados em runtime.
 - A porta provisória foi removida. O gatilho agora anima `Market/LojaCartoon/Doors/Window/Cube.010`, o segmento central do modelo já posicionado, e continua enviando `EnteredStore` ao tutorial.
 - A tela do computador exibe cinco abas: Mercado, Preços, Objetivos, Banco e Estatísticas. O layout foi corrigido para manter cabeçalho em 44 px, abas em 40 px e o corpo ocupando o restante.
@@ -81,6 +81,8 @@ Os checks de objetivos usam eventos e os de save usam memória. Não foram testa
 `Logs/objective-hud-validation.log`: `OBJECTIVE_HUD_VALIDATION_PASS` no Canvas `Player/Canvas`, retângulo `440 x 300`, referências serializadas e texto inicial `Finish tutorial`.
 
 `Logs/day-flow-ui-validation.log`: `DAY_FLOW_UI_VALIDATION_PASS` no Canvas `Player/Canvas`, 3 botões, um EventSystem, decisão às 21h e fechamento às 00h.
+
+`Logs/playmode-day-flow.xml`: **2 testes; 2 passaram; 0 falhas**. Um cobre o primeiro dia protegido às 21h, com botão de finalizar bloqueado; o outro cobre continuar até 23:59/00h e finalizar manualmente às 21h do dia seguinte.
 
 `Logs/editmode-four-fixes.xml`: execução anterior com **287 testes; 287 passaram; 0 falhas**.
 
