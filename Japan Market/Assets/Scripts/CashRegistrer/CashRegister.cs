@@ -78,6 +78,7 @@ public class CashRegister : InteractableBase
     private float            zoomOri;
     private float            totalPrice;
     private int              _totalExpected;  // items the NPC brought
+    private JapanMarket.Core.Money _saleCost;
     private int              _scannedCount;   // items successfully scanned
     private Queue<Item>      itemsQueue = new();
     private List<NpcTraject> npcQueue   = new();
@@ -512,6 +513,10 @@ public class CashRegister : InteractableBase
         {
             itemsQueue.Enqueue(itemComponent);
             _totalExpected++;
+            var context = JapanMarket.Gameplay.GameContext.Current;
+            if (context != null && context.Services.TryResolve(out JapanMarket.Data.IItemCatalog catalog))
+                foreach (var product in catalog.All)
+                    if (product.LegacyEnumValue == (int)itemType) { _saleCost += product.BaseCost; break; }
         }
 
         // Ensure an Outline component exists so the hover system can toggle it.
@@ -582,7 +587,18 @@ public class CashRegister : InteractableBase
 
     public void FinalizeTransaction()
     {
+        if (_totalExpected <= 0 || npcQueue.Count == 0) return;
         float earned = totalPrice;
+        var game = JapanMarket.Gameplay.GameContext.Current;
+        if (game != null)
+        {
+            int id = npcQueue[0].transform.GetInstanceID();
+            game.Events.Publish(new JapanMarket.Core.SaleCompleted(id, default,
+                JapanMarket.Core.Money.FromYen((double)earned), _saleCost, _totalExpected,
+                GetCurrentPaymentType() == PaymentType.Card ? JapanMarket.Core.PaymentMethod.Card : JapanMarket.Core.PaymentMethod.Cash));
+            ServiceLocator.Get<MarketManager>()?.UnregisterClient(npcQueue[0].transform, JapanMarket.Core.CustomerLeaveReason.Purchased);
+        }
+        else ServiceLocator.Get<MarketManager>()?.Earn_Money(earned);
         if (_inCardMachineMode) ExitCardMachineMode();
         FinishCurrentCustomer();
         ResetMoneyPlacementState();
@@ -612,6 +628,7 @@ public class CashRegister : InteractableBase
     {
         totalPrice     = 0;
         _totalExpected = 0;
+        _saleCost = default;
         _scannedCount  = 0;
         itemsQueue.Clear();
         cashregisterText.gameObject.SetActive(false);

@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cddb9cd79f2dc7f4bb31ff56f642b874, type: 3}
+  m_Name: FatureVendas
+  m_EditorClassIdentifier: JapanMarket.Data::JapanMarket.Data.ObjectiveDefinition
+  _id:
+    _value: b4609b0e7d9e4476a8b298184736b833
+  _title:
+    _entries:
+    - language: 0
+      text: Fature mil ienes
+  _description:
+    _entries:
+    - language: 0
+      text: "Faturar \xA51.000 em vendas"
+  _conditions:
+  - {fileID: 11400000, guid: 3384d748d88b0084c9015e8cbde6e8cf, type: 2}
+  _reward:
+    Money:
+      _yen: 100
+    XP: 25
+    Flag: 
+  _unlock: {fileID: 11400000, guid: 60ecddccfe8f839428035ea9c95b6084, type: 2}
+  _sortOrder: 5

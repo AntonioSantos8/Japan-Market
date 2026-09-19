@@ -3,19 +3,71 @@ using DG.Tweening;
 using TMPro;
 using UnityEngine.UI;
 using System.Collections.Generic;
+using JapanMarket.Core;
+using JapanMarket.Domain;
 
+/// <summary>
+/// O painel de dinheiro da loja.
+///
+/// ATENÇÃO — esta classe deixou de ser a dona do saldo na Fase 6. O dinheiro
+/// agora vive no <see cref="ILedger"/>, em Domain, junto com o livro-razão. O
+/// que sobrou aqui é a APRESENTAÇÃO: o texto, o tween, o flash, as faíscas.
+///
+/// A API pública não mudou de propósito — <c>Money</c>, <c>Earn_Money</c>,
+/// <c>Lose_Money</c> e <c>Open</c> continuam existindo com a mesma assinatura,
+/// e os scripts antigos que os chamam continuam funcionando sem uma linha de
+/// mudança. A diferença é que agora eles atravessam o livro-razão, então existe
+/// UM saldo só, com histórico, e a venda fechada no caixa novo aparece no mesmo
+/// contador.
+///
+/// O efeito visual não é mais disparado por quem chama: ele reage ao evento
+/// <c>BalanceChanged</c>. Assim uma venda do sistema novo ganha a mesma animação
+/// sem conhecer este script.
+///
+/// Uma diferença de comportamento vale ser registrada: antes, <c>money += q</c>
+/// fazia <c>Lose_Money(-50)</c> AUMENTAR o saldo. Agora valores não positivos são
+/// ignorados nos dois métodos. Se algum lugar dependia disso, dependia de um
+/// acidente.
+/// </summary>
 public class MarketManager : MonoBehaviour
 {
     private bool open = false;
-    private float money;
     private float late_money;
     private Tweener moneyTween;
 
     [SerializeField] private float clients;
     [SerializeField] private TextMeshProUGUI moneyText;
 
-    public float Money { get => money; set => money = value; }
-    public bool Open { get => open; set => open = value; }
+    private ILedger _ledger;
+    // System.IDisposable qualificado: este arquivo NÃO importa System, senão
+    // `Random` ficaria ambíguo entre System.Random e UnityEngine.Random.
+    private System.IDisposable _balanceSubscription;
+
+    /// <summary>
+    /// Leitura do saldo real. O setter existe só para não quebrar chamadas
+    /// antigas e é deliberadamente inerte — atribuir dinheiro sem registrar de
+    /// onde veio é exatamente o que o livro-razão existe para impedir.
+    /// </summary>
+    public float Money
+    {
+        get => _ledger != null ? _ledger.Balance.Yen : 0f;
+        set => Debug.LogWarning(
+            "[MarketManager] Atribuir Money direto não tem mais efeito. Use " +
+            "Earn_Money/Lose_Money, ou ILedger.Deposit/TryWithdraw no código novo.", this);
+    }
+
+    public bool Open
+    {
+        get => JapanMarket.Gameplay.GameContext.Current != null &&
+            JapanMarket.Gameplay.GameContext.Current.Services.TryResolve(out IGameClock clock) ? clock.StoreIsOpen : open;
+        set
+        {
+            open = value;
+            var game = JapanMarket.Gameplay.GameContext.Current;
+            if (game == null || !game.Services.TryResolve(out IGameClock clock)) return;
+            if (value) open = clock.TryOpenStore(); else clock.CloseStore();
+        }
+    }
     public float Clients { get => clients; set => clients = value; }
 
     private List<Transform> clientTransforms = new List<Transform>();
@@ -24,31 +76,110 @@ public class MarketManager : MonoBehaviour
     private Vector3 _baseScale;
     private Canvas _rootCanvas;
 
+    private const float VfxCooldownSeconds = 0.35f;
+    private float _lastVfxTime = -99f;
+
     // ── Lifecycle ─────────────────────────────────────────────────────────────
 
     public void RegisterClient(Transform client)
     {
-        if (!clientTransforms.Contains(client)) clientTransforms.Add(client);
+        if (clientTransforms.Contains(client)) return;
+        clientTransforms.Add(client);
+        JapanMarket.Gameplay.GameContext.Current?.Events.Publish(new CustomerEntered(client.GetInstanceID(), client));
     }
-    public void UnregisterClient(Transform client) => clientTransforms.Remove(client);
+    public void UnregisterClient(Transform client) => UnregisterClient(client, CustomerLeaveReason.NothingToBuy);
+
+    public void UnregisterClient(Transform client, CustomerLeaveReason reason)
+    {
+        if (!clientTransforms.Remove(client)) return;
+        JapanMarket.Gameplay.GameContext.Current?.Events.Publish(new CustomerLeft(client.GetInstanceID(), reason == CustomerLeaveReason.Purchased, reason));
+    }
 
     void Start()
     {
         ServiceLocator.Register(this);
-        Earn_Money(8000);
+
         if (moneyText != null)
         {
             _baseScale = moneyText.transform.localScale;
             _rootCanvas = moneyText.GetComponentInParent<Canvas>()?.rootCanvas;
         }
+
+        // O saldo inicial não é mais dado aqui com um Earn_Money(8000): ele é o
+        // saldo de abertura do livro-razão, configurado no GameContext. Somar de
+        // novo aqui geraria uma "venda" fantasma de ¥8000 no relatório do dia 1.
+        BindLedger();
         LoadMoney();
+    }
+
+    private void BindLedger()
+    {
+        var game = JapanMarket.Gameplay.GameContext.Current;
+        if (game == null)
+        {
+            Debug.LogWarning("[MarketManager] Nenhum GameContext nesta cena. A economia " +
+                             "inteira fica desligada aqui: o saldo lê ¥0 e Earn_Money/" +
+                             "Lose_Money não fazem nada. Adicione um GameContext.", this);
+            return;
+        }
+
+        game.Services.TryResolve(out _ledger);
+        if (_ledger == null) return;
+
+        _balanceSubscription = game.Events.Subscribe<BalanceChanged>(OnBalanceChanged);
+
+        // Repinta na hora. Num bind tardio (cena aditiva, GameContext que entrou
+        // depois do Start) o texto está em ¥0 e o late_money em 0 — sem isto, a
+        // primeira movimentação animaria de zero até o saldo real, dando um
+        // salto de ¥8000 que não corresponde a transação nenhuma.
+        LoadMoney();
+    }
+
+    private void OnDestroy() => _balanceSubscription?.Dispose();
+
+    /// <summary>
+    /// Um único lugar reage à mudança de saldo, venha ela de onde vier: da
+    /// compra de uma prateleira no código antigo ou da venda fechada no caixa
+    /// novo. Antes, cada chamador disparava o próprio efeito — e quem esquecia,
+    /// mexia no dinheiro sem a tela piscar.
+    /// </summary>
+    private void OnBalanceChanged(BalanceChanged change)
+    {
+        bool spending = change.Delta.IsNegative;
+
+        // O contador sempre acompanha: é barato e é o que o jogador lê.
+        AnimateTo(change.Current.Yen, spending ? 1f : 0.9f,
+                  spending ? Ease.OutQuad : Ease.OutExpo);
+
+        // O resto é caro. Cada PlayEarnVFX instancia catorze GameObjects com
+        // TextMeshProUGUI, e agora TODA venda passa por aqui — com três caixas
+        // atendendo seriam quarenta e dois por frame, mais três flashes dourados
+        // de tela cheia sobrepostos. Um por vez, com uma folga curta.
+        if (Time.unscaledTime - _lastVfxTime < VfxCooldownSeconds) return;
+        _lastVfxTime = Time.unscaledTime;
+
+        PlaySound(spending ? SFX.GastarDinheiro : SFX.GanharDinheiro);
+
+        if (spending) PlaySpendVFX();
+        else PlayEarnVFX(change.Delta.Yen);
+    }
+
+    private void AnimateTo(float target, float duration, Ease ease)
+    {
+        if (moneyText == null) { late_money = target; return; }
+
+        moneyTween?.Kill();
+        moneyTween = DOTween.To(
+            () => late_money,
+            x => { late_money = x; moneyText.text = $"Iene: {FormatMoney(late_money)}"; },
+            target, duration).SetEase(ease);
     }
 
     public void LoadMoney()
     {
-        late_money = money;
+        late_money = Money;
         if (moneyText != null)
-            moneyText.text = $"Iene: {FormatMoney(money)}";
+            moneyText.text = $"Iene: {FormatMoney(Money)}";
     }
 
     [ContextMenu("Test Earn")]
@@ -56,23 +187,33 @@ public class MarketManager : MonoBehaviour
 
     // ── Earn ─────────────────────────────────────────────────────────────────
 
+    /// <summary>
+    /// Entrada de dinheiro sem motivo declarado. Mantida para o código antigo;
+    /// em código novo, chame <c>ILedger.Deposit</c> com a
+    /// <c>TransactionReason</c> certa, senão a linha some do relatório do dia.
+    /// </summary>
     public void Earn_Money(float quantity)
     {
-        money += quantity;
+        if (_ledger == null) { BindLedger(); if (_ledger == null) return; }
 
-        ServiceLocator.Get<SoundManager>().Play(SFX.GanharDinheiro);
+        _ledger.Deposit(JapanMarket.Core.Money.FromYen(quantity), TransactionReason.Unknown);
+    }
 
-        moneyTween?.Kill();
-        moneyTween = DOTween.To(
-            () => late_money,
-            x => { late_money = x; moneyText.text = $"Iene: {FormatMoney(late_money)}"; },
-            money, 0.9f).SetEase(Ease.OutExpo);
-
-        PlayEarnVFX(quantity);
+    /// <summary>
+    /// O ServiceLocator devolve null para serviço ausente (é o contrato antigo,
+    /// preservado), então tocar som sem checar é NullReferenceException numa
+    /// cena sem SoundManager — a Sandbox, por exemplo.
+    /// </summary>
+    private static void PlaySound(SFX sfx)
+    {
+        SoundManager sound = ServiceLocator.Get<SoundManager>();
+        if (sound != null) sound.Play(sfx);
     }
 
     private void PlayEarnVFX(float amount)
     {
+        if (moneyText == null) return;
+
         // 1. Flash dourado em toda a tela
         SpawnScreenFlash();
 
@@ -216,18 +357,26 @@ public class MarketManager : MonoBehaviour
 
     // ── Lose ─────────────────────────────────────────────────────────────────
 
+    /// <summary>
+    /// Saída de dinheiro. ATENÇÃO ao comportamento herdado: sem saldo, isto NÃO
+    /// desconta e NÃO avisa — e quem chamou segue achando que comprou. Está
+    /// preservado de propósito para não mudar o jogo por baixo do código antigo,
+    /// mas é um defeito: em código novo use <c>ILedger.TryWithdraw</c>, que
+    /// devolve false, ou <c>Charge</c> para cobranças obrigatórias.
+    /// </summary>
     public void Lose_Money(float quantity)
     {
-        if (money < quantity) return;
-        money -= quantity;
+        if (_ledger == null) { BindLedger(); if (_ledger == null) return; }
 
-        ServiceLocator.Get<SoundManager>().Play(SFX.GastarDinheiro);
+        JapanMarket.Core.Money amount = JapanMarket.Core.Money.FromYen(quantity);
+        if (!_ledger.CanAfford(amount)) return;
 
-        moneyTween?.Kill();
-        moneyTween = DOTween.To(
-            () => late_money,
-            x => { late_money = x; moneyText.text = $"Iene: {FormatMoney(late_money)}"; },
-            money, 1f).SetEase(Ease.OutQuad);
+        _ledger.TryWithdraw(amount, TransactionReason.Unknown);
+    }
+
+    private void PlaySpendVFX()
+    {
+        if (moneyText == null) return;
 
         moneyText.DOKill();
         moneyText.transform.DOKill(true);
@@ -239,11 +388,13 @@ public class MarketManager : MonoBehaviour
 
     // ── Format ───────────────────────────────────────────────────────────────
 
-    private string FormatMoney(float value)
-    {
-        if (value >= 1_000_000_000f) return $"¥{value / 1_000_000_000f:0.##}b";
-        if (value >= 1_000_000f) return $"¥{value / 1_000_000f:0.##}m";
-        if (value >= 1_000f) return $"¥{value / 1_000f:0.##}k";
-        return "¥" + Mathf.FloorToInt(value);
-    }
+    /// <summary>
+    /// Delega ao <c>Money.ToCompactString</c>. A versão anterior devolvia
+    /// "¥-4000000" para saldo negativo (todos os ifs comparavam com o valor com
+    /// sinal) e estourava no <c>Mathf.FloorToInt</c> acima de ~2,1 bilhões —
+    /// dois casos que passaram a ser alcançáveis agora que o livro-razão deixa o
+    /// saldo ficar negativo e guarda em long.
+    /// </summary>
+    private string FormatMoney(float value) =>
+        JapanMarket.Core.Money.FromYen(value).ToCompactString();
 }

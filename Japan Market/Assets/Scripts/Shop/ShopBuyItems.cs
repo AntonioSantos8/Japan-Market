@@ -68,11 +68,29 @@ public class ShopBuyItems : MonoBehaviour
         currentItemBox = at.itemBoxPrefab;
         nameText.text = at.name;
         descriptionText.text = at.description;
-        singlePriceText.text = "¥" + Mathf.RoundToInt(at.singleItemPrice);
+        singlePriceText.text = BoxPriceText(at);
         
     }
     public void BuyBox()
     {
+        var game = JapanMarket.Gameplay.GameContext.Current;
+        if (_sellingItemType == SellingItemType.Food && game != null)
+        {
+            if (!game.Services.TryResolve(out JapanMarket.Data.IItemCatalog catalog) ||
+                !game.Services.TryResolve(out JapanMarket.Domain.IMarketOrderService orders)) return;
+            JapanMarket.Data.ItemDefinition product = null;
+            foreach (var candidate in catalog.All)
+                if (candidate.LegacyEnumValue == (int)currentObj.Data.itemType) { product = candidate; break; }
+            if (product == null) { ServiceLocator.Get<Warnings>()?.ShowWarning("Produto ausente no catálogo.", false); return; }
+            var cart = new JapanMarket.Domain.MarketCart();
+            cart.AddBoxes(product, 1);
+            var result = orders.TryCheckout(cart, out var order);
+            if (result != JapanMarket.Domain.MarketOrderResult.Ok)
+            { ServiceLocator.Get<Warnings>()?.ShowWarning("Pedido recusado: " + result, false); return; }
+            ServiceLocator.Get<SoundManager>()?.Play(SFX.ComprarItemOuFurnitureComputador);
+            _tutorialManager?.BoughtItem(_sellingItemType);
+            return;
+        }
         float price = 0f;
 
         price = currentObj.Data.singleItemPrice;
@@ -175,7 +193,7 @@ public class ShopBuyItems : MonoBehaviour
                     
                     nameText.text = at.name;
                     descriptionText.text = at.description;
-                    singlePriceText.text = "¥" + Mathf.RoundToInt(at.singleItemPrice);
+                    singlePriceText.text = BoxPriceText(at);
                 
 
 
@@ -203,6 +221,15 @@ public class ShopBuyItems : MonoBehaviour
     public void RefreshCurrentItem()
     {
         ChangeItem(currentIndex);
+    }
+    private string BoxPriceText(AllIThingsData data)
+    {
+        var game = JapanMarket.Gameplay.GameContext.Current;
+        if (_sellingItemType == SellingItemType.Food && game != null &&
+            game.Services.TryResolve(out JapanMarket.Data.IItemCatalog catalog))
+            foreach (var product in catalog.All)
+                if (product.LegacyEnumValue == (int)data.itemType) return "¥" + product.BoxCost.Yen;
+        return "¥" + Mathf.RoundToInt(data.singleItemPrice);
     }
     public void UpdateComputerTexts(ComputerStats stats) 
     {

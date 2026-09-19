@@ -22,6 +22,7 @@ public class PaymentMoney : MonoBehaviour
 
     private List<float> moneyStack   = new List<float>();
     private float       totalPrice;
+    private bool processingPayment;
     private float       customerPaid;
     private float       giving;
     private Vector3     _imageOriginalScale;
@@ -46,6 +47,7 @@ public class PaymentMoney : MonoBehaviour
         if (IsOpen) return;
 
         IsOpen     = true;
+        processingPayment = false;
         totalPrice = price;
 
         ServiceLocator.Get<TutorialManager>()?.NotifyGameEvent("ChoosedPaymentType");
@@ -166,7 +168,8 @@ public class PaymentMoney : MonoBehaviour
 
     private void OnPaymentSuccess()
     {
-        ServiceLocator.Get<MarketManager>().Earn_Money(totalPrice);
+        if (processingPayment) return;
+        processingPayment = true;
 
         DOTween.Sequence()
             .Append(givingText.DOColor(Color.green, 0.2f))

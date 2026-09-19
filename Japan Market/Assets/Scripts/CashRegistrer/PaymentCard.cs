@@ -16,6 +16,7 @@ public class PaymentCard : MonoBehaviour
     public bool IsOpen { get; private set; }
 
     private float  totalPrice;
+    private bool processingPayment;
     private string currentValue = "" ;
 
     // ── Public API ────────────────────────────────────────────────────────────
@@ -25,6 +26,7 @@ public class PaymentCard : MonoBehaviour
         if (IsOpen) return;
 
         IsOpen     = true;
+        processingPayment = false;
         totalPrice = price;
         currentValue = "";
 
@@ -95,7 +97,8 @@ public class PaymentCard : MonoBehaviour
 
     private void OnPaymentSuccess()
     {
-        ServiceLocator.Get<MarketManager>().Earn_Money(totalPrice);
+        if (processingPayment) return;
+        processingPayment = true;
 
         DOTween.Sequence()
             .Append(valueText.DOColor(Color.green, 0.2f))
