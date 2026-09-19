@@ -58,7 +58,7 @@ public class Computer : InteractableBase
                 Cursor.lockState = CursorLockMode.Locked;
                 Cursor.visible = false;
 
-                ServiceLocator.Get<ShopManager>().ExitFurnitureSesion();
+               
             }
 
 

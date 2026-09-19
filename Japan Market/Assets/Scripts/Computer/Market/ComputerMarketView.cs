@@ -33,6 +33,7 @@ public sealed class ComputerMarketView : MonoBehaviour
     [SerializeField] private TMP_Text feedbackText;
     [SerializeField] private UnityEngine.UI.Button checkoutButton;
     [SerializeField, Min(0)] private long fixedShippingFeeYen = 800;
+    [SerializeField] private bool instantProductDelivery = true;
 
     private readonly MarketCart productCart = new();
     private readonly Dictionary<FurnitureData, int> furnitureCart = new();
@@ -250,7 +251,25 @@ public sealed class ComputerMarketView : MonoBehaviour
 
             productCart.ShippingFee = shipping;
             productCart.AdditionalCost = furnitureTotal;
-            MarketOrderResult result = market.TryCheckout(productCart, out MarketOrder order);
+
+            // A configuração geral do mercado pode ter horas de entrega. Para
+            // compras feitas neste computador, a opção padrão é entrega
+            // imediata. Restauramos o valor logo depois para não alterar outros
+            // fornecedores ou sistemas que usem o mesmo serviço.
+            float previousDeliveryHours = market.DeliveryHours;
+            if (instantProductDelivery) market.DeliveryHours = 0f;
+
+            MarketOrderResult result;
+            MarketOrder order;
+            try
+            {
+                result = market.TryCheckout(productCart, out order);
+            }
+            finally
+            {
+                market.DeliveryHours = previousDeliveryHours;
+            }
+
             if (result != MarketOrderResult.Ok)
             {
                 SetFeedback(Explain(result), false);

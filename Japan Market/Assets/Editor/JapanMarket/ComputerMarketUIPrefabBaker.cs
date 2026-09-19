@@ -126,6 +126,7 @@ internal static class ComputerMarketUIPrefabBaker
             Set(so, "feedbackText", feedback);
             Set(so, "checkoutButton", checkout);
             so.FindProperty("fixedShippingFeeYen").longValue = 800;
+            so.FindProperty("instantProductDelivery").boolValue = true;
             FillFurnitureCatalog(so.FindProperty("furnitureCatalog"));
             so.ApplyModifiedPropertiesWithoutUndo();
 
