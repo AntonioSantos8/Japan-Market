@@ -28,6 +28,30 @@ namespace JapanMarket.Gameplay
         [Tooltip("Área em que as caixas são espalhadas, em metros.")]
         [SerializeField] private Vector2 _scatter = new(1.2f, 1.2f);
 
+        [Header("Posicionamento seguro")]
+        [Min(1)]
+        [Tooltip("Quantos pontos são testados antes de usar o ponto central.")]
+        [SerializeField] private int _spawnSearchAttempts = 32;
+
+        [Min(0.1f)]
+        [Tooltip("Espaço horizontal reservado para cada caixa.")]
+        [SerializeField] private float _boxClearanceRadius = 0.55f;
+
+        [Min(0.1f)]
+        [Tooltip("Altura livre exigida acima do chão.")]
+        [SerializeField] private float _boxClearanceHeight = 1.1f;
+
+        [Min(0.01f)]
+        [Tooltip("Distância que deixa a caixa acima do chão antes da física acomodá-la.")]
+        [SerializeField] private float _heightAboveGround = 0.12f;
+
+        [Min(1f)]
+        [Tooltip("Altura do início do raycast usado para encontrar o chão.")]
+        [SerializeField] private float _groundProbeHeight = 5f;
+
+        [Tooltip("Camadas consideradas chão ou obstáculo. Vazio significa todas.")]
+        [SerializeField] private LayerMask _blockingLayers = ~0;
+
         [Min(0f)]
         [Tooltip("Segundos entre uma caixa e a seguinte.")]
         [SerializeField] private float _secondsBetweenBoxes = 0.25f;
@@ -99,10 +123,7 @@ namespace JapanMarket.Gameplay
                 return;
             }
 
-            Vector3 position = Drop.position + new Vector3(
-                Random.Range(-_scatter.x, _scatter.x) * 0.5f,
-                0f,
-                Random.Range(-_scatter.y, _scatter.y) * 0.5f);
+            Vector3 position = FindSafeSpawnPosition();
 
             var box = Object.Instantiate(product.BoxPrefab, position, Drop.rotation);
             foreach (var component in box.GetComponentsInChildren<MonoBehaviour>(true))
@@ -112,6 +133,67 @@ namespace JapanMarket.Gameplay
             if (_logDeliveries)
                 Debug.Log($"[Entrega] {product.name} — {_market.DeliveryQueue.PendingBoxes} " +
                           "caixa(s) ainda na fila.", this);
+        }
+
+        private Vector3 FindSafeSpawnPosition()
+        {
+            int mask = _blockingLayers.value == 0 ? Physics.AllLayers : _blockingLayers.value;
+            int attempts = Mathf.Max(1, _spawnSearchAttempts);
+
+            // O primeiro teste é exatamente no Drop Point. Os seguintes formam
+            // anéis progressivos: se o ponto estiver numa parede, a busca sai
+            // dela em vez de continuar sorteando dentro dos mesmos 1,2 metros.
+            for (int i = 0; i < attempts; i++)
+            {
+                Vector2 offset = i == 0 ? Vector2.zero : SpiralOffset(i);
+                Vector3 horizontal = Drop.position + new Vector3(offset.x, 0f, offset.y);
+                Vector3 rayOrigin = horizontal + Vector3.up * _groundProbeHeight;
+
+                if (!Physics.Raycast(rayOrigin, Vector3.down, out RaycastHit ground,
+                        _groundProbeHeight * 2f, mask, QueryTriggerInteraction.Ignore))
+                    continue;
+
+                Vector3 clearanceCenter = ground.point +
+                    Vector3.up * (_boxClearanceHeight * 0.5f + 0.03f);
+                Vector3 halfExtents = new(
+                    _boxClearanceRadius,
+                    _boxClearanceHeight * 0.5f,
+                    _boxClearanceRadius);
+
+                if (Physics.CheckBox(clearanceCenter, halfExtents, Drop.rotation,
+                        mask, QueryTriggerInteraction.Ignore))
+                    continue;
+
+                return ground.point + Vector3.up * _heightAboveGround;
+            }
+
+            Debug.LogWarning(
+                "[DeliverySpawner] Nenhum espaço totalmente livre foi encontrado perto " +
+                $"de '{Drop.name}'. Usando o centro do ponto de entrega.", this);
+
+            return GroundedFallback(mask);
+        }
+
+        private Vector2 SpiralOffset(int index)
+        {
+            const float GoldenAngle = 2.39996323f;
+
+            float baseRadius = Mathf.Max(_boxClearanceRadius * 2.2f,
+                Mathf.Max(_scatter.x, _scatter.y) * 0.5f);
+            float radius = baseRadius * Mathf.Sqrt(index);
+            float angle = index * GoldenAngle;
+
+            return new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * radius;
+        }
+
+        private Vector3 GroundedFallback(int mask)
+        {
+            Vector3 origin = Drop.position + Vector3.up * _groundProbeHeight;
+            if (Physics.Raycast(origin, Vector3.down, out RaycastHit ground,
+                    _groundProbeHeight * 2f, mask, QueryTriggerInteraction.Ignore))
+                return ground.point + Vector3.up * _heightAboveGround;
+
+            return Drop.position + Vector3.up * _heightAboveGround;
         }
 
         /// <summary>
@@ -135,6 +217,12 @@ namespace JapanMarket.Gameplay
         {
             Gizmos.color = new Color(0.4f, 0.8f, 1f);
             Gizmos.DrawWireCube(Drop.position, new Vector3(_scatter.x, 0.1f, _scatter.y));
+
+            Gizmos.color = new Color(0.2f, 1f, 0.45f, 0.7f);
+            float searchRadius = Mathf.Max(_boxClearanceRadius * 2.2f,
+                Mathf.Max(_scatter.x, _scatter.y) * 0.5f) *
+                Mathf.Sqrt(Mathf.Max(1, _spawnSearchAttempts - 1));
+            Gizmos.DrawWireSphere(Drop.position, searchRadius);
         }
     }
 }

@@ -30,6 +30,10 @@ public class Computer : InteractableBase
             ServiceLocator.Get<PlayerMotor>().SetCanMove(false);
             ServiceLocator.Get<PlayerLook>().CanLook = false;
             reticle.SetActive(false);
+
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+
             onEnterComputer?.Invoke();
         }
     }
@@ -47,6 +51,7 @@ public class Computer : InteractableBase
                 onLeaveComputer?.Invoke();
                 ServiceLocator.Get<PlayerMotor>().SetCanMove(true);
                 ServiceLocator.Get<PlayerLook>().CanLook = true;
+             
                 reticle.SetActive(true);
                 isInComputer = false;
 

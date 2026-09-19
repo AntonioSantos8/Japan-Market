@@ -27,11 +27,20 @@ namespace JapanMarket.Domain
 
         public IReadOnlyDictionary<ItemDefinition, int> Items => _items;
 
+        /// <summary>Taxa única por pedido, independente da quantidade.</summary>
+        public Money ShippingFee { get; set; }
+
+        /// <summary>
+        /// Outros itens cobrados junto do pedido, como móveis do computador.
+        /// A tela é responsável por entregar esses itens depois do checkout.
+        /// </summary>
+        public Money AdditionalCost { get; set; }
+
         public Money TotalCost
         {
             get
             {
-                Money total = Money.Zero;
+                Money total = TotalBoxes > 0 ? ShippingFee + AdditionalCost : Money.Zero;
                 foreach (var kvp in _items)
                 {
                     Money boxCost = kvp.Key.BoxCost;
@@ -87,7 +96,12 @@ namespace JapanMarket.Domain
         private static int Clamp(int boxes) =>
             boxes > MaxBoxesPerProduct ? MaxBoxesPerProduct : boxes;
 
-        public void Clear() => _items.Clear();
+        public void Clear()
+        {
+            _items.Clear();
+            ShippingFee = Money.Zero;
+            AdditionalCost = Money.Zero;
+        }
     }
 }
 

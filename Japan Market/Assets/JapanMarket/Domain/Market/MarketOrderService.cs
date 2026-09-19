@@ -133,6 +133,9 @@ namespace JapanMarket.Domain
                 total += line.Total;
             }
 
+            // Frete e itens adicionais são cobrados uma única vez por pedido.
+            total += cart.ShippingFee + cart.AdditionalCost;
+
             // `IsPositive` antes de sacar: o livro-razão recusa valor não
             // positivo (e com razão), mas um carrinho só de brindes custa ¥0 e
             // seria reportado como "sem dinheiro" com o caixa cheio.
