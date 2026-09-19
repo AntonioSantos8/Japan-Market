@@ -85,7 +85,10 @@ namespace JapanMarket.Gameplay
         {
             if (_market == null) { TryResolve(); return; }
 
-            if (_cooldown > 0f) { _cooldown -= Time.deltaTime; return; }
+            // O computador pausa o tempo do jogo. Usar deltaTime fazia a
+            // primeira caixa aparecer e congelava todas as seguintes no
+            // cooldown enquanto o jogador continuava na tela de compras.
+            if (_cooldown > 0f) { _cooldown -= Time.unscaledDeltaTime; return; }
             if (_maxBoxesOnFloor > 0 && CountOnFloor() >= _maxBoxesOnFloor) return;
             if (_market.DeliveryQueue.PendingBoxes == 0) return;
 
