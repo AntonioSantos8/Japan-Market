@@ -41,6 +41,16 @@ namespace JapanMarket.Domain
         /// <summary>O relógio anda? Falso durante o fechamento do dia e em menus.</summary>
         bool IsRunning { get; }
 
+        /// <summary>
+        /// Enquanto verdadeiro, o horário não alcança o fechamento e pedidos
+        /// manuais de encerrar o dia são recusados. O tempo absoluto continua
+        /// avançando para não travar entregas durante o tutorial.
+        /// </summary>
+        bool IsEndOfDayLocked { get; }
+
+        /// <summary>Hora em que a decisão de encerrar o expediente é oferecida.</summary>
+        float EndDayPromptHour { get; }
+
         /// <summary>Hora a partir da qual o jogador não pode mais abrir a loja.</summary>
         float ClosingHour { get; }
 
@@ -58,6 +68,12 @@ namespace JapanMarket.Domain
         void CloseStore();
 
         void SetRunning(bool running);
+
+        /// <summary>
+        /// Protege um fluxo obrigatório (como o primeiro tutorial) contra o
+        /// fechamento automático e contra o botão de encerrar o dia.
+        /// </summary>
+        void SetEndOfDayLocked(bool locked);
 
         /// <summary>
         /// Encerra o dia agora, sem esperar o relógio. É o botão "ir dormir".

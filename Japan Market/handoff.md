@@ -6,10 +6,16 @@ Atualizado em 18/09/2026. Projeto Unity 6000.2.7f2.
 
 A montagem baseada em `C:\Users\Ariele\Downloads\SETUP.md` foi gravada em `Assets/Scenes/Main.unity` e `Assets/Scenes/Sandbox.unity`. O usuário confirmou que Main é a cena de jogo e pediu este handoff e um README de funcionalidades e uso.
 
-**Validação automática concluída: 287/287 testes EditMode aprovados; 18 checks em cada cena e 5 regressões específicas aprovados em Play, com zero erros.** Isso não equivale à aprovação manual do fluxo inteiro pelo jogador: arte, sensação da porta e operações completas de computador, abastecimento e caixa ainda precisam de revisão manual.
+**Validação automática concluída: 292/292 testes EditMode aprovados; 18 checks em cada cena e 5 regressões específicas aprovados em Play, com zero erros. As hierarquias da HUD de objetivos e do fluxo de fim do dia também passaram nas validações dedicadas.** Isso não equivale à aprovação manual do fluxo inteiro pelo jogador: arte, sensação da porta e operações completas de computador, abastecimento e caixa ainda precisam de revisão manual.
 
 ## Correções concluídas em 18/09
 
+- Foi montado `Player/Canvas/Objective Tracker`, painel de HUD ancorado no canto superior direito. Durante o tutorial, a HUD e a aba Objetivos do computador mostram somente `Finish tutorial`; as metas econômicas não progridem nem recompensam nesse período. Depois elas começam do zero e as telas passam para até três metas ativas.
+- `ITutorialStatus` mantém a UI desacoplada das etapas concretas do tutorial. O montador idempotente e sua validação estão em `Assets/Editor/JapanMarket/ObjectiveHudSetup.cs`.
+- O primeiro dia agora fica protegido contra fechamento automático/manual até três vendas concluídas (quantidade configurável no `TutorialManager`). A terceira venda agenda o fechamento para o frame seguinte, depois que o caixa termina de remover o cliente da fila.
+- O relógio visível para antes do fechamento durante essa proteção, mas `TotalHours` continua avançando para entregas. Dias posteriores oferecem a decisão às 21h e encerram obrigatoriamente às 00h.
+- `Player/Canvas/Day Flow UI` contém a decisão modal das 21h e o resumo completo. **Finalizar dia** fecha imediatamente; **Continuar aberto** mantém porta/clientes até 00h sem repetir o modal; meia-noite fecha e mostra o relatório. `DaySummaryView` consome `ReportClosed` e `DayEndDecisionView` coordena a decisão, pausa e cursor.
+- O montador idempotente e a validação estão em `Assets/Editor/JapanMarket/DayFlowUISetup.cs`; a cena ficou com um único EventSystem e três botões ligados em runtime.
 - A porta provisória foi removida. O gatilho agora anima `Market/LojaCartoon/Doors/Window/Cube.010`, o segmento central do modelo já posicionado, e continua enviando `EnteredStore` ao tutorial.
 - A tela do computador exibe cinco abas: Mercado, Preços, Objetivos, Banco e Estatísticas. O layout foi corrigido para manter cabeçalho em 44 px, abas em 40 px e o corpo ocupando o restante.
 - O Price Display pode iniciar oculto/inativo e é reativado por `ShowDisplay`, evitando o travamento da etapa `HasPutPrice`.
@@ -70,7 +76,13 @@ Os checks de objetivos usam eventos e os de save usam memória. Não foram testa
 
 ### EditMode
 
-`Logs/editmode-four-fixes.xml`: **287 testes; 287 passaram; 0 falhas** em 18/09/2026.
+`Logs/editmode-day-flow.xml`: **292 testes; 292 passaram; 0 falhas** em 18/09/2026. Inclui as regressões da trava de horário, do fechamento após a terceira venda, da suspensão de objetivos durante o tutorial e o novo intervalo 21h→00h.
+
+`Logs/objective-hud-validation.log`: `OBJECTIVE_HUD_VALIDATION_PASS` no Canvas `Player/Canvas`, retângulo `440 x 300`, referências serializadas e texto inicial `Finish tutorial`.
+
+`Logs/day-flow-ui-validation.log`: `DAY_FLOW_UI_VALIDATION_PASS` no Canvas `Player/Canvas`, 3 botões, um EventSystem, decisão às 21h e fechamento às 00h.
+
+`Logs/editmode-four-fixes.xml`: execução anterior com **287 testes; 287 passaram; 0 falhas**.
 
 `Logs/regression-diagnostics.txt`: **5/5 PASS** para alternância de ferramenta, movimento do modelo real da porta, reativação do Price Display, altura do cabeçalho e presença/layout das cinco abas.
 
@@ -80,9 +92,9 @@ A primeira execução encontrou duas falhas e ambas foram corrigidas: default de
 
 ## O que falta fazer
 
-1. **Revisão manual/visual na Main**: confirmar posições, acessibilidade, chão, colisões, alcance, outline e pickup. O montador usou aproximadamente `(25, 0.1, 5)` como referência do depósito/doca; respeitar ajustes manuais posteriores.
-2. **Fluxo completo pela interface**: comprar alimento → esperar entrega → pegar caixa → abastecer prateleira → atender cliente com dinheiro/cartão → confirmar crédito único, recompensa e relatório correto.
-3. **Placa e relógio**: testar fechamento automático enquanto a placa anima ou o jogador interage. A placa relê o estado no clique, mas seu visual não tem sincronização contínua dedicada com fechamento automático.
+1. **Revisão manual/visual na Main**: confirmar posições, acessibilidade, chão, colisões, alcance, outline, pickup e leitura das duas telas de fim do dia em diferentes resoluções. O montador usou aproximadamente `(25, 0.1, 5)` como referência do depósito/doca; respeitar ajustes manuais posteriores.
+2. **Fluxo completo pela interface**: comprar alimento → esperar entrega → pegar caixa → abastecer prateleira → atender três clientes → confirmar resumo; no dia 2 testar as duas opções das 21h e o fechamento às 00h.
+3. **Placa e relógio**: testar visualmente que **Continuar aberto** mantém placa/clientes e que o evento das 00h sincroniza o modelo da placa com o estado fechado.
 4. **Polimento de objetivos/banco/ferramentas**: revisar textos, motivos de recusa, conserto/reposição, ícones e arte final. As telas e a barra já estão funcionais.
 5. **Arte**: substituir modelos provisórios de resíduos, saco, lixeira, ferramentas e manchas; posicionar sujeira de vidro em uma superfície visual adequada.
 6. **Tablet, engradado e taco**: implementar ações próprias. Hoje só são selecionáveis e exibidos na mão.

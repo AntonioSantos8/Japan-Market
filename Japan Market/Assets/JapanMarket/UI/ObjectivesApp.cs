@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using JapanMarket.Core;
 using JapanMarket.Data;
 using JapanMarket.Domain;
 using TMPro;
@@ -23,6 +24,7 @@ namespace JapanMarket.UI
         private RectTransform _list;
 
         private IObjectiveService _objectives;
+        private ITutorialStatus _tutorial;
 
         protected override void Build()
         {
@@ -37,6 +39,9 @@ namespace JapanMarket.UI
 
         protected override void Subscribe()
         {
+            if (TryGet(out _tutorial))
+                _tutorial.Completed += OnTutorialCompleted;
+
             if (!TryGet(out _objectives)) return;
 
             _objectives.ProgressChanged += Refresh;
@@ -46,12 +51,21 @@ namespace JapanMarket.UI
 
         protected override void Unsubscribe()
         {
+            if (_tutorial != null)
+            {
+                _tutorial.Completed -= OnTutorialCompleted;
+                _tutorial = null;
+            }
+
             if (_objectives == null) return;
 
             _objectives.ProgressChanged -= Refresh;
             _objectives.ObjectiveStarted -= OnObjectiveChanged;
             _objectives.ObjectiveCompleted -= OnObjectiveChanged;
+            _objectives = null;
         }
+
+        private void OnTutorialCompleted() => Refresh();
 
         private void OnObjectiveChanged(ActiveObjective _) => Refresh();
 
@@ -61,6 +75,12 @@ namespace JapanMarket.UI
             if (_objectives == null && !TryGet(out _objectives)) return;
 
             UIKit.Clear(_list);
+
+            if (_tutorial != null && !_tutorial.IsFinished)
+            {
+                DrawTutorialObjective();
+                return;
+            }
 
             var active = new List<ActiveObjective>(_objectives.Active);
 
@@ -73,6 +93,19 @@ namespace JapanMarket.UI
             }
 
             for (int i = 0; i < active.Count; i++) DrawObjective(active[i]);
+        }
+
+        private void DrawTutorialObjective()
+        {
+            Image card = UIKit.Panel("Objetivo do tutorial", _list, UIKit.SurfaceAlt);
+            RectTransform body = UIKit.Column("Corpo", card.transform, 4f,
+                                              new RectOffset(10, 10, 8, 8));
+            UIKit.Stretch(body);
+
+            var fit = card.gameObject.AddComponent<ContentSizeFitter>();
+            fit.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+            UIKit.Label("Nome", body, "Finish tutorial", UIKit.HeadingSize, UIKit.Text);
         }
 
         private void DrawObjective(ActiveObjective objective)

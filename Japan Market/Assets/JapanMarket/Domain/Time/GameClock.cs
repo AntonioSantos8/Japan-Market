@@ -55,6 +55,7 @@ namespace JapanMarket.Domain
         /// de entrega.
         /// </summary>
         private float _totalHours;
+        private bool _endOfDayLocked;
 
         public GameClock(IEventBus events, GameClockSettings settings = default)
         {
@@ -72,9 +73,11 @@ namespace JapanMarket.Domain
         public float TimeOfDay { get; private set; }
         public bool StoreIsOpen { get; private set; }
         public bool IsRunning { get; private set; } = true;
+        public bool IsEndOfDayLocked => _endOfDayLocked;
 
         public float TotalHours => _totalHours;
 
+        public float EndDayPromptHour => Settings.EndDayPromptHour;
         public float ClosingHour => Settings.ClosingHour;
         public float EndOfDayHour => Settings.EndOfDayHour;
 
@@ -92,15 +95,24 @@ namespace JapanMarket.Domain
             TimeOfDay += elapsed;
             _totalHours += elapsed;
 
+            // O tutorial precisa do tempo absoluto para as entregas, mas não
+            // pode perder o expediente enquanto o jogador lê e monta a loja.
+            // Seguramos o relógio visível um minuto antes de fechar; TotalHours
+            // continua andando e os pedidos pagos continuam chegando.
+            if (_endOfDayLocked)
+            {
+                float holdAt = Math.Max(Settings.DayStartHour,
+                                        Settings.ClosingHour - NotifyStepHours);
+                TimeOfDay = Math.Min(TimeOfDay, holdAt);
+            }
+
             // O dia deixou de ser recém-nascido: a partir daqui um pedido de
             // fechamento é uma decisão do jogador, não o eco do clique anterior.
             _freshDay = false;
 
-            // A porta fecha sozinha no horário. Sem isto, o jogador que esquece
-            // a placa ligada recebe clientes de madrugada.
-            if (StoreIsOpen && TimeOfDay >= Settings.ClosingHour) CloseStore();
-
-            if (_lastClosedDay != Day && TimeOfDay >= Settings.EndOfDayHour) FireEndOfDay();
+            if (!_endOfDayLocked && _lastClosedDay != Day
+                                     && TimeOfDay >= Settings.EndOfDayHour)
+                FireEndOfDay();
 
             if (Math.Abs(TimeOfDay - _lastNotifiedTime) < NotifyStepHours) return;
 
@@ -109,6 +121,18 @@ namespace JapanMarket.Domain
         }
 
         public void SetRunning(bool running) => IsRunning = running;
+
+        public void SetEndOfDayLocked(bool locked)
+        {
+            _endOfDayLocked = locked;
+
+            if (!locked || TimeOfDay < Settings.ClosingHour) return;
+
+            TimeOfDay = Math.Max(Settings.DayStartHour,
+                                 Settings.ClosingHour - NotifyStepHours);
+            _lastNotifiedTime = TimeOfDay;
+            TimeChanged?.Invoke(this);
+        }
 
         // ── porta ────────────────────────────────────────────────────────────
 
@@ -149,6 +173,7 @@ namespace JapanMarket.Domain
         /// </summary>
         public bool RequestEndOfDay()
         {
+            if (_endOfDayLocked) return false;
             if (_lastClosedDay == Day) return false;
             if (_freshDay && !_advancing) return false;
 
@@ -250,6 +275,7 @@ namespace JapanMarket.Domain
     public struct GameClockSettings
     {
         public float DayStartHour;
+        public float EndDayPromptHour;
         public float ClosingHour;
         public float EndOfDayHour;
 
@@ -262,7 +288,8 @@ namespace JapanMarket.Domain
         public static GameClockSettings Default => new()
         {
             DayStartHour = 6f,
-            ClosingHour = 22f,
+            EndDayPromptHour = 21f,
+            ClosingHour = 24f,
             EndOfDayHour = 24f,
             GameHoursPerRealSecond = 0.2f,
         };
@@ -277,12 +304,16 @@ namespace JapanMarket.Domain
 
             if (GameHoursPerRealSecond <= 0f) GameHoursPerRealSecond = fallback.GameHoursPerRealSecond;
             if (EndOfDayHour <= 0f) EndOfDayHour = fallback.EndOfDayHour;
-            if (ClosingHour <= 0f || ClosingHour > EndOfDayHour) ClosingHour = Math.Min(fallback.ClosingHour, EndOfDayHour);
+            if (ClosingHour <= 0f || ClosingHour > EndOfDayHour)
+                ClosingHour = Math.Min(fallback.ClosingHour, EndOfDayHour);
             // `<= 0`, e não `< 0`: um struct vindo de uma cena salva antes
             // desta fase chega com tudo zero, e zero aqui faria o dia começar à
             // meia-noite em vez das seis.
             if (DayStartHour <= 0f || DayStartHour >= ClosingHour)
                 DayStartHour = Math.Min(fallback.DayStartHour, ClosingHour);
+            if (EndDayPromptHour <= DayStartHour || EndDayPromptHour >= EndOfDayHour)
+                EndDayPromptHour = Math.Min(fallback.EndDayPromptHour,
+                                            EndOfDayHour - (1f / 60f));
 
             return this;
         }

@@ -119,6 +119,33 @@ namespace JapanMarket.Tests
         }
 
         [Test]
+        public void Tutorial_suspende_progresso_e_recompensa_ate_ser_concluido()
+        {
+            ObjectiveDefinition definition = Objective(
+                new ObjectiveCondition[] { Condition<SellItemsCondition>(1) },
+                money: Money.FromYen(500));
+
+            using ObjectiveService service = Service(definition);
+            service.SetTrackingEnabled(false);
+
+            Sell(1);
+            service.Flush();
+
+            Assert.IsFalse(service.TrackingEnabled);
+            Assert.AreEqual(0, service.Active[0].ProgressOf(0));
+            Assert.IsFalse(service.Active[0].IsCompleted);
+            Assert.AreEqual(Money.FromYen(1000), _ledger.Balance);
+
+            service.SetTrackingEnabled(true);
+            Sell(1);
+            service.Flush();
+
+            Assert.IsTrue(service.TrackingEnabled);
+            Assert.IsTrue(service.Active[0].IsCompleted);
+            Assert.AreEqual(Money.FromYen(1500), _ledger.Balance);
+        }
+
+        [Test]
         public void O_progresso_nunca_passa_do_alvo_na_tela()
         {
             // A barra do jogador não pode marcar 8 de 5. O bruto continua 8 —

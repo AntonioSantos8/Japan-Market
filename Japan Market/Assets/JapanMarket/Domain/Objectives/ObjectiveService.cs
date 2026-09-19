@@ -45,6 +45,7 @@ namespace JapanMarket.Domain
         private bool _dirty;
         private bool _flushing;
         private bool _disposed;
+        private bool _trackingEnabled = true;
 
         /// <summary>
         /// <paramref name="maxActive"/> é parâmetro de construtor, e não só
@@ -79,6 +80,7 @@ namespace JapanMarket.Domain
         }
 
         public IReadOnlyList<ActiveObjective> Active => _active;
+        public bool TrackingEnabled => _trackingEnabled;
 
         /// <summary>
         /// Aumentar o teto em jogo libera vaga; o objetivo novo entra no Flush
@@ -104,6 +106,41 @@ namespace JapanMarket.Domain
         public event Action<ActiveObjective> ObjectiveStarted;
         public event Action<ActiveObjective> ObjectiveCompleted;
         public event Action ProgressChanged;
+
+        public void SetTrackingEnabled(bool enabled)
+        {
+            if (_disposed || _trackingEnabled == enabled) return;
+
+            _trackingEnabled = enabled;
+
+            if (!enabled)
+            {
+                for (int i = 0; i < _active.Count; i++)
+                    _active[i].Unsubscribe();
+
+                _dirty = false;
+                return;
+            }
+
+            for (int i = 0; i < _active.Count; i++)
+            {
+                ActiveObjective objective = _active[i];
+                if (objective.IsCompleted) continue;
+
+                IReadOnlyList<ObjectiveCondition> conditions =
+                    objective.Definition.Conditions;
+                for (int conditionIndex = 0;
+                     conditionIndex < conditions.Count;
+                     conditionIndex++)
+                {
+                    objective.Track(conditions[conditionIndex].Watch(
+                        _events, objective.Slot(conditionIndex, MarkDirty)));
+                }
+            }
+
+            _dirty = true;
+            ProgressChanged?.Invoke();
+        }
 
         // ── ativação ─────────────────────────────────────────────────────────
 
@@ -179,7 +216,7 @@ namespace JapanMarket.Domain
             _active.Add(objective);
 
             IReadOnlyList<ObjectiveCondition> conditions = definition.Conditions;
-            for (int i = 0; i < conditions.Count; i++)
+            for (int i = 0; _trackingEnabled && i < conditions.Count; i++)
             {
                 IObjectiveProgress slot = objective.Slot(i, MarkDirty);
                 objective.Track(conditions[i].Watch(_events, slot));
@@ -207,7 +244,7 @@ namespace JapanMarket.Domain
             // Reentrância: pagar a recompensa publica BalanceChanged, e um
             // assinante disso pode chamar Flush de volta. A varredura de fora
             // termina o serviço.
-            if (_disposed || _flushing) return;
+            if (_disposed || _flushing || !_trackingEnabled) return;
 
             _flushing = true;
 
@@ -358,7 +395,7 @@ namespace JapanMarket.Domain
 
                     // Concluído não volta a ouvir o barramento: seria trabalho por
                     // venda, para sempre, sem poder mudar nada.
-                    if (entry.Completed) continue;
+                    if (entry.Completed || !_trackingEnabled) continue;
 
                     IReadOnlyList<ObjectiveCondition> conditions = definition.Conditions;
                     for (int c = 0; c < conditions.Count; c++)

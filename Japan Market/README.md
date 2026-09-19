@@ -4,7 +4,7 @@ Abra o projeto com **Unity 6000.2.7f2**. A cena de jogo é `Assets/Scenes/Main.u
 
 Este guia descreve a montagem feita a partir do SETUP.md. O estado da validação e as pendências estão em [handoff.md](handoff.md). A arquitetura dos serviços já existentes está em [Assets/JapanMarket/README.md](Assets/JapanMarket/README.md).
 
-Validação automática em 18/09/2026: **287 testes EditMode aprovados**, **18 checks em cada cena aprovados em Play** e **5 regressões de interface/gameplay aprovadas**, com zero erros. A revisão manual de arte, posicionamento e do fluxo completo jogado ainda está pendente.
+Validação automática em 18/09/2026: **292 testes EditMode aprovados**, **18 checks em cada cena aprovados em Play**, **5 regressões de interface/gameplay aprovadas** e as hierarquias da HUD de objetivos e do fluxo de fim do dia validadas, com zero erros. A revisão manual de arte, posicionamento e do fluxo completo jogado ainda está pendente.
 
 ## O que foi adicionado ou conectado
 
@@ -34,6 +34,22 @@ Os serviços centrais de economia, objetivos, banco e save já existiam. Esta en
 No objeto `— Game Context —`, os campos Opening Balance, Daily Rent e Delivery Hours controlam saldo inicial, aluguel e prazo. Para testar entrega imediata, mude temporariamente Delivery Hours para 0 **antes de Play**. Evite gravar esse ajuste na cena se quiser manter o prazo normal.
 
 A compra de móveis continua usando o fluxo anterior. As interfaces de Mercado, Preços, Banco, Objetivos e Estatísticas estão funcionais e montadas por código; o visual ainda é uma base técnica que pode receber arte final depois.
+
+## Primeiro dia do tutorial e resumo
+
+O primeiro dia não pode mais acabar por horário nem pelo comando manual enquanto o tutorial aguarda clientes. O relógio visível para um minuto antes do fechamento, mas o tempo absoluto continua avançando para não travar entregas. Cada venda concluída conta como um cliente atendido; na terceira venda o dia fecha automaticamente no frame seguinte, mesmo que ainda seja cedo. O limite fica no componente **Tutorial Manager**, campo **Customers To End First Day**, e pode ser alterado sem mexer em código.
+
+A UI completa já está montada em `Player/Canvas/Day Flow UI`, com `GraphicRaycaster`, `EventSystem`, referências e botões ligados. No primeiro dia ela pula a decisão das 21h: o tutorial mantém prioridade e, após a terceira venda, abre diretamente o resumo.
+
+Nos dias normais o fluxo é:
+
+1. Às **21:00**, o relógio e o jogo pausam e aparece **ENCERRAR O DIA?**.
+2. **FINALIZAR DIA** fecha a porta, processa receitas e despesas, fecha o relatório e abre o resumo imediatamente.
+3. **CONTINUAR ABERTO** devolve o controle sem fechar a porta; clientes continuam chegando e a mesma pergunta não aparece de novo naquele dia.
+4. Às **00:00**, a loja fecha automaticamente e o resumo aparece, caso o jogador tenha escolhido continuar.
+5. **COMEÇAR PRÓXIMO DIA** fecha o resumo, devolve o cursor ao estado anterior e retoma o relógio às 06:00 do novo dia.
+
+O resumo mostra dia, saldos inicial e final, receita, custo dos produtos, lucro bruto, compras, despesas, lucro líquido, variação de caixa, clientes atendidos/perdidos, itens, ticket médio e motivos das perdas. Os controladores ficam nos objetos sempre ativos `Day End Decision` e `Day Summary`; somente os painéis visuais são ocultados. Para remontar de forma idempotente, use **Japan Market > Setup > Montar fluxo de fim do dia**. A validação fica em **Japan Market > Validation > Validar fluxo de fim do dia**.
 
 ## Ferramentas
 
@@ -69,6 +85,10 @@ Use a lixeira nova com `JapanMarket.Gameplay.TrashBin` e `TrashBinInteraction`. 
 As chaves de categorias, resíduos e empréstimos participam do save: mantenha-as estáveis ao renomear assets.
 
 ## Objetivos
+
+O sistema usa assets independentes. Cada `ObjectiveDefinition` guarda título, descrição, recompensa, ordem e condição de desbloqueio. Cada `ObjectiveCondition` escuta eventos do jogo — venda, cliente atendido, caixa recebida, lixo separado, dia encerrado ou nível alcançado — sem o gerente precisar conhecer casos específicos. O `ObjectiveService` mantém até três metas em andamento, conclui e paga no `LateUpdate`, concede dinheiro/XP/flags, libera a próxima meta e envia o progresso para o save.
+
+O rastreador foi montado no Canvas já existente `Player/Canvas`, no canto superior direito, como `Objective Tracker` de `440 x 300`. Durante o tutorial, tanto essa HUD quanto a aba **Objetivos** do computador exibem exclusivamente **Finish tutorial**. Nesse período, as metas econômicas ficam suspensas: não acumulam progresso e não pagam recompensas escondidas. Quando o `TutorialManager` conclui, elas começam do zero e as duas interfaces trocam automaticamente para até três objetivos ativos da loja, com descrição e contagem atual/alvo. O script de montagem idempotente fica em `Assets/Editor/JapanMarket/ObjectiveHudSetup.cs` e também pode ser executado pelo menu **Japan Market > Setup > Montar HUD de objetivos**.
 
 | Objetivo | Condição |
 |---|---|

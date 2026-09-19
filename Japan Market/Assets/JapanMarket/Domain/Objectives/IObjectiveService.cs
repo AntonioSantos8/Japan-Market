@@ -41,6 +41,14 @@ namespace JapanMarket.Domain
         int MaxActive { get; set; }
 
         /// <summary>
+        /// Falso durante fluxos exclusivos, como o tutorial inicial. Objetivos
+        /// da loja não acumulam progresso nem pagam recompensas nesse período.
+        /// </summary>
+        bool TrackingEnabled { get; }
+
+        void SetTrackingEnabled(bool enabled);
+
+        /// <summary>
         /// Paga o que venceu e ativa o que desbloqueou.
         ///
         /// Existe como passo separado por um motivo específico, e não por gosto:

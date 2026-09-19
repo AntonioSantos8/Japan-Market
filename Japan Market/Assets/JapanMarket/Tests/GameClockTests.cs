@@ -10,7 +10,8 @@ namespace JapanMarket.Tests
         private static GameClockSettings Fast => new()
         {
             DayStartHour = 6f,
-            ClosingHour = 22f,
+            EndDayPromptHour = 21f,
+            ClosingHour = 24f,
             EndOfDayHour = 24f,
             GameHoursPerRealSecond = 1f,   
         };
@@ -87,22 +88,49 @@ namespace JapanMarket.Tests
         public void Nao_da_para_abrir_depois_do_horario()
         {
             var clock = new GameClock(new EventBus(), Fast);
-            clock.Tick(16f);   
+            clock.Tick(18f);
 
             Assert.IsFalse(clock.TryOpenStore(),
-                "Opening at 10 PM would give the player a minute of customers.");
+                "À meia-noite o expediente já terminou.");
         }
 
         [Test]
-        public void A_porta_fecha_sozinha_no_horario()
+        public void As_vinte_e_uma_a_loja_continua_aberta_aguardando_a_decisao()
         {
             var clock = new GameClock(new EventBus(), Fast);
             clock.TryOpenStore();
 
-            clock.Tick(16.5f);
+            clock.Tick(15f);
 
-            Assert.IsFalse(clock.StoreIsOpen,
-                "Whoever forgets the sign on cannot receive customers in the early morning.");
+            Assert.AreEqual(21f, clock.TimeOfDay, 0.001f);
+            Assert.AreEqual(21f, clock.EndDayPromptHour, 0.001f);
+            Assert.IsTrue(clock.StoreIsOpen,
+                "21h apenas oferece a decisão; não pode fechar a loja em silêncio.");
+        }
+
+        [Test]
+        public void Recusar_o_fim_mantem_a_loja_aberta_ate_meia_noite()
+        {
+            var clock = new GameClock(new EventBus(), Fast);
+            clock.TryOpenStore();
+
+            clock.Tick(17.99f);
+
+            Assert.IsTrue(clock.StoreIsOpen, "Às 23:59 a loja ainda opera.");
+        }
+
+        [Test]
+        public void A_meia_noite_fecha_a_porta_e_encerra_o_dia()
+        {
+            var clock = new GameClock(new EventBus(), Fast);
+            clock.TryOpenStore();
+            int endings = 0;
+            clock.EndOfDayReached += _ => endings++;
+
+            clock.Tick(18f);
+
+            Assert.IsFalse(clock.StoreIsOpen);
+            Assert.AreEqual(1, endings);
         }
 
         [Test]
@@ -217,6 +245,67 @@ namespace JapanMarket.Tests
         }
 
         [Test]
+        public void Trava_do_tutorial_segura_o_expediente_mas_nao_o_tempo_absoluto()
+        {
+            var clock = new GameClock(new EventBus(), Fast);
+            int endings = 0;
+            clock.EndOfDayReached += _ => endings++;
+
+            Assert.IsTrue(clock.TryOpenStore());
+            clock.SetEndOfDayLocked(true);
+            clock.Tick(100f);
+
+            Assert.Less(clock.TimeOfDay, clock.ClosingHour);
+            Assert.GreaterOrEqual(clock.TotalHours, 100f);
+            Assert.IsTrue(clock.StoreIsOpen);
+            Assert.AreEqual(0, endings);
+            Assert.IsFalse(clock.RequestEndOfDay(),
+                "O botão de dormir não pode interromper o primeiro tutorial.");
+
+            clock.SetEndOfDayLocked(false);
+            Assert.IsTrue(clock.RequestEndOfDay());
+            Assert.AreEqual(1, endings);
+            Assert.IsFalse(clock.StoreIsOpen);
+        }
+
+        [Test]
+        public void Tutorial_encerra_o_dia_so_depois_da_terceira_venda_e_fora_do_evento()
+        {
+            var events = new EventBus();
+            var clock = new GameClock(events, Fast);
+            int endings = 0;
+            clock.EndOfDayReached += _ => endings++;
+
+            using (var gate = new TutorialDayGate(clock, events, 1, 3))
+            {
+                events.Publish(Sale(1));
+                events.Publish(Sale(2));
+
+                Assert.AreEqual(2, gate.CustomersServed);
+                Assert.IsFalse(gate.IsCompletionPending);
+                Assert.IsFalse(gate.ProcessPendingEndOfDay());
+                Assert.AreEqual(0, endings);
+                Assert.IsTrue(clock.IsEndOfDayLocked);
+
+                events.Publish(Sale(3));
+
+                Assert.IsTrue(gate.IsCompletionPending);
+                Assert.AreEqual(0, endings,
+                    "O fechamento não pode ocorrer dentro do despacho da venda.");
+                Assert.IsTrue(gate.ProcessPendingEndOfDay());
+
+                Assert.AreEqual(1, endings);
+                Assert.IsFalse(gate.IsActive);
+                Assert.IsFalse(clock.IsEndOfDayLocked);
+                Assert.IsFalse(gate.ProcessPendingEndOfDay());
+            }
+        }
+
+        private static SaleCompleted Sale(int customerId) =>
+            new(customerId, default, Money.FromYen(100), Money.FromYen(40), 1,
+                PaymentMethod.Cash);
+
+        [Test]
         public void Restaurar_um_save_no_meio_da_noite_nao_dispara_virada()
         {
             var clock = new GameClock(new EventBus(), Fast);
@@ -227,7 +316,7 @@ namespace JapanMarket.Tests
             clock.Restore(day: 7, timeOfDay: 23f, storeOpen: true);
 
             Assert.AreEqual(7, clock.Day);
-            Assert.IsFalse(clock.StoreIsOpen, "11 PM is past closing time.");
+            Assert.IsTrue(clock.StoreIsOpen, "Às 23h a loja pode continuar aberta até 00h.");
             Assert.AreEqual(0, endings);
         }
     }
