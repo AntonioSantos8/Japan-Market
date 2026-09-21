@@ -1,6 +1,8 @@
+using System.Collections.Generic;
 using JapanMarket.Data;
 using JapanMarket.Domain;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace JapanMarket.Gameplay
 {
@@ -24,6 +26,16 @@ namespace JapanMarket.Gameplay
         [Tooltip("Onde o modelo da ferramenta selecionada aparece.")]
         [SerializeField] private Transform _hand;
 
+        [Tooltip("Animator compartilhado por todas as ferramentas. Deve ficar na mão ou em um pai dela.")]
+        [SerializeField] private Animator _toolAnimator;
+
+        [Tooltip("Parâmetro inteiro que recebe o índice da ferramenta equipada. -1 = mão vazia.")]
+        [SerializeField] private string _equippedToolParameter = "EquippedTool";
+
+        [Tooltip("Bool mantido ativo enquanto a ferramenta está em uso, permitindo animação em loop.")]
+        [FormerlySerializedAs("_useTrigger")]
+        [SerializeField] private string _usingParameter = "Using";
+
         [Header("Mira")]
         [Tooltip("De onde parte o raio. Vazio usa a câmera principal.")]
         [SerializeField] private Transform _aimOrigin;
@@ -38,24 +50,68 @@ namespace JapanMarket.Gameplay
 
         private IToolBelt _belt;
         private GameObject _heldModel;
+        private readonly Dictionary<ToolDefinition, GameObject> _heldModels = new();
         private Camera _camera;
+        private int _equippedToolHash;
+        private int _usingParameterHash;
+        private bool _hasEquippedToolParameter;
+        private bool _hasUsingParameter;
+        private bool _subscribed;
+        private Grime _activeGrime;
+        private float _activePower;
+        private bool _isUsing;
 
         /// <summary>Último resultado de uso. A UI lê para mostrar o aviso certo.</summary>
         public ToolUseResult LastResult { get; private set; }
 
         private void OnEnable()
         {
-            if (!TryResolve()) return;
+            TryInitialize();
+        }
 
-            _belt.SelectionChanged += OnSelectionChanged;
-            OnSelectionChanged(_belt.Selected);
+        private void Update()
+        {
+            // O Player pode habilitar antes do GameContext. Nesse caso o
+            // serviço ainda não existe no primeiro OnEnable, então concluímos
+            // a ligação no primeiro frame em que ele ficar disponível.
+            if (!_subscribed) TryInitialize();
+            if (_isUsing) ContinueUsing();
         }
 
         private void OnDisable()
         {
-            if (_belt == null) return;
+            StopUsing();
+            if (_belt == null || !_subscribed) return;
 
             _belt.SelectionChanged -= OnSelectionChanged;
+            _subscribed = false;
+        }
+
+        private bool TryInitialize()
+        {
+            if (_subscribed) return true;
+            if (!TryResolve()) return false;
+
+            ResolvePrefabReferences();
+            PrepareHeldModels();
+            PrepareAnimator();
+            _belt.SelectionChanged += OnSelectionChanged;
+            _subscribed = true;
+            OnSelectionChanged(_belt.Selected);
+            return true;
+        }
+
+        private void ResolvePrefabReferences()
+        {
+            Camera playerCamera = GetComponentInChildren<Camera>(true);
+            if (_aimOrigin == null && playerCamera != null)
+                _aimOrigin = playerCamera.transform;
+
+            if (_hand == null && playerCamera != null)
+                _hand = playerCamera.transform.Find("Tool Hand");
+
+            if (_toolAnimator == null && _hand != null)
+                _toolAnimator = _hand.GetComponent<Animator>();
         }
 
         private bool TryResolve()
@@ -96,13 +152,68 @@ namespace JapanMarket.Gameplay
 
         private void OnSelectionChanged(ToolSlot slot)
         {
-            if (_heldModel != null) Destroy(_heldModel);
+            StopUsing();
+            PrepareHeldModels();
+
+            foreach (GameObject model in _heldModels.Values)
+                if (model != null) model.SetActive(false);
+
             _heldModel = null;
 
-            if (slot == null || slot.IsEmpty || _hand == null) return;
-            if (slot.Tool.HeldPrefab == null) return;
+            int slotIndex = slot != null && !slot.IsEmpty ? slot.Index : -1;
+            SetEquippedToolParameter(slotIndex);
 
-            _heldModel = Instantiate(slot.Tool.HeldPrefab, _hand.position, _hand.rotation, _hand);
+            if (slotIndex < 0 || _hand == null) return;
+            if (!_heldModels.TryGetValue(slot.Tool, out _heldModel) || _heldModel == null) return;
+
+            _heldModel.SetActive(true);
+        }
+
+        private void PrepareHeldModels()
+        {
+            if (_belt == null || _hand == null) return;
+
+            _heldModels.Clear();
+            for (int i = 0; i < _belt.Slots.Count; i++)
+            {
+                ToolSlot slot = _belt.Slots[i];
+                ToolDefinition tool = slot?.Tool;
+                if (tool == null || tool.HeldPrefab == null)
+                    continue;
+
+                Transform model = _hand.Find(tool.HeldPrefab.name);
+                if (model != null) _heldModels[tool] = model.gameObject;
+            }
+        }
+
+        private void PrepareAnimator()
+        {
+            if (_toolAnimator == null && _hand != null)
+                _toolAnimator = _hand.GetComponentInParent<Animator>();
+
+            _equippedToolHash = Animator.StringToHash(_equippedToolParameter);
+            if (_usingParameter == "Use") _usingParameter = "Using";
+            _usingParameterHash = Animator.StringToHash(_usingParameter);
+            _hasEquippedToolParameter = HasAnimatorParameter(
+                _equippedToolHash, AnimatorControllerParameterType.Int);
+            _hasUsingParameter = HasAnimatorParameter(
+                _usingParameterHash, AnimatorControllerParameterType.Bool);
+        }
+
+        private bool HasAnimatorParameter(int hash, AnimatorControllerParameterType type)
+        {
+            if (_toolAnimator == null) return false;
+
+            foreach (AnimatorControllerParameter parameter in _toolAnimator.parameters)
+                if (parameter.nameHash == hash && parameter.type == type) return true;
+
+            return false;
+        }
+
+        private void SetEquippedToolParameter(int slotIndex)
+        {
+            if (_hasEquippedToolParameter)
+                _toolAnimator.SetInteger(_equippedToolHash, slotIndex);
         }
 
         // ── uso ──────────────────────────────────────────────────────────────
@@ -112,6 +223,7 @@ namespace JapanMarket.Gameplay
         /// </summary>
         public ToolUseResult UseOnAim()
         {
+            StopUsing();
             if (!TryResolve()) return LastResult = ToolUseResult.NoTool;
 
             Grime target = FindGrime();
@@ -125,13 +237,45 @@ namespace JapanMarket.Gameplay
 
             if (result != ToolUseResult.Ok) return result;
 
-            bool finished = target.Scrub(power);
-
-            if (_logUses)
-                Debug.Log($"[Ferramenta] {_belt.Selected?.Tool} em {target.name}" +
-                          $"{(finished ? " — limpou" : "")}.", this);
+            _activeGrime = target;
+            _activePower = power;
+            SetUsing(true);
 
             return result;
+        }
+
+        public void StopUsing()
+        {
+            _activeGrime = null;
+            _activePower = 0f;
+            SetUsing(false);
+        }
+
+        private void ContinueUsing()
+        {
+            if (_activeGrime == null || FindGrime() != _activeGrime)
+            {
+                StopUsing();
+                return;
+            }
+
+            string grimeName = _activeGrime.name;
+            bool finished = _activeGrime.Scrub(_activePower * Time.deltaTime);
+            if (!finished) return;
+
+            if (_logUses)
+                Debug.Log($"[Ferramenta] {_belt.Selected?.Tool} limpou {grimeName}.", this);
+
+            // Destroy é adiado até o fim do frame. Desligar explicitamente aqui
+            // evita que o Animator continue em loop enquanto o botão está preso.
+            StopUsing();
+        }
+
+        private void SetUsing(bool value)
+        {
+            _isUsing = value;
+            if (_hasUsingParameter)
+                _toolAnimator.SetBool(_usingParameterHash, value);
         }
 
         /// <summary>

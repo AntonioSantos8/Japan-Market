@@ -36,6 +36,9 @@ namespace JapanMarket.Gameplay
         [Tooltip("Escala mínima antes de sumir — só o visual.")]
         [SerializeField] private float _minScale = 0.2f;
 
+        [Tooltip("Filho que encolhe durante a limpeza. Vazio procura um filho chamado Visual.")]
+        [SerializeField] private Transform _visual;
+
         private IDirtRegistry _cleanliness;
         private Vector3 _fullScale;
         private float _remaining;
@@ -47,7 +50,10 @@ namespace JapanMarket.Gameplay
 
         private void Awake()
         {
-            _fullScale = transform.localScale;
+            if (_visual == null) _visual = transform.Find("Visual");
+            if (_visual == null) _visual = transform;
+
+            _fullScale = _visual.localScale;
             _remaining = _toughness;
         }
 
@@ -71,11 +77,12 @@ namespace JapanMarket.Gameplay
             if (_remaining > 0f)
             {
                 float fraction = Mathf.Clamp01(_remaining / _toughness);
-                transform.localScale = _fullScale * Mathf.Lerp(_minScale, 1f, fraction);
+                _visual.localScale = _fullScale * Mathf.Lerp(_minScale, 1f, fraction);
                 return false;
             }
 
             _remaining = 0f;
+            _visual.localScale = _fullScale * _minScale;
 
             // Desregistra ANTES de destruir: o Destroy só acontece no fim do
             // frame, e até lá um cliente que consultasse a limpeza ainda contaria

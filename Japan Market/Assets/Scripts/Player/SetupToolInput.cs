@@ -33,6 +33,8 @@ public sealed class SetupToolInput : MonoBehaviour
 
     private void Update()
     {
+        if (Input.GetMouseButtonUp(1)) tools.StopUsing();
+
         if (wheelOpen)
         {
             if (!input.enabled || Time.timeScale == 0f
@@ -63,6 +65,7 @@ public sealed class SetupToolInput : MonoBehaviour
 
     private void OpenWheel()
     {
+        tools.StopUsing();
         if (wheel == null)
             wheel = FindFirstObjectByType<ToolWheelView>(FindObjectsInactive.Include);
         if (wheel == null || !wheel.Open()) return;
@@ -94,7 +97,11 @@ public sealed class SetupToolInput : MonoBehaviour
         Cursor.visible = previousCursorVisible;
     }
 
-    private void OnDisable() => CloseWheel(false);
+    private void OnDisable()
+    {
+        tools?.StopUsing();
+        CloseWheel(false);
+    }
 
     private void OnApplicationFocus(bool hasFocus)
     {
