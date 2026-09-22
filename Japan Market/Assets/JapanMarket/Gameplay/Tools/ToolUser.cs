@@ -107,11 +107,41 @@ namespace JapanMarket.Gameplay
             if (_aimOrigin == null && playerCamera != null)
                 _aimOrigin = playerCamera.transform;
 
-            if (_hand == null && playerCamera != null)
+            Transform populatedHand = FindPopulatedToolHand(playerCamera);
+            if (populatedHand != null) _hand = populatedHand;
+            else if (_hand == null && playerCamera != null)
                 _hand = playerCamera.transform.Find("Tool Hand");
 
-            if (_toolAnimator == null && _hand != null)
+            if (_hand != null)
                 _toolAnimator = _hand.GetComponent<Animator>();
+        }
+
+        private Transform FindPopulatedToolHand(Camera playerCamera)
+        {
+            if (playerCamera == null || _belt == null) return null;
+
+            Transform best = null;
+            int bestMatches = 0;
+            Transform[] candidates = playerCamera.GetComponentsInChildren<Transform>(true);
+            foreach (Transform candidate in candidates)
+            {
+                if (candidate.name != "Tool Hand") continue;
+
+                int matches = 0;
+                for (int i = 0; i < _belt.Slots.Count; i++)
+                {
+                    ToolDefinition tool = _belt.Slots[i]?.Tool;
+                    if (tool != null && tool.HeldPrefab != null
+                                     && candidate.Find(tool.HeldPrefab.name) != null)
+                        matches++;
+                }
+
+                if (matches <= bestMatches) continue;
+                best = candidate;
+                bestMatches = matches;
+            }
+
+            return best;
         }
 
         private bool TryResolve()
