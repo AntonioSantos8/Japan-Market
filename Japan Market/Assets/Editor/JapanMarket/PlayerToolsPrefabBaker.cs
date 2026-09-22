@@ -31,7 +31,11 @@ namespace JapanMarket.Editor
         static PlayerToolsPrefabBaker()
         {
             EditorApplication.delayCall += BakeIfNeeded;
+            EditorSceneManager.sceneOpened += OnSceneOpened;
         }
+
+        private static void OnSceneOpened(Scene _, OpenSceneMode __) =>
+            EditorApplication.delayCall += RemoveOldSceneOverrides;
 
         [MenuItem("Tools/Japan Market/Tools/Preparar Tools no Player Prefab")]
         private static void BakeFromMenu() => Bake(force: true);
@@ -165,7 +169,13 @@ namespace JapanMarket.Editor
                              .Select(item => item.gameObject)
                              .ToArray())
                 {
-                    if (!PrefabUtility.IsAddedGameObjectOverride(candidate)) continue;
+                    Transform parent = candidate.transform.parent;
+                    bool isEmptyLegacyHand = parent != null
+                        && PrefabUtility.IsPartOfPrefabInstance(parent.gameObject)
+                        && candidate.transform.childCount == 0
+                        && candidate.GetComponent<Animator>() == null;
+                    if (!PrefabUtility.IsAddedGameObjectOverride(candidate) && !isEmptyLegacyHand)
+                        continue;
                     UnityEngine.Object.DestroyImmediate(candidate);
                     changed = true;
                 }
