@@ -5,7 +5,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using GameJam.Utilities;
 
-[RequireComponent(typeof(RectTransform))]
+[RequireComponent(typeof(RectTransform), typeof(Button))]
 public class MenuButtonFX : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler//, ISelectHandler, IDeselectHandler, ISubmitHandler
 {
     [SerializeField] private RectTransform visual;
@@ -52,20 +52,36 @@ public class MenuButtonFX : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
 
     private void Awake()
     {
-        _selfRect = visual;
+        ResolveReferences();
+
+        if (_selfRect == null || scaleTarget == null)
+        {
+            enabled = false;
+            return;
+        }
+
         _button = GetComponent<Button>();
         _restAnchoredPosition = _selfRect.anchoredPosition;
         _restScale = scaleTarget.localScale;
 
-        _baseButtonColor = buttonImage.color;
-        _baseTextColor = label.color;
-clickPunchCooldown = new CooldownTimer(clickPunchDuration);
-          }
-    void Start(){  
-}
+        _baseButtonColor = buttonImage != null ? buttonImage.color : Color.white;
+        _baseTextColor = label != null ? label.color : Color.white;
+        clickPunchCooldown = new CooldownTimer(clickPunchDuration);
+    }
+
+    private void ResolveReferences()
+    {
+        _selfRect = visual != null ? visual : transform as RectTransform;
+        visual = _selfRect;
+        scaleTarget ??= _selfRect;
+        buttonImage ??= GetComponent<Image>();
+        buttonImage ??= GetComponentInChildren<Image>(true);
+        label ??= GetComponentInChildren<TextMeshProUGUI>(true);
+    }
+
     void Update()
     {
-        clickPunchCooldown.Tick();
+        clickPunchCooldown.Tick(Time.unscaledDeltaTime);
     }
     private void OnEnable()
     {
@@ -82,7 +98,7 @@ clickPunchCooldown = new CooldownTimer(clickPunchDuration);
     {
 
         _idleSequence?.Kill();
-        float baseY = visual.anchoredPosition.y;
+       float baseY = visual.anchoredPosition.y;
         
        float randomDelay = Random.Range(0f, idleBobDuration);
        float randomDuration = idleBobDuration * Random.Range(0.8f, 1.2f);
@@ -91,7 +107,7 @@ clickPunchCooldown = new CooldownTimer(clickPunchDuration);
         _idleSequence.PrependInterval(randomDelay);
         _idleSequence.Append(visual.DOAnchorPosY(baseY + idleBobAmount, randomDuration).SetEase(Ease.InOutSine));
         _idleSequence.Append(visual.DOAnchorPosY(baseY, randomDuration).SetEase(Ease.InOutSine));
-        _idleSequence.SetLoops(-1);
+        _idleSequence.SetLoops(-1).SetUpdate(true);
     }
 
     public void OnPointerEnter(PointerEventData eventData)
@@ -99,13 +115,15 @@ clickPunchCooldown = new CooldownTimer(clickPunchDuration);
         if (!_button.interactable) return;
 
         AnimateTo(hoverScale, _restAnchoredPosition + Vector2.up * hoverLiftAmount, hoverTiltAngle, hoverButtonColor, hoverTextColor);
-        SoundManager.Instance.Play(SFX.ButtonHover);
+        if (SoundManager.Instance != null)
+            SoundManager.Instance.Play(SFX.ButtonHover);
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
         AnimateTo(1f, _restAnchoredPosition, 0f, _baseButtonColor, _baseTextColor);
-       SoundManager.Instance.Play(SFX.ButtonUnhover);
+       if (SoundManager.Instance != null)
+           SoundManager.Instance.Play(SFX.ButtonUnhover);
     }
 
     public void OnPointerClick(PointerEventData eventData)
@@ -115,8 +133,10 @@ clickPunchCooldown = new CooldownTimer(clickPunchDuration);
         if(clickPunchCooldown.CanUse)
         {
             clickPunchCooldown.Use();
-            _selfRect.DOPunchScale(clickPunchScale, clickPunchDuration, 6, 0.7f);
-            SoundManager.Instance.Play(SFX.ButtonClick);
+            _selfRect.DOPunchScale(clickPunchScale, clickPunchDuration, 6, 0.7f)
+                .SetUpdate(true);
+            if (SoundManager.Instance != null)
+                SoundManager.Instance.Play(SFX.ButtonClick);
         }
         
         // _selfRect.DOPunchScale(clickPunchScale, clickPunchDuration, 6, 0.7f);
@@ -126,7 +146,7 @@ clickPunchCooldown = new CooldownTimer(clickPunchDuration);
     private void AnimateTo(float scaleMultiplier, Vector2 anchoredPosition, float tiltAngle, Color buttonColor, Color textColor)
     {
         _hoverSequence?.Kill();
-        _hoverSequence = DOTween.Sequence();
+        _hoverSequence = DOTween.Sequence().SetUpdate(true);
 
        
         _hoverSequence.Join(scaleTarget.DOScale(_restScale * scaleMultiplier, hoverScaleDuration).SetEase(Ease.OutBack, 1.4f));
@@ -135,10 +155,13 @@ clickPunchCooldown = new CooldownTimer(clickPunchDuration);
        
         _hoverSequence.Join(visual.DOLocalRotate(new Vector3(0f, 0f, tiltAngle), hoverMoveDuration).SetEase(Ease.OutQuad));
         
-    if(useHoverColor){
-        _hoverSequence.Join(buttonImage.DOColor(buttonColor, colorDuration));
-        _hoverSequence.Join(label.DOColor(textColor, colorDuration));
-    }
+        if(useHoverColor)
+        {
+            if (buttonImage != null)
+                _hoverSequence.Join(buttonImage.DOColor(buttonColor, colorDuration));
+            if (label != null)
+                _hoverSequence.Join(label.DOColor(textColor, colorDuration));
+        }
     }
 
     // public void OnSelect(BaseEventData eventData)

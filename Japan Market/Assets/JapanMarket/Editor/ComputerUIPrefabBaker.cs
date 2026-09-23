@@ -7,8 +7,8 @@ using UnityEngine;
 namespace JapanMarket.EditorTools
 {
     /// <summary>
-    /// Migração de Editor: grava a UI do computador no prefab. Depois disso a
-    /// hierarquia fica totalmente editável e nenhuma UI é criada em runtime.
+    /// Migração de Editor: grava e atualiza a UI do computador no prefab. O host
+    /// ainda tem um fallback para saves/projetos cujo prefab não foi reimportado.
     /// </summary>
     [InitializeOnLoad]
     internal static class ComputerUIPrefabBaker
@@ -59,31 +59,50 @@ namespace JapanMarket.EditorTools
                     return;
                 }
 
-                if (uiRoot.Find(AppsRootName) != null)
-                    return;
+                Transform existingRoot = uiRoot.Find(AppsRootName);
+                bool changed = existingRoot == null;
 
-                PrepareDesktopBackground(uiRoot);
+                if (changed) PrepareDesktopBackground(uiRoot);
 
-                RectTransform appsRoot = CreateRect(AppsRootName, uiRoot);
+                RectTransform appsRoot = existingRoot as RectTransform
+                                         ?? CreateRect(AppsRootName, uiRoot);
                 Stretch(appsRoot);
 
-                string[] appNames = { "Mercado", "Preços", "Objetivos", "Banco", "Relatório" };
+                string[] appNames =
+                    { "Mercado", "Preços", "Objetivos", "Banco", "Relatório", "Gestão" };
                 var views = new List<ComputerAppView>(appNames.Length);
 
                 for (int i = 0; i < appNames.Length; i++)
-                    views.Add(CreateApp(appsRoot, appNames[i], i));
+                {
+                    Transform existingApp = appsRoot.Find($"App - {appNames[i]}");
+                    ComputerAppView view = existingApp != null
+                        ? existingApp.GetComponent<ComputerAppView>()
+                        : null;
+
+                    if (view == null)
+                    {
+                        view = CreateApp(appsRoot, appNames[i], i);
+                        changed = true;
+                    }
+
+                    changed |= SetIconLayout(view, i);
+                    views.Add(view);
+                }
 
                 SerializedObject serializedHost = new(host);
                 SerializedProperty apps = serializedHost.FindProperty("_apps");
                 apps.arraySize = views.Count;
                 for (int i = 0; i < views.Count; i++)
                     apps.GetArrayElementAtIndex(i).objectReferenceValue = views[i];
-                serializedHost.ApplyModifiedPropertiesWithoutUndo();
+                changed |= serializedHost.ApplyModifiedPropertiesWithoutUndo();
 
-                PrefabUtility.SaveAsPrefabAsset(prefabRoot, PrefabPath);
-                AssetDatabase.SaveAssets();
+                if (changed)
+                {
+                    PrefabUtility.SaveAsPrefabAsset(prefabRoot, PrefabPath);
+                    AssetDatabase.SaveAssets();
+                }
 
-                if (logSuccess)
+                if (logSuccess && changed)
                     Debug.Log("[Computer UI] UI gravada no prefab do computador.");
             }
             finally
@@ -112,8 +131,8 @@ namespace JapanMarket.EditorTools
             iconRect.anchorMin = new Vector2(0f, 1f);
             iconRect.anchorMax = new Vector2(0f, 1f);
             iconRect.pivot = new Vector2(0f, 1f);
-            iconRect.anchoredPosition = new Vector2(34f + index * 174f, -34f);
-            iconRect.sizeDelta = new Vector2(140f, 126f);
+            iconRect.anchoredPosition = new Vector2(24f + index * 154f, -34f);
+            iconRect.sizeDelta = new Vector2(134f, 126f);
 
             TextMeshProUGUI initial = CreateText("Icon", iconRect,
                 appName.Substring(0, 1).ToUpperInvariant(), 48f, TextAlignmentOptions.Center);
@@ -178,6 +197,26 @@ namespace JapanMarket.EditorTools
             serializedView.ApplyModifiedPropertiesWithoutUndo();
 
             return view;
+        }
+
+        private static bool SetIconLayout(ComputerAppView view, int index)
+        {
+            if (view == null) return false;
+
+            Transform button = view.transform.Find("Icon Button");
+            if (button is not RectTransform rect) return false;
+
+            Vector2 position = new(24f + index * 154f, -34f);
+            Vector2 size = new(134f, 126f);
+            bool changed = rect.anchoredPosition != position || rect.sizeDelta != size;
+
+            rect.anchorMin = new Vector2(0f, 1f);
+            rect.anchorMax = new Vector2(0f, 1f);
+            rect.pivot = new Vector2(0f, 1f);
+            rect.anchoredPosition = position;
+            rect.sizeDelta = size;
+
+            return changed;
         }
 
         private static RectTransform CreateRect(string name, Transform parent)

@@ -107,6 +107,7 @@ namespace JapanMarket.Gameplay
         private DailyReportService _reports;
         private SalesAccountant _accountant;
         private BankService _bank;
+        private StoreExpansionService _expansions;
         private MarketOrderService _market;
         private ObjectiveService _objectives;
         private TrashService _trash;
@@ -130,6 +131,7 @@ namespace JapanMarket.Gameplay
         public ILedger Ledger => _ledger;
         public IExpenseService Expenses => _expenses;
         public IBankService Bank => _bank;
+        public IStoreExpansionService Expansions => _expansions;
         public IMarketOrderService Market => _market;
         public IObjectiveService Objectives => _objectives;
         public ITrashService Trash => _trash;
@@ -285,6 +287,7 @@ namespace JapanMarket.Gameplay
             {
                 MaxConcurrentLoans = _maxConcurrentLoans,
             };
+            _expansions = new StoreExpansionService(_ledger, _progress, _progress);
 
             // O relógio e o contexto de desbloqueio não são opcionais aqui: sem
             // o primeiro nada faz o prazo de entrega vencer, e sem o segundo um
@@ -335,6 +338,7 @@ namespace JapanMarket.Gameplay
             _container.Register<ILedger>(_ledger);
             _container.Register<IExpenseService>(_expenses);
             _container.Register<IBankService>(_bank);
+            _container.Register<IStoreExpansionService>(_expansions);
             _container.Register<IMarketOrderService>(_market);
             _container.Register<IObjectiveService>(_objectives);
             _container.Register<ITrashService>(_trash);

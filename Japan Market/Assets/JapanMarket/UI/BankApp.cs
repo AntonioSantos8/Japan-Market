@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using JapanMarket.Core;
 using JapanMarket.Data;
@@ -31,6 +32,8 @@ namespace JapanMarket.UI
         private ILoanCatalog _catalog;
         private IUnlockContext _unlocks;
         private ILedger _ledger;
+        private IEventBus _events;
+        private IDisposable _balanceSubscription;
 
         protected override void Build()
         {
@@ -69,6 +72,8 @@ namespace JapanMarket.UI
             TryGet(out _catalog);
             TryGet(out _unlocks);
             TryGet(out _ledger);
+            if (TryGet(out _events))
+                _balanceSubscription = _events.Subscribe<BalanceChanged>(_ => Refresh());
 
             _bank.LoanTaken += OnLoansChanged;
             _bank.LoanPaidOff += OnLoansChanged;
@@ -76,6 +81,10 @@ namespace JapanMarket.UI
 
         protected override void Unsubscribe()
         {
+            _balanceSubscription?.Dispose();
+            _balanceSubscription = null;
+            _events = null;
+
             if (_bank == null) return;
 
             _bank.LoanTaken -= OnLoansChanged;
@@ -177,8 +186,11 @@ namespace JapanMarket.UI
                         TextAlignmentOptions.Right).Width(110f);
             UIKit.Label("Parcela", row, $"{tier.DailyPayment} × {tier.TermDays}",
                         UIKit.BodySize, UIKit.TextDim, TextAlignmentOptions.Right).Width(150f);
-            UIKit.Label("Total", row, $"paga {tier.TotalCost}", UIKit.SmallSize, UIKit.TextDim,
+            Money interest = tier.TotalCost - tier.Principal;
+            UIKit.Label("Juros", row, $"juros {interest}", UIKit.SmallSize, UIKit.TextDim,
                         TextAlignmentOptions.Right).Width(120f);
+            UIKit.Label("Total", row, $"total {tier.TotalCost}", UIKit.SmallSize,
+                        UIKit.TextDim, TextAlignmentOptions.Right).Width(120f);
 
             LoanDefinition captured = tier;
             UIKit.Button("Contratar", row, "Contratar", () => Take(captured), UIKit.SmallSize,

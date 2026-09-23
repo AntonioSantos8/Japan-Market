@@ -11,9 +11,9 @@ namespace JapanMarket.UI
     /// <summary>
     /// O app Preços: quanto custou, quanto vale no mercado, por quanto você vende.
     ///
-    /// Só lista quem tem HISTÓRIA — produto nunca comprado nem precificado não
-    /// aparece. É o filtro do próprio <c>IPricingService.Table</c>, e evita uma
-    /// tela com cem linhas zeradas no primeiro dia.
+    /// Lista todos os produtos atualmente liberados para a loja, mesmo antes da
+    /// primeira compra. Assim o jogador consegue preparar a margem antes de
+    /// colocar o primeiro item na prateleira.
     ///
     /// O preço é ajustado em degraus e não digitado. Um campo de texto aqui
     /// significaria validar entrada, tratar vírgula, e decidir o que fazer com
@@ -24,13 +24,16 @@ namespace JapanMarket.UI
     {
         public override string Title => "Preços";
 
-        private const int Step = 10;
+        private const int Step = 1;
 
         private RectTransform _list;
         private TextMeshProUGUI _hint;
 
         private IPricingService _pricing;
         private IGameClock _clock;
+        private IItemCatalog _catalog;
+        private IUnlockContext _unlocks;
+        private IStoreLevelService _storeLevel;
 
         protected override void Build()
         {
@@ -64,7 +67,11 @@ namespace JapanMarket.UI
             if (!TryGet(out _pricing)) return;
 
             TryGet(out _clock);
+            TryGet(out _catalog);
+            TryGet(out _unlocks);
+            TryGet(out _storeLevel);
             _pricing.PriceChanged += OnPriceChanged;
+            if (_storeLevel != null) _storeLevel.LevelChanged += OnStoreLevelChanged;
         }
 
         protected override void Unsubscribe()
@@ -72,9 +79,11 @@ namespace JapanMarket.UI
             if (_pricing == null) return;
 
             _pricing.PriceChanged -= OnPriceChanged;
+            if (_storeLevel != null) _storeLevel.LevelChanged -= OnStoreLevelChanged;
         }
 
         private void OnPriceChanged(ItemDefinition _, Money __) => Refresh();
+        private void OnStoreLevelChanged(int _) => Refresh();
 
         public override void Refresh()
         {
@@ -83,15 +92,26 @@ namespace JapanMarket.UI
 
             UIKit.Clear(_list);
 
-            // A tabela é reaproveitada entre leituras pelo serviço, então é
-            // copiada antes de desenhar: cada botão criado aqui captura o
-            // produto, e a lista pode ser reescrita por baixo antes do clique.
-            var rows = new List<PricingData>(_pricing.Table);
+            var rows = new List<PricingData>();
+
+            if (_catalog != null)
+            {
+                List<ItemDefinition> products = _catalog.UnlockedFor(_unlocks);
+                for (int i = 0; i < products.Count; i++)
+                    if (products[i] != null)
+                        rows.Add(_pricing.GetPricingData(products[i]));
+            }
+            else
+            {
+                // Cena de teste sem catálogo: ainda mostra tudo o que já tem
+                // histórico no serviço, em vez de deixar o app vazio.
+                rows.AddRange(_pricing.Table);
+            }
 
             if (rows.Count == 0)
             {
                 UIKit.Label("Vazio", _list,
-                            "Nenhum produto com histórico ainda. Compre estoque no Mercado.",
+                            "Nenhum produto está liberado para esta loja.",
                             UIKit.BodySize, UIKit.TextDim);
                 return;
             }

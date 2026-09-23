@@ -207,6 +207,7 @@ GameObject:
   - component: {fileID: 7303401811132643561}
   - component: {fileID: 3292188402585210558}
   - component: {fileID: 4958793902513888416}
+  - component: {fileID: 7719482371198300002}
   m_Layer: 0
   m_Name: Button
   m_TagString: Untagged
@@ -317,3 +318,34 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &7719482371198300002
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8387180886647347504}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eccff8ceaba57e1438a66481857f5bcc, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::MenuButtonFX
+  visual: {fileID: 7466894474102594137}
+  scaleTarget: {fileID: 7466894474102594137}
+  buttonImage: {fileID: 3292188402585210558}
+  label: {fileID: 0}
+  idleBobAmount: 6
+  idleBobDuration: 1.1
+  hoverScale: 1.08
+  hoverScaleDuration: 0.25
+  hoverLiftAmount: 10
+  hoverTiltAngle: 3
+  hoverMoveDuration: 0.25
+  hoverButtonColor: {r: 1, g: 0.85, b: 0.3, a: 1}
+  hoverTextColor: {r: 0, g: 0, b: 0, a: 1}
+  colorDuration: 0.2
+  clickPunchScale: {x: 0.15, y: 0.15, z: 0.15}
+  clickPunchDuration: 0.3
+  useHoverColor: 0
+  selectionColor: {r: 1, g: 1, b: 1, a: 1}
+  deselectionColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}

@@ -1,4 +1,7 @@
 using System.Collections.Generic;
+using JapanMarket.Core;
+using JapanMarket.Data;
+using JapanMarket.Domain;
 using UnityEngine;
 
 public class GlobalPrices : MonoBehaviour
@@ -12,6 +15,9 @@ public class GlobalPrices : MonoBehaviour
     private readonly Dictionary<Items, bool> _hasPutItem = new();
 
     private Items currentDisplayType = Items.None;
+    private IPricingService _pricing;
+    private IItemCatalog _catalog;
+    private IGameClock _clock;
 
     private void Awake()
     {
@@ -27,6 +33,13 @@ public class GlobalPrices : MonoBehaviour
             _discountPercent[item] = 0f;
             _hasPutItem[item] = false;
         }
+
+        BindModernPricing();
+    }
+
+    private void OnDestroy()
+    {
+        if (_pricing != null) _pricing.PriceChanged -= OnModernPriceChanged;
     }
 
     public float GetItemCurrentPrice(Items item)
@@ -57,6 +70,13 @@ public class GlobalPrices : MonoBehaviour
         _baseItemsPrice[item] = basePrice;
         _discountPercent[item] = discount;
         _globalItemsPrice[item] = Mathf.Round(basePrice * (1f - discount / 100f));
+
+        ItemDefinition product = FindProduct(item);
+        if (_pricing != null && product != null)
+        {
+            _pricing.SetSellPrice(product,
+                Money.FromYen(_globalItemsPrice[item]), _clock?.Day ?? 0);
+        }
     }
 
     public void Apply()
@@ -109,6 +129,59 @@ public class GlobalPrices : MonoBehaviour
         {
             if (data != null && data.itemType == item)
                 return data;
+        }
+
+        return null;
+    }
+
+    private void BindModernPricing()
+    {
+        ServiceContainer.Current.TryResolve(out _pricing);
+        ServiceContainer.Current.TryResolve(out _catalog);
+        ServiceContainer.Current.TryResolve(out _clock);
+
+        if (_pricing == null || _catalog == null) return;
+
+        _pricing.PriceChanged += OnModernPriceChanged;
+
+        IReadOnlyList<ItemDefinition> products = _catalog.All;
+        for (int i = 0; i < products.Count; i++)
+        {
+            ItemDefinition product = products[i];
+            if (product == null || product.LegacyEnumValue < 0) continue;
+
+            Items item = (Items)product.LegacyEnumValue;
+            if (!_globalItemsPrice.ContainsKey(item)) continue;
+
+            ApplyModernPrice(item, _pricing.GetSellPrice(product));
+        }
+    }
+
+    private void OnModernPriceChanged(ItemDefinition product, Money price)
+    {
+        if (product == null || product.LegacyEnumValue < 0) return;
+
+        Items item = (Items)product.LegacyEnumValue;
+        if (_globalItemsPrice.ContainsKey(item)) ApplyModernPrice(item, price);
+    }
+
+    private void ApplyModernPrice(Items item, Money price)
+    {
+        float value = Mathf.Max(0f, (float)price.Yen);
+        _baseItemsPrice[item] = value;
+        _discountPercent[item] = 0f;
+        _globalItemsPrice[item] = value;
+    }
+
+    private ItemDefinition FindProduct(Items item)
+    {
+        if (_catalog == null) return null;
+
+        IReadOnlyList<ItemDefinition> products = _catalog.All;
+        for (int i = 0; i < products.Count; i++)
+        {
+            ItemDefinition product = products[i];
+            if (product != null && product.LegacyEnumValue == (int)item) return product;
         }
 
         return null;
