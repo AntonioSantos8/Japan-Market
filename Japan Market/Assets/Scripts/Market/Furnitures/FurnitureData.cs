@@ -8,6 +8,8 @@ public class FurnitureData : ScriptableObject
     public string furnitureName;
     public GameObject prefab;
     public GameObject ghostPrefab;
+    [Tooltip("Caixa física entregue quando este móvel é comprado.")]
+    public GameObject deliveryBoxPrefab;
     public float floorDistance;
     public Sprite furnitureImage;
     public AllIThingsData data;

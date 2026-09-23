@@ -117,14 +117,27 @@ public class NpcTraject : MonoBehaviour
 
         yield return new WaitForSeconds(0.2f);
 
-        foreach (var shoppingItem in _inventory)
+        int placedCount = 0;
+        for (int i = 0; i < _inventory.Count;)
         {
-            _cashRegister.SpawnItemWithAnimation(shoppingItem.Type, shoppingItem.Price);
+            ShoppingItem shoppingItem = _inventory[i];
+            if (!_cashRegister.SpawnItemWithAnimation(shoppingItem.Type, shoppingItem.Price))
+            {
+                i++;
+                continue;
+            }
+
+            _inventory.RemoveAt(i);
+            placedCount++;
             yield return new WaitForSeconds(0.2f);
         }
 
-        _inventory.Clear();
-        Debug.Log("[NPC] Itens colocados no balcão.");
+        if (_inventory.Count == 0)
+            Debug.Log($"[NPC] {placedCount} item(ns) colocado(s) no balcão.");
+        else
+            Debug.LogError(
+                $"[NPC] {placedCount} item(ns) colocado(s), mas {_inventory.Count} falharam. " +
+                "Confira os erros de catálogo do CashRegister.", this);
     }
 
     private IEnumerator ShoppingRoutine()

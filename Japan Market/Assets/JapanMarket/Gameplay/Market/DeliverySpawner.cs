@@ -138,6 +138,26 @@ namespace JapanMarket.Gameplay
                           "caixa(s) ainda na fila.", this);
         }
 
+        /// <summary>
+        /// Entrega uma caixa física genérica no mesmo depósito usado pelos produtos.
+        /// A configuração específica do conteúdo fica com o chamador, evitando
+        /// acoplar esta assembly de gameplay aos tipos legados da Assembly-CSharp.
+        /// </summary>
+        public bool TrySpawnBox(GameObject boxPrefab, out GameObject spawnedBox)
+        {
+            spawnedBox = null;
+            if (boxPrefab == null) return false;
+
+            Vector3 position = FindSafeSpawnPosition();
+            spawnedBox = Object.Instantiate(boxPrefab, position, Drop.rotation);
+            _onFloor.Add(spawnedBox);
+
+            if (_logDeliveries)
+                Debug.Log($"[Entrega] Caixa física '{boxPrefab.name}'.", this);
+
+            return true;
+        }
+
         private Vector3 FindSafeSpawnPosition()
         {
             int mask = _blockingLayers.value == 0 ? Physics.AllLayers : _blockingLayers.value;

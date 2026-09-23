@@ -14,8 +14,10 @@ public sealed class SetupToolInput : MonoBehaviour
     private ItemRaycastController interaction;
     private PlayerInput input;
     private PlayerController controller;
+    private PlayerMotor motor;
     private bool wheelOpen;
     private bool controllerWasEnabled;
+    private bool motorWasMovable;
     private CursorLockMode previousCursorLock;
     private bool previousCursorVisible;
 
@@ -27,6 +29,7 @@ public sealed class SetupToolInput : MonoBehaviour
         input = GetComponent<PlayerInput>();
         interaction = GetComponentInChildren<ItemRaycastController>();
         controller = GetComponent<PlayerController>();
+        motor = GetComponent<PlayerMotor>();
         if (wheel == null)
             wheel = FindFirstObjectByType<ToolWheelView>(FindObjectsInactive.Include);
     }
@@ -80,6 +83,12 @@ public sealed class SetupToolInput : MonoBehaviour
             controller.enabled = false;
         }
 
+        if (motor != null)
+        {
+            motorWasMovable = motor.CanMove;
+            motor.SetCanMove(false);
+        }
+
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
         wheel.UpdatePointer(Input.mousePosition);
@@ -93,6 +102,7 @@ public sealed class SetupToolInput : MonoBehaviour
         if (wheel != null) wheel.Close(commitSelection);
 
         if (controller != null) controller.enabled = controllerWasEnabled;
+        if (motor != null) motor.SetCanMove(motorWasMovable);
         Cursor.lockState = previousCursorLock;
         Cursor.visible = previousCursorVisible;
     }

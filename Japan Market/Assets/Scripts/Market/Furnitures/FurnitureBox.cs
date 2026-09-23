@@ -8,15 +8,30 @@ public class FurnitureBox : InteractableBase
 
     public FurnitureData GetData() => data;
 
+    public void Initialize(FurnitureData furniture)
+    {
+        data = furniture;
+        RefreshImage();
+    }
+
     private void Start()
     {
-        if (furnitureImage != null && data != null)
-            furnitureImage.sprite = data.furnitureImage;
+        RefreshImage();
+    }
+
+    private void RefreshImage()
+    {
+        if (furnitureImage == null) return;
+        furnitureImage.sprite = data != null ? data.furnitureImage : null;
+        furnitureImage.enabled = furnitureImage.sprite != null;
     }
 
     public override void Interact()
     {
-        ServiceLocator.Get<FurnitureManager>().AddToInventory(data);
+        FurnitureManager manager = ServiceLocator.Get<FurnitureManager>();
+        if (manager == null || data == null) return;
+
+        manager.AddToInventory(data);
         Destroy(gameObject);
     }
 }

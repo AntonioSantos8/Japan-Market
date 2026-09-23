@@ -62,6 +62,9 @@ public class CashRegister : InteractableBase
     [SerializeField] private float clickRadius = 0.05f;
     [Tooltip("Maximum distance from the cash-register camera at which an item can be scanned.")]
     [SerializeField] private float itemScanDistance = 5f;
+    [Tooltip("Limites físicos (largura, altura e profundidade) dos produtos colocados no balcão. " +
+             "Itens menores mantêm a escala original; somente os exageradamente grandes são reduzidos.")]
+    [SerializeField] private Vector3 maximumCounterItemSize = new(0.38f, 0.48f, 0.38f);
 
     [Header("Coin Pop")]
     [SerializeField] private GameObject _coinPopPrefab;
@@ -408,16 +411,17 @@ public class CashRegister : InteractableBase
 
     private void RegisterScannedItem(Item item)
     {
-        foreach (var data in allItem)
+        AllIThingsData data = GetItemData(item.GetItemType());
+        if (data != null)
         {
-            if (data.itemType != item.GetItemType()) continue;
-
-            float price        = item.GetComponent<ItemPrice>().Price;
+            ItemPrice itemPrice = item.GetComponent<ItemPrice>();
+            float price        = itemPrice != null ? itemPrice.Price : 0f;
             nameItemText.text  = data.itemName;
             priceItemText.text = "¥" + Mathf.RoundToInt(price);
             totalPrice        += price;
-            break;
         }
+        else
+            Debug.LogError($"[CashRegister] Dados do item {item.GetItemType()} não encontrados ao registrar a leitura.", this);
 
         _scannedCount++;
 
@@ -488,36 +492,51 @@ public class CashRegister : InteractableBase
     // Items are added to the queue here only. OnTriggerEnter is intentionally
     // absent to prevent the same item being enqueued twice.
 
-    public void SpawnItemWithAnimation(Items itemType, float price)
+    public bool SpawnItemWithAnimation(Items itemType, float price)
     {
-        GameObject prefab = GetItemPrefab(itemType);
-        if (prefab == null) return;
+        AllIThingsData data = GetItemData(itemType);
+        GameObject prefab = data != null ? data.itemPrefab : null;
+        if (prefab == null)
+        {
+            Debug.LogError(
+                $"[CashRegister] Não foi possível colocar {itemType} no balcão: " +
+                "o produto não existe no catálogo compartilhado ou está sem itemPrefab.", this);
+            return false;
+        }
 
-        Vector3 originalScale = prefab.transform.localScale;
         Vector3 offset = new Vector3(
             Random.Range(-0.15f, 0.15f), 0.05f,
             Random.Range(-0.15f, 0.15f));
 
         GameObject newItem = Instantiate(prefab, itemPosition.position + offset, Quaternion.identity);
-        newItem.AddComponent<ItemPrice>().Price = price;
+        ItemPrice itemPrice = newItem.GetComponent<ItemPrice>();
+        if (itemPrice == null) itemPrice = newItem.AddComponent<ItemPrice>();
+        itemPrice.Price = price;
+        Vector3 counterScale = FitItemToCounter(newItem);
+        EnsureScanCollider(newItem);
+        AlignItemBaseWithCounter(newItem, itemPosition.position.y + 0.015f);
         newItem.transform.localScale = Vector3.zero;
 
-        newItem.transform.DOScale(originalScale, 0.4f)
+        newItem.transform.DOScale(counterScale, 0.4f)
             .SetEase(Ease.OutBack)
-            .OnComplete(() => newItem.transform.DOPunchScale(originalScale * 0.15f, 0.2f, 5, 1));
+            .OnComplete(() => newItem.transform.DOPunchScale(counterScale * 0.15f, 0.2f, 5, 1));
 
         if (newItem.TryGetComponent<Rigidbody>(out var rb))
             rb.AddForce(Vector3.up * 2f, ForceMode.Impulse);
 
-        if (newItem.TryGetComponent(out Item itemComponent))
+        if (!newItem.TryGetComponent(out Item itemComponent))
         {
-            itemsQueue.Enqueue(itemComponent);
-            _totalExpected++;
-            var context = JapanMarket.Gameplay.GameContext.Current;
-            if (context != null && context.Services.TryResolve(out JapanMarket.Data.IItemCatalog catalog))
-                foreach (var product in catalog.All)
-                    if (product.LegacyEnumValue == (int)itemType) { _saleCost += product.BaseCost; break; }
+            Debug.LogError($"[CashRegister] O prefab de {itemType} não possui o componente Item.", newItem);
+            Destroy(newItem);
+            return false;
         }
+
+        itemsQueue.Enqueue(itemComponent);
+        _totalExpected++;
+        var context = JapanMarket.Gameplay.GameContext.Current;
+        if (context != null && context.Services.TryResolve(out JapanMarket.Data.IItemCatalog catalog))
+            foreach (var product in catalog.All)
+                if (product.LegacyEnumValue == (int)itemType) { _saleCost += product.BaseCost; break; }
 
         // Ensure an Outline component exists so the hover system can toggle it.
         var ol = newItem.GetComponent<Outline>();
@@ -527,6 +546,68 @@ public class CashRegister : InteractableBase
         ol.OutlineColor = Color.white;
         ol.OutlineWidth = 4f;
         ol.enabled = false;
+        return true;
+    }
+
+    private Vector3 FitItemToCounter(GameObject item)
+    {
+        Vector3 currentScale = item.transform.localScale;
+        if (!TryGetRendererBounds(item, out Bounds bounds)) return currentScale;
+
+        Vector3 size = bounds.size;
+        float factor = 1f;
+        if (maximumCounterItemSize.x > 0f && size.x > maximumCounterItemSize.x)
+            factor = Mathf.Min(factor, maximumCounterItemSize.x / size.x);
+        if (maximumCounterItemSize.y > 0f && size.y > maximumCounterItemSize.y)
+            factor = Mathf.Min(factor, maximumCounterItemSize.y / size.y);
+        if (maximumCounterItemSize.z > 0f && size.z > maximumCounterItemSize.z)
+            factor = Mathf.Min(factor, maximumCounterItemSize.z / size.z);
+
+        Vector3 fittedScale = currentScale * factor;
+        item.transform.localScale = fittedScale;
+        return fittedScale;
+    }
+
+    private static void AlignItemBaseWithCounter(GameObject item, float counterY)
+    {
+        if (!TryGetRendererBounds(item, out Bounds bounds)) return;
+        item.transform.position += Vector3.up * (counterY - bounds.min.y);
+    }
+
+    private static void EnsureScanCollider(GameObject item)
+    {
+        if (item.GetComponentInChildren<Collider>(true) != null) return;
+        if (!TryGetRendererBounds(item, out Bounds bounds)) return;
+
+        BoxCollider collider = item.AddComponent<BoxCollider>();
+        collider.center = item.transform.InverseTransformPoint(bounds.center);
+
+        Vector3 scale = item.transform.lossyScale;
+        collider.size = new Vector3(
+            Mathf.Abs(scale.x) > Mathf.Epsilon ? bounds.size.x / Mathf.Abs(scale.x) : bounds.size.x,
+            Mathf.Abs(scale.y) > Mathf.Epsilon ? bounds.size.y / Mathf.Abs(scale.y) : bounds.size.y,
+            Mathf.Abs(scale.z) > Mathf.Epsilon ? bounds.size.z / Mathf.Abs(scale.z) : bounds.size.z);
+    }
+
+    private static bool TryGetRendererBounds(GameObject item, out Bounds bounds)
+    {
+        Renderer[] renderers = item.GetComponentsInChildren<Renderer>(true);
+        bounds = default;
+        bool found = false;
+
+        foreach (Renderer renderer in renderers)
+        {
+            if (!renderer.enabled) continue;
+            if (!found)
+            {
+                bounds = renderer.bounds;
+                found = true;
+            }
+            else
+                bounds.Encapsulate(renderer.bounds);
+        }
+
+        return found;
     }
 
     // ── Payment API (called by PaymentMoney / PaymentCard) ────────────────────
@@ -750,11 +831,23 @@ public class CashRegister : InteractableBase
     private void NotifyTutorial(string eventId)
         => ServiceLocator.Get<TutorialManager>()?.NotifyGameEvent(eventId);
 
+    private AllIThingsData GetItemData(Items type)
+    {
+        if (allItem != null)
+            foreach (AllIThingsData data in allItem)
+                if (data != null && data.itemType == type) return data;
+
+        ItemManager sharedCatalog = ServiceLocator.Get<ItemManager>();
+        AllIThingsData sharedData = sharedCatalog != null ? sharedCatalog.GetItemData(type) : null;
+        if (sharedData != null) return sharedData;
+
+        return null;
+    }
+
     public GameObject GetItemPrefab(Items type)
     {
-        foreach (var data in allItem)
-            if (data.itemType == type) return data.itemPrefab;
-        return null;
+        AllIThingsData data = GetItemData(type);
+        return data != null ? data.itemPrefab : null;
     }
 
     [ContextMenu("Debug: Spawn Coin Pop")]

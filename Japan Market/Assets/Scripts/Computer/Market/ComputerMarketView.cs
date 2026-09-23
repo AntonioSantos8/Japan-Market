@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using JapanMarket.Core;
 using JapanMarket.Data;
 using JapanMarket.Domain;
+using JapanMarket.Gameplay;
 using TMPro;
 using UnityEngine;
 
@@ -249,14 +250,23 @@ public sealed class ComputerMarketView : MonoBehaviour
             return;
         }
 
-        FurnitureManager furnitureManager = null;
+        DeliverySpawner deliverySpawner = null;
         if (furnitureCart.Count > 0)
         {
-            furnitureManager = ServiceLocator.Get<FurnitureManager>();
-            if (furnitureManager == null)
+            deliverySpawner = FindFirstObjectByType<DeliverySpawner>();
+            if (deliverySpawner == null)
             {
-                SetFeedback("Sistema de móveis indisponível.", false);
+                SetFeedback("Ponto de entrega indisponível.", false);
                 return;
+            }
+
+            foreach (KeyValuePair<FurnitureData, int> entry in furnitureCart)
+            {
+                if (entry.Key == null || entry.Key.deliveryBoxPrefab == null)
+                {
+                    SetFeedback("Um móvel não possui caixa de entrega configurada.", false);
+                    return;
+                }
             }
         }
 
@@ -295,7 +305,7 @@ public sealed class ComputerMarketView : MonoBehaviour
                 return;
             }
 
-            DeliverFurniture(furnitureManager);
+            DeliverFurniture(deliverySpawner);
             SetFeedback($"Pedido #{order.Id} realizado.", true);
         }
         else
@@ -307,7 +317,7 @@ public sealed class ComputerMarketView : MonoBehaviour
                 return;
             }
 
-            DeliverFurniture(furnitureManager);
+            DeliverFurniture(deliverySpawner);
             SetFeedback("Compra realizada.", true);
         }
 
@@ -354,11 +364,27 @@ public sealed class ComputerMarketView : MonoBehaviour
         return tutorial != null && !tutorial.IsTutorialFinished;
     }
 
-    private void DeliverFurniture(FurnitureManager manager)
+    private void DeliverFurniture(DeliverySpawner deliverySpawner)
     {
-        if (manager == null) return;
+        if (deliverySpawner == null) return;
+
         foreach (KeyValuePair<FurnitureData, int> entry in furnitureCart)
-            for (int i = 0; i < entry.Value; i++) manager.AddToInventory(entry.Key);
+        {
+            for (int i = 0; i < entry.Value; i++)
+            {
+                if (!deliverySpawner.TrySpawnBox(entry.Key.deliveryBoxPrefab,
+                        out GameObject spawnedBox))
+                {
+                    Debug.LogWarning(
+                        $"[ComputerMarket] Não foi possível entregar a caixa de '{entry.Key.name}'.",
+                        this);
+                    continue;
+                }
+
+                FurnitureBox receiver = spawnedBox.GetComponentInChildren<FurnitureBox>(true);
+                if (receiver != null) receiver.Initialize(entry.Key);
+            }
+        }
     }
 
     private void SetFeedback(string message, bool success)

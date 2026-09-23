@@ -24,7 +24,18 @@ public class PlayerMotor : MonoBehaviour
     [SerializeField] private float tiltSpeed = 5f;
     [SerializeField] private CinemachineCamera cam;
     bool canMove = true;
-    public void SetCanMove(bool value) { canMove = value; }
+    public bool CanMove => canMove;
+
+    public void SetCanMove(bool value)
+    {
+        canMove = value;
+        if (value) return;
+
+        IsMoving = false;
+        IsRunning = false;
+        stepTimer = 0f;
+        ResetCameraEffects();
+    }
     private float fovValue = 60f;
     private float currentTilt = 0f;
     private float inputX = 0f;
@@ -71,7 +82,7 @@ public class PlayerMotor : MonoBehaviour
         StopAllCoroutines();
 
         fovValue = 60f;
-        cam.Lens.FieldOfView = fovValue;
+        if (cam != null) cam.Lens.FieldOfView = fovValue;
 
         inputX = 0f;
         currentTilt = 0f;
