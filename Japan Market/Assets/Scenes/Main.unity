@@ -18868,12 +18868,12 @@ MonoBehaviour:
   doorleft: {fileID: 580393102}
   doorRigth: {fileID: 1511169502}
   leftClosedPos: {x: 27.887987, y: 0.4665193, z: -5.170383}
-  leftOpenPos: {x: 26.38799, y: 0.4665193, z: -5.170383}
-  rightClosedPos: {x: 27.887987, y: 0.4665193, z: -5.170383}
+  leftOpenPos: {x: 24.88799, y: 0.4665193, z: -5.170383}
+  rightClosedPos: {x: 29.38799, y: 0.4665193, z: -5.170383}
   rightOpenPos: {x: 29.38799, y: 0.4665193, z: -5.170383}
   useWorldOffsets: 1
-  leftOpenWorldOffset: {x: 0, y: 2.812463, z: 0}
-  rightOpenWorldOffset: {x: 0, y: 0, z: 0}
+  leftOpenWorldOffset: {x: -1.5, y: 0, z: 0}
+  rightOpenWorldOffset: {x: 1.5, y: 0, z: 0}
   speed: 1
   doorCloseTime: 2
   easeType: 9
@@ -109266,6 +109266,55 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 400000, guid: 2b44582523d7fdf48ae9a30dd4e38897, type: 3}
   m_PrefabInstance: {fileID: 1018473945}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1021633980
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1021633982}
+  - component: {fileID: 1021633981}
+  m_Layer: 0
+  m_Name: -- Expansions --
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1021633981
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1021633980}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a9c2d4e6f8014b7ca3d5e7f901234567, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: JapanMarket.Gameplay::JapanMarket.Gameplay.StoreExpansionSceneBinder
+  expansions:
+  - section: 0
+    label: 
+    disableWhenPurchased: []
+    enableWhenPurchased: []
+--- !u!4 &1021633982
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1021633980}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.58841, y: -0.23652, z: -3.51108}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1026121893
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -236597,3 +236646,4 @@ SceneRoots:
   - {fileID: 2059281475}
   - {fileID: 774287428}
   - {fileID: 1031522961}
+  - {fileID: 1021633982}

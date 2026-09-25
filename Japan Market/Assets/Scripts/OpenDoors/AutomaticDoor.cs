@@ -46,11 +46,7 @@ public class AutomaticDoor : MonoBehaviour
             return;
         }
 
-        // Os valores antigos do prefab foram gravados em coordenadas de mundo,
-        // mas o tween usa espaço local. Conservamos apenas o deslocamento de
-        // abertura (que continua correto) e usamos a posição local real como o
-        // estado fechado. Isso também permite reposicionar o prefab sem a porta
-        // saltar de volta para a cena em que foi criada.
+     
         Vector3 leftTravel = leftOpenPos - leftClosedPos;
         Vector3 rightTravel = rightOpenPos - rightClosedPos;
 

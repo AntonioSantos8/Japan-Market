@@ -104,6 +104,12 @@ namespace JapanMarket.UI
             RectTransform content = view.ContentRoot;
             if (content == null) return;
 
+            // O prefab atual do Mercado já contém sua própria loja, com abas de
+            // produtos, móveis e carrinho. Criar MarketApp no mesmo Content
+            // desenha uma segunda interface por cima e bloqueia os cliques.
+            if (view.AppName == "Mercado" && content.Find("Market Store") != null)
+                return;
+
             ComputerApp controller = view.AppName switch
             {
                 "Mercado" => GetOrAdd<MarketApp>(content.gameObject),
