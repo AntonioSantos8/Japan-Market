@@ -287,7 +287,10 @@ namespace JapanMarket.Gameplay
             {
                 MaxConcurrentLoans = _maxConcurrentLoans,
             };
-            _expansions = new StoreExpansionService(_ledger, _progress, _progress);
+            StoreExpansionSceneBinder expansionBinder =
+                FindFirstObjectByType<StoreExpansionSceneBinder>(FindObjectsInactive.Include);
+            _expansions = new StoreExpansionService(_ledger, _progress, _progress,
+                expansionBinder?.CreateOffers());
 
             // O relógio e o contexto de desbloqueio não são opcionais aqui: sem
             // o primeiro nada faz o prazo de entrega vencer, e sem o segundo um

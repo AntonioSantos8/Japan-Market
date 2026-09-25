@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using JapanMarket.Core;
 using JapanMarket.Domain;
 using UnityEngine;
 
@@ -20,6 +21,11 @@ namespace JapanMarket.Gameplay
             [Tooltip("Nome apenas para facilitar a identificação no Inspector.")]
             public string label = "Expansão";
 
+            [Min(0), Tooltip("Preço exibido no PC e cobrado na compra, em ienes.")]
+            public long priceYen = 350;
+            [Min(0), Tooltip("Nível mínimo da loja. Zero libera desde o início.")]
+            public int requiredStoreLevel;
+
             [Tooltip("Objetos visíveis antes da compra e desativados depois dela.")]
             public GameObject[] disableWhenPurchased = Array.Empty<GameObject>();
 
@@ -28,6 +34,20 @@ namespace JapanMarket.Gameplay
         }
 
         [SerializeField] private VisualSwap[] expansions = Array.Empty<VisualSwap>();
+
+        public IReadOnlyList<StoreSectionOffer> CreateOffers()
+        {
+            var offers = new List<StoreSectionOffer>();
+            var seen = new HashSet<int>();
+            foreach (VisualSwap swap in expansions)
+            {
+                if (swap == null || swap.section < 2 || !seen.Add(swap.section)) continue;
+                offers.Add(new StoreSectionOffer(swap.section,
+                    Money.FromYen(Math.Max(0, swap.priceYen)),
+                    Math.Max(0, swap.requiredStoreLevel)));
+            }
+            return offers;
+        }
 
         private IStoreExpansionService _service;
 

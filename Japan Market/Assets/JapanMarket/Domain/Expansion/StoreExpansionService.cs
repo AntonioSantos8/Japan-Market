@@ -14,35 +14,23 @@ namespace JapanMarket.Domain
     {
         private const string FlagPrefix = "store.section.";
 
-        private static readonly StoreSectionOffer[] SectionOffers =
-        {
-            new(2, Money.FromYen(350), 4),
-            new(3, Money.FromYen(600), 6),
-            new(4, Money.FromYen(1100), 9),
-            new(5, Money.FromYen(1600), 14),
-            new(6, Money.FromYen(2500), 18),
-            new(7, Money.FromYen(3400), 23),
-            new(8, Money.FromYen(4600), 26),
-            new(9, Money.FromYen(5850), 31),
-            new(10, Money.FromYen(7500), 37),
-            new(11, Money.FromYen(9500), 44),
-            new(12, Money.FromYen(12000), 52),
-            new(13, Money.FromYen(15000), 61),
-        };
+        private readonly IReadOnlyList<StoreSectionOffer> _offers;
 
         private readonly ILedger _ledger;
         private readonly IUnlockContext _unlocks;
         private readonly IProgressFlags _flags;
 
         public StoreExpansionService(ILedger ledger, IUnlockContext unlocks,
-                                     IProgressFlags flags)
+                                     IProgressFlags flags,
+                                     IReadOnlyList<StoreSectionOffer> offers)
         {
             _ledger = ledger;
             _unlocks = unlocks;
             _flags = flags;
+            _offers = offers ?? Array.Empty<StoreSectionOffer>();
         }
 
-        public IReadOnlyList<StoreSectionOffer> Offers => SectionOffers;
+        public IReadOnlyList<StoreSectionOffer> Offers => _offers;
 
         public int OwnedCount
         {
@@ -50,8 +38,8 @@ namespace JapanMarket.Domain
             {
                 int count = 0;
 
-                for (int i = 0; i < SectionOffers.Length; i++)
-                    if (IsOwned(SectionOffers[i].Section)) count++;
+                for (int i = 0; i < _offers.Count; i++)
+                    if (IsOwned(_offers[i].Section)) count++;
 
                 return count;
             }
@@ -70,7 +58,7 @@ namespace JapanMarket.Domain
                 return ExpansionPurchaseResult.Unavailable;
             if (IsOwned(section)) return ExpansionPurchaseResult.AlreadyOwned;
 
-            StoreSectionOffer offer = SectionOffers[offerIndex];
+            StoreSectionOffer offer = _offers[offerIndex];
             if (_unlocks.StoreLevel < offer.RequiredStoreLevel)
                 return ExpansionPurchaseResult.StoreLevelRequired;
 
@@ -83,10 +71,10 @@ namespace JapanMarket.Domain
             return ExpansionPurchaseResult.Ok;
         }
 
-        private static int FindOffer(int section)
+        private int FindOffer(int section)
         {
-            for (int i = 0; i < SectionOffers.Length; i++)
-                if (SectionOffers[i].Section == section) return i;
+            for (int i = 0; i < _offers.Count; i++)
+                if (_offers[i].Section == section) return i;
 
             return -1;
         }
