@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Audio;
+using UnityEngine.SceneManagement;
 
 public enum SFX
 {
@@ -79,12 +80,27 @@ public class SoundManager : MonoBehaviour
             return;
         }
 
-            ServiceLocator.Register(this);
+        ServiceLocator.Register(this);
         Instance = this;
         DontDestroyOnLoad(gameObject);
+        SceneManager.sceneLoaded += OnSceneLoaded;
         InitPool();
 
     
+    }
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        // A cena Main cria um novo container no Awake. Como este objeto persiste
+        // desde o menu, seu Awake não roda outra vez para registrá-lo ali.
+        ServiceLocator.Register(this);
+    }
+
+    private void OnDestroy()
+    {
+        if (Instance != this) return;
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+        Instance = null;
     }
 
 

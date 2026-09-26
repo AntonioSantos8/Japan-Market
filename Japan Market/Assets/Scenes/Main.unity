@@ -72957,6 +72957,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Sujeira_Chao
       objectReference: {fileID: 0}
+    - target: {fileID: 6867647492524054895, guid: 71f9a714ac3b1f6409d1613916584489, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -110788,6 +110792,10 @@ PrefabInstance:
     - target: {fileID: 9055981368651268085, guid: 15dd0944a6e4dbb428741346911eaa56, type: 3}
       propertyPath: m_Name
       value: Sujeira_Vidro
+      objectReference: {fileID: 0}
+    - target: {fileID: 9055981368651268085, guid: 15dd0944a6e4dbb428741346911eaa56, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -187875,6 +187883,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1659655416}
   - component: {fileID: 1659655415}
+  - component: {fileID: 1659655417}
   m_Layer: 0
   m_Name: "\u2014 Lixo \u2014"
   m_TagString: Untagged
@@ -187916,6 +187925,39 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1659655417
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1659655414}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8dc20789a3724a1e998668af9fb514da, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: JapanMarket.Gameplay::JapanMarket.Gameplay.FloorGrimeSpawner
+  _floorPrefab: {fileID: 3243468933591323767, guid: 71f9a714ac3b1f6409d1613916584489, type: 3}
+  _areas:
+  - section: 1
+    center: {x: 25, y: 0, z: 5}
+    size: {x: 8, y: 8}
+  - section: 2
+    center: {x: 17, y: 0, z: 5}
+    size: {x: 8, y: 8}
+  - section: 3
+    center: {x: 25, y: 0, z: 13}
+    size: {x: 8, y: 8}
+  - section: 4
+    center: {x: 17, y: 0, z: 13}
+    size: {x: 8, y: 8}
+  _secondsBetweenTries: 30
+  _chancePerTry: 0.5
+  _maxActive: 12
+  _minimumSeparation: 1
+  _floorMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
 --- !u!4 &1660999517 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3587188065289658224, guid: 127aa2c5714c23247847eeabdbdce066, type: 3}

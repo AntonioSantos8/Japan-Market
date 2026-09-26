@@ -27,6 +27,10 @@ public class NpcManager : MonoBehaviour
     [Tooltip("Número máximo de NPCs vivos ao mesmo tempo. 0 = sem limite.")]
     [SerializeField] private int _maxNpcsInScene = 5;
 
+    [Header("Limpeza")]
+    [Min(1f)] [SerializeField] private float _dirtyIntervalMultiplier = 3f;
+    [Range(0.1f, 1f)] [SerializeField] private float _dirtyCapacityFraction = 0.5f;
+
     private readonly List<GameObject> _activeNpcs = new List<GameObject>();
 
     private void Start()
@@ -58,12 +62,17 @@ public class NpcManager : MonoBehaviour
             if (!ServiceLocator.Get<MarketManager>().Open)
                 yield break;
 
-            float interval = Random.Range(_minSpawnInterval, _maxSpawnInterval);
+            float interval = Random.Range(_minSpawnInterval, _maxSpawnInterval)
+                * Mathf.Lerp(1f, _dirtyIntervalMultiplier, DirtLevel);
             yield return new WaitForSeconds(interval);
 
             CleanupDestroyedNpcs();
 
-            if (_maxNpcsInScene > 0 && _activeNpcs.Count >= _maxNpcsInScene)
+            int capacity = _maxNpcsInScene > 0
+                ? Mathf.Max(1, Mathf.RoundToInt(Mathf.Lerp(_maxNpcsInScene,
+                    _maxNpcsInScene * _dirtyCapacityFraction, DirtLevel)))
+                : 0;
+            if (capacity > 0 && _activeNpcs.Count >= capacity)
             {
                 Debug.Log("[NpcManager] Cap de NPCs atingido, aguardando...");
                 yield return null;
@@ -73,6 +82,7 @@ public class NpcManager : MonoBehaviour
             SpawnNpc();
         }
     }
+    private float DirtLevel => JapanMarket.Gameplay.GameContext.Current?.Cleanliness?.Normalized ?? 0f;
 
     private void SpawnNpc()
     {

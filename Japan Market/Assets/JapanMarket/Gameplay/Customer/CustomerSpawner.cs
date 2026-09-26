@@ -30,6 +30,10 @@ namespace JapanMarket.Gameplay
         [Tooltip("Maximum live customers at the same time. 0 = unlimited.")]
         [Min(0)] [SerializeField] private int _maxAlive = 6;
 
+        [Header("Limpeza")]
+        [Min(1f)] [SerializeField] private float _dirtyIntervalMultiplier = 3f;
+        [Range(0.1f, 1f)] [SerializeField] private float _dirtyCapacityFraction = 0.5f;
+
         [Header("Start")]
         [Tooltip("Starts spawning without waiting for the store to open. Use in Sandbox.")]
         [SerializeField] private bool _autoStart;
@@ -89,14 +93,21 @@ namespace JapanMarket.Gameplay
             PruneDead();
 
             if (Time.time < _nextSpawnAt) return;
-            if (_maxAlive > 0 && _alive.Count >= _maxAlive) { ScheduleNext(); return; }
+            int capacity = _maxAlive > 0
+                ? Mathf.Max(1, Mathf.RoundToInt(Mathf.Lerp(_maxAlive,
+                    _maxAlive * _dirtyCapacityFraction, DirtLevel)))
+                : 0;
+            if (capacity > 0 && _alive.Count >= capacity) { ScheduleNext(); return; }
 
             Spawn();
             ScheduleNext();
         }
 
+        private float DirtLevel => GameContext.Current?.Cleanliness?.Normalized ?? 0f;
+
         private void ScheduleNext() =>
-            _nextSpawnAt = Time.time + Random.Range(_intervalSeconds.x, _intervalSeconds.y);
+            _nextSpawnAt = Time.time + Random.Range(_intervalSeconds.x, _intervalSeconds.y)
+                * Mathf.Lerp(1f, _dirtyIntervalMultiplier, DirtLevel);
 
         private void Spawn()
         {
