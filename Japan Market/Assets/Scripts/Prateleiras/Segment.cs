@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 using DG.Tweening;
+using JapanMarket.Gameplay;
 [System.Serializable]
 public class SegmentTypeGroup
 {
@@ -303,7 +304,11 @@ public class Segment : InteractableBase
         seq.Append(
             itemTransform.DOScale(targetScale, 0.12f)
             .SetEase(Ease.OutBack)
-            .OnComplete(() => ServiceLocator.Get<SoundManager>().Play(SFX.PopItemPrateleira))
+            .OnComplete(() =>
+            {
+                ServiceLocator.Get<SoundManager>().Play(SFX.PopItemPrateleira);
+                ShelfPlacementEffect.Play(itemTransform.gameObject);
+            })
         );
 
         activeTweens++;

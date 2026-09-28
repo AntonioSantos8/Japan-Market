@@ -163,6 +163,7 @@ namespace JapanMarket.Gameplay
             if (spawned.TryGetComponent(out Rigidbody body)) body.isKinematic = true;
 
             _slotVisuals[slotIndex] = t;
+            ShelfPlacementEffect.Play(spawned);
         }
 
         private void DespawnVisual(int slotIndex)
