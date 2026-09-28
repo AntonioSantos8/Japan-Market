@@ -13,9 +13,7 @@ public class ItemBox : MonoBehaviour, JapanMarket.Gameplay.IStockDeliveryReceive
     [SerializeField] FurnitureType allowedFurniture;
 
     [SerializeField] Transform itemsParent;
-    [SerializeField] float delayBetweenItems = 0.08f;
-   
-    float visualDelay;
+
     public bool isAnimating;
     int activeTweens;	
 
@@ -161,6 +159,22 @@ public class ItemBox : MonoBehaviour, JapanMarket.Gameplay.IStockDeliveryReceive
         return boxType == type;
     }
 
+    public bool HasSpaceFor(Items type)
+    {
+        if (type == Items.None || !CanReceive(type)) return false;
+
+        if (IsEmpty())
+        {
+            var data = ServiceLocator.Get<ItemManager>()?.GetItemData(type);
+            return data != null && data.boxGrid != null && data.boxGrid.TotalCapacity > 0;
+        }
+
+        for (int i = 0; i < _spaces.Count; i++)
+            if (_spaces[i] == null) return true;
+
+        return false;
+    }
+
     public bool AddItem(Transform item, Items type, Segment segment)
     {
         if (!CanReceive(type)) return false;
@@ -200,7 +214,7 @@ public class ItemBox : MonoBehaviour, JapanMarket.Gameplay.IStockDeliveryReceive
         ServiceLocator.Get<SoundManager>().Play(SFX.WooshTransicaoItem);
 
         Sequence seq = DOTween.Sequence();
-        seq.SetDelay(visualDelay + Random.Range(0f, 0.015f));
+        seq.SetDelay(Random.Range(0f, 0.015f));
 
         Vector3 start = item.localPosition;
         float distance = Vector3.Distance(start, end);
@@ -271,13 +285,10 @@ public class ItemBox : MonoBehaviour, JapanMarket.Gameplay.IStockDeliveryReceive
                 isAnimating = false;
                 if (segment != null)
                 {
-                    segment.IsAnimating = false;
                     segment.OnLookAtWithRestriction();
                 }
             }
         });
-
-        visualDelay += delayBetweenItems;
 
         if (item.TryGetComponent(out Rigidbody rb))
             rb.isKinematic = true;
@@ -303,7 +314,6 @@ public class ItemBox : MonoBehaviour, JapanMarket.Gameplay.IStockDeliveryReceive
     
     public Transform TakeItemByType(Items type)
     {
-        visualDelay = 0;
         if (boxType != type) return null;
 
         for (int i = _spaces.Count - 1; i >= 0; i--)

@@ -12,7 +12,6 @@ public class GlobalPrices : MonoBehaviour
     private readonly Dictionary<Items, float> _globalItemsPrice = new();
     private readonly Dictionary<Items, float> _baseItemsPrice = new();
     private readonly Dictionary<Items, float> _discountPercent = new();
-    private readonly Dictionary<Items, bool> _hasPutItem = new();
 
     private Items currentDisplayType = Items.None;
     private IPricingService _pricing;
@@ -28,10 +27,9 @@ public class GlobalPrices : MonoBehaviour
     {
         foreach (Items item in System.Enum.GetValues(typeof(Items)))
         {
-            _globalItemsPrice[item] = 0f;
-            _baseItemsPrice[item] = 0f;
+            _globalItemsPrice[item] = GetMarketPrice(item);
+            _baseItemsPrice[item] = GetMarketPrice(item);
             _discountPercent[item] = 0f;
-            _hasPutItem[item] = false;
         }
 
         BindModernPricing();
@@ -44,12 +42,12 @@ public class GlobalPrices : MonoBehaviour
 
     public float GetItemCurrentPrice(Items item)
     {
-        return _globalItemsPrice.TryGetValue(item, out float price) ? price : 0f;
+        return _globalItemsPrice.TryGetValue(item, out float price) ? price : GetMarketPrice(item);
     }
 
     public float GetItemBasePrice(Items item)
     {
-        if (_baseItemsPrice.TryGetValue(item, out float price) && price > 0f)
+        if (_baseItemsPrice.TryGetValue(item, out float price))
             return price;
 
         return GetMarketPrice(item);
@@ -97,18 +95,6 @@ public class GlobalPrices : MonoBehaviour
             tutorialManager.NotifyGameEvent("HasPutPrice");
 
         SetCurrentDisplayNone();
-    }
-
-    public void HasPutItem(Items item)
-    {
-        if (!_hasPutItem.ContainsKey(item)) return;
-
-        if (!_hasPutItem[item])
-        {
-            _hasPutItem[item] = true;
-            SetPricing(GetMarketPrice(item), 0f, item);
-            OpenPriceDisplay(item);
-        }
     }
 
     public void SetCurrentDisplay(Items to)

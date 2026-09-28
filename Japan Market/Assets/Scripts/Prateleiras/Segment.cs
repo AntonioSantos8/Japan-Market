@@ -31,11 +31,12 @@ public class Segment : InteractableBase
     [SerializeField] SegmentTypeGroup[] groups; 
     [SerializeField] List<Items> supportedItems = new List<Items>();
     [SerializeField] Transform itemsParent;
-    [SerializeField] float delayBetweenItems = 0.08f;
+    [SerializeField, Min(0.05f)] float placementInterval = 0.3f;
     [SerializeField] Material greenMaterial, redMaterial, transparentMaterial;
     [SerializeField] Shelf shelf;
     [SerializeField] FurnitureType myType;
     public FurnitureType FurnitureType => myType;
+    public float PlacementInterval => Mathf.Max(0.05f, placementInterval);
 
     public SegmentTypeGroup[] Groups 
     { 
@@ -46,12 +47,9 @@ public class Segment : InteractableBase
         } 
         set => groups = value; 
     }
-    public bool IsAnimating { set => isAnimating = value; }
-
     [SerializeField] MeshRenderer outlineMeshRenderer;
 
     int activeTweens;
-    float visualDelay;
     bool isLooking;
     bool isAnimating;    
 
@@ -244,8 +242,6 @@ public class Segment : InteractableBase
         }
 
         mySegment = type;
-        ServiceLocator.Get<GlobalPrices>().HasPutItem(mySegment);
-
         itemTransform.SetParent(itemsParent);
         groups[groupIndex].spaces[spaceIndex] = itemTransform;
 
@@ -257,65 +253,32 @@ public class Segment : InteractableBase
         Vector3 targetScale = settings.itemScale;
 
         Vector3 start = itemTransform.position;
-        float height = Vector3.Distance(start, end) * 0.21f;
-
-        Vector3 mid = (start + end) * 0.5f;
-        mid += Vector3.up * height;
-
-        Vector3[] path = new Vector3[]
-        {
-            start,
-            mid,
-            end
-        };
+        float arcHeight = Mathf.Min(Vector3.Distance(start, end) * 0.14f, 0.28f);
+        const float moveDuration = 0.4f;
 
         Sequence seq = DOTween.Sequence();
-
-        seq.SetDelay(visualDelay + Random.Range(0f, 0.025f));
-
-        seq.Append(
-            itemTransform.DOPath(path, 0.34f, PathType.CatmullRom)
-            .SetEase(Ease.OutCubic)
-        );
-
-        seq.Join(
-            itemTransform.DORotateQuaternion(
-                targetRotation * Quaternion.Euler(
-                    Random.Range(-6f, 6f),
-                    Random.Range(-12f, 12f),
-                    Random.Range(-4f, 4f)
-                ),
-                0.26f
-            ).SetEase(Ease.OutSine)
-        );
-
-        seq.Append(
-            itemTransform.DOMove(end, 0.05f)
-            .SetEase(Ease.InQuad)
-        );
-
-        seq.Join(
-            itemTransform.DORotateQuaternion(targetRotation, 0.05f)
-        );
-        seq.Join(
-            itemTransform.DOScaleY(targetScale.y * 1.2f, 0.18f)
-            .SetEase(Ease.OutQuad)
-        );
-        seq.Append(
-            itemTransform.DOScale(targetScale, 0.12f)
-            .SetEase(Ease.OutBack)
-            .OnComplete(() =>
-            {
-                ServiceLocator.Get<SoundManager>().Play(SFX.PopItemPrateleira);
-                ShelfPlacementEffect.Play(itemTransform.gameObject);
-            })
-        );
+        // Um arco contínuo evita a pausa no waypoint inicial e o salto curto
+        // que havia entre a trajetória e o encaixe final.
+        seq.Append(DOVirtual.Float(0f, 1f, moveDuration, progress =>
+        {
+            itemTransform.position = Vector3.Lerp(start, end, progress)
+                + Vector3.up * (4f * arcHeight * progress * (1f - progress));
+        }).SetEase(Ease.OutSine));
+        seq.Join(itemTransform.DORotateQuaternion(targetRotation, moveDuration)
+            .SetEase(Ease.OutSine));
+        seq.Join(itemTransform.DOScale(targetScale, moveDuration)
+            .SetEase(Ease.OutSine));
 
         activeTweens++;
         isAnimating = true;
 
         seq.OnComplete(() =>
         {
+            itemTransform.SetPositionAndRotation(end, targetRotation);
+            itemTransform.localScale = targetScale;
+            ServiceLocator.Get<SoundManager>().Play(SFX.PopItemPrateleira);
+            ShelfPlacementEffect.Play(itemTransform.gameObject);
+
             activeTweens--;
 
             if (activeTweens <= 0)
@@ -324,8 +287,6 @@ public class Segment : InteractableBase
                 OnLookAtWithRestriction();
             }
         });
-
-        visualDelay += delayBetweenItems;
 
         ShelfItem shelfItem = itemTransform.GetComponent<ShelfItem>();
         if (shelfItem == null)
@@ -337,75 +298,65 @@ public class Segment : InteractableBase
         return true;
     }
 
- bool TakeItem(ItemBox box)
-{//colocar item na caixa
-    for (int g = 0; g < groups.Length; g++)
+    public bool CanPlaceFromBox(ItemBox box)
     {
-        if (!box.CanReceive(groups[g].type)) continue;
-
-        for (int i = groups[g].spaces.Count - 1; i >= 0; i--)
-        {
-            Transform item = groups[g].spaces[i];
-            if (item == null) continue;
-
-                if (!box.AddItem(item, groups[g].type, this)) { mySegment = Items.None; return false; }
-
-            groups[g].spaces[i] = null;
-
-            TakeItem(box);
-            return true;
-        }
+        return box != null && !box.IsEmpty() && !box.isAnimating
+            && (box.AllowedFurniture == myType || box.AllowedFurniture == FurnitureType.None)
+            && (mySegment == Items.None || mySegment == box.GetBoxType())
+            && !IsFull();
     }
-    mySegment = Items.None;
-    shelf.RemoveSegment(this);
 
-    return false;
-}
+    public bool CanTakeIntoBox(ItemBox box)
+    {
+        return box != null && mySegment != Items.None && !isAnimating
+            && (box.AllowedFurniture == myType || box.AllowedFurniture == FurnitureType.None)
+            && box.HasSpaceFor(mySegment);
+    }
+
+    public bool TakeOneItem(ItemBox box)
+    {
+        if (!CanTakeIntoBox(box)) return false;
+
+        for (int g = 0; g < groups.Length; g++)
+        {
+            if (groups[g].type != mySegment) continue;
+
+            for (int i = groups[g].spaces.Count - 1; i >= 0; i--)
+            {
+                Transform item = groups[g].spaces[i];
+                if (item == null) continue;
+                if (!box.AddItem(item, groups[g].type, this)) return false;
+
+                RemoveItem(g, i);
+                if (IsEmpty()) shelf.RemoveSegment(this);
+                OnLookAtWithRestriction();
+                return true;
+            }
+        }
+
+        return false;
+    }
  public override void Interact()
 {
-    if (isAnimating) return;
-    if (!ServiceLocator.Get<ItemRaycastController>().isWithBox) return;
+    ItemRaycastController controller = ServiceLocator.Get<ItemRaycastController>();
+    if (controller == null || !controller.isWithBox) return;
 
-    ItemBox box = ServiceLocator.Get<ItemRaycastController>().LastBox();
+    ItemBox box = controller.LastBox();
+    if (box == null) return;
 
-    if(mySegment==Items.None && box.IsEmpty()) return;
-    if(box.AllowedFurniture != myType && !box.AllowedFurniture.Equals(FurnitureType.None)){ print("Furniture Errada"); return;}
-    if(box.isAnimating) return;
+    if (!CanPlaceFromBox(box)) return;
 
-    if (box.IsEmpty())
-    {
-         isAnimating = true;
-         TakeItem(box);
-
-         OnLookAtWithRestriction();
-         return;
-    }
-
-         Items type = box.GetBoxType();
-        bool placedAnyItemFromBox = false;
+        Items type = box.GetBoxType();
         box.transform.root.DOPunchScale(-Vector3.right * .03f, .3f, 2);
-        while (true)
+        Transform item = box.TakeItemByType(type);
+        if (item == null) return;
+
+        Item itemComponent = item.GetComponent<Item>();
+        if (!PlaceSingleItem(item, itemComponent.GetItemType()))
         {
-            Transform item = box.TakeItemByType(type);
-            if (item == null)
-             {  
-                box.SetBoxType(Items.None);
-                break;
-                }
-
-            Item itemComponent = item.GetComponent<Item>();
-
-            if (!PlaceSingleItem(item,itemComponent.GetItemType()))
-            {
-                box.AddItem(item, type, this);
-
-                break;
-            }
-
-            placedAnyItemFromBox = true;
+            box.AddItem(item, type, this);
         }
-
-        if (placedAnyItemFromBox)
+        else
         {
             TutorialManager tutorialManager = ServiceLocator.Get<TutorialManager>();
             if (tutorialManager != null)
@@ -413,46 +364,20 @@ public class Segment : InteractableBase
         }
 
         OnLookAtWithRestriction();
-
-visualDelay = 0;
-
 }
     public override bool OnLookAt()
     {
         isLooking = true;
-        if(isAnimating)
-       {
-       // outlineMeshRenderer.material = transparentMaterial;
+        ItemRaycastController controller = ServiceLocator.Get<ItemRaycastController>();
+        ItemBox box = controller != null ? controller.LastBox() : null;
+        if (controller == null || !controller.isWithBox || box == null) return false;
+        bool canPlace = CanPlaceFromBox(box);
+        bool canTake = CanTakeIntoBox(box);
+        if (!canPlace && !canTake) return false;
 
-        ChangeMaterialColor(ServiceLocator.Get<FurnitureManager>().TransparentSegment, true);
-        return false;
-    }
-        if (!ServiceLocator.Get<ItemRaycastController>().isWithBox) return false;
-         ItemBox box = ServiceLocator.Get<ItemRaycastController>().LastBox();
-          if(box.AllowedFurniture != myType && !box.AllowedFurniture.Equals(FurnitureType.None))
-        {
-        ChangeMaterialColor(ServiceLocator.Get<FurnitureManager>().RedSegment);
-        PlayOutlineOnSound();
-        return false;
-
-        }
-         if(box.IsEmpty() && mySegment == Items.None) return false;
-       // if (mySegment != Items.None && mySegment != box.GetBoxType() && !box.IsEmpty()) return;
-        if(box.GetBoxType() != mySegment && box.GetBoxType() != Items.None && mySegment != Items.None) return false;
-
-        if(IsFull() && box.GetBoxType() != Items.None) return false;
-
-        if (box.IsEmpty())
-        {
-          //  outlineMeshRenderer.material = redMaterial;
-
-          ChangeMaterialColor(ServiceLocator.Get<FurnitureManager>().RedSegment);
-        }
-        else
-        {
-            // outlineMeshRenderer.material = greenMaterial;
-            ChangeMaterialColor(ServiceLocator.Get<FurnitureManager>().GreenSegment);
-        }
+        ChangeMaterialColor(canPlace
+            ? ServiceLocator.Get<FurnitureManager>().GreenSegment
+            : ServiceLocator.Get<FurnitureManager>().RedSegment);
         PlayOutlineOnSound();
         return true;
     }

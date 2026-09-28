@@ -68,6 +68,10 @@ public class ItemRaycastController : MonoBehaviour
     float currentHoldTime;
     InteractableBase currentHoldingInteractable;
     bool waitMouseReleaseAfterInteract;
+    bool placingUntilMouseRelease;
+    bool takingUntilMouseRelease;
+    float nextPlacementTime;
+    float nextTakeTime;
 
     bool useItemRotation;
 
@@ -178,6 +182,11 @@ public class ItemRaycastController : MonoBehaviour
     }
     private void PerformInteractionRaycast()
     {
+        if (!Input.GetMouseButton(0))
+            placingUntilMouseRelease = false;
+        if (!Input.GetMouseButton(1))
+            takingUntilMouseRelease = false;
+
         if (!CanProcessInteractions) return;
 
         if (TryGetInteractableHit(out RaycastHit hit))
@@ -201,6 +210,53 @@ public class ItemRaycastController : MonoBehaviour
                 if (waitMouseReleaseAfterInteract)
                 {
                     ResetHold();
+                    return;
+                }
+
+                if (interactable is Segment segment && lastBoxHeld != null && isWithBox)
+                {
+                    if (Input.GetMouseButton(1))
+                    {
+                        if (!takingUntilMouseRelease)
+                        {
+                            takingUntilMouseRelease = true;
+                            nextTakeTime = 0f;
+                        }
+
+                        if (canLookAtNow && segment.CanTakeIntoBox(lastBoxHeld)
+                            && Time.time >= nextTakeTime)
+                        {
+                            segment.TakeOneItem(lastBoxHeld);
+                            nextTakeTime = Time.time + segment.PlacementInterval;
+                        }
+                    }
+                    else if (Input.GetMouseButton(0))
+                    {
+                        if (!placingUntilMouseRelease)
+                        {
+                            placingUntilMouseRelease = true;
+                            nextPlacementTime = 0f;
+                        }
+
+                        if (canLookAtNow && segment.CanPlaceFromBox(lastBoxHeld)
+                            && Time.time >= nextPlacementTime)
+                        {
+                            segment.Interact();
+                            nextPlacementTime = Time.time + segment.PlacementInterval;
+                        }
+                    }
+
+                    currentHoldTime = 0f;
+                    currentHoldingInteractable = null;
+                    holdImage.fillAmount = 0f;
+                    return;
+                }
+
+                if (placingUntilMouseRelease || takingUntilMouseRelease)
+                {
+                    currentHoldTime = 0f;
+                    currentHoldingInteractable = null;
+                    holdImage.fillAmount = 0f;
                     return;
                 }
 
@@ -295,7 +351,7 @@ public class ItemRaycastController : MonoBehaviour
 
     void HandleHeldItemInput()
     {
-        if (heldItem != null && Input.GetMouseButtonDown(1))
+        if (CanProcessInteractions && heldItem != null && Input.GetKeyDown(KeyCode.G))
         {
             DropItem();
         }
