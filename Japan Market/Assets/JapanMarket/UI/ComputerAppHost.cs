@@ -5,7 +5,7 @@ namespace JapanMarket.UI
 {
     /// <summary>
     /// Controla a navegação entre os apps do prefab, liga cada janela ao seu
-    /// controlador e cria a aba Gestão como compatibilidade para prefabs antigos.
+    /// controlador e cria apps ausentes como compatibilidade para prefabs antigos.
     /// </summary>
     [DisallowMultipleComponent]
     public sealed class ComputerAppHost : MonoBehaviour
@@ -122,6 +122,7 @@ namespace JapanMarket.UI
                 "Relatório" => GetOrAdd<ReportApp>(content.gameObject),
                 "Estatísticas" => GetOrAdd<ReportApp>(content.gameObject),
                 "Gestão" => GetOrAdd<ManagementApp>(content.gameObject),
+                "Customização" => content.GetComponent<CustomizationApp>(),
                 _ => null,
             };
 

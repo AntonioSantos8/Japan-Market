@@ -64,12 +64,14 @@ namespace JapanMarket.EditorTools
 
                 if (changed) PrepareDesktopBackground(uiRoot);
 
+                changed |= EnsureWallpapers(uiRoot);
+
                 RectTransform appsRoot = existingRoot as RectTransform
                                          ?? CreateRect(AppsRootName, uiRoot);
                 Stretch(appsRoot);
 
                 string[] appNames =
-                    { "Mercado", "Preços", "Objetivos", "Banco", "Relatório", "Gestão" };
+                    { "Mercado", "Preços", "Objetivos", "Banco", "Relatório", "Gestão", "Customização" };
                 var views = new List<ComputerAppView>(appNames.Length);
 
                 for (int i = 0; i < appNames.Length; i++)
@@ -119,6 +121,83 @@ namespace JapanMarket.EditorTools
             background.name = "Desktop Background";
             background.color = DesktopColor;
             background.raycastTarget = false;
+        }
+
+        private static bool EnsureWallpapers(Transform uiRoot)
+        {
+            Transform desktop = uiRoot.Find("Desktop Background");
+            if (desktop == null) return false;
+
+            UnityEngine.UI.Image background = desktop.GetComponent<UnityEngine.UI.Image>();
+            if (background == null) return false;
+
+            string[] names = { "Original", "Colinas", "K-On", "Angel", "Angel Rosa", "Operação" };
+            string[] paths =
+            {
+                null,
+                "Assets/UIComputer/Wallpapers/WallpaperPc.jpg",
+                "Assets/UIComputer/Wallpapers/eb906d169da1bf4f51b5a5a62a2a866a.jpg",
+                "Assets/UIComputer/Wallpapers/b0d50885a3e06d5fe5fbd6e4f35d5970.jpg",
+                "Assets/UIComputer/Wallpapers/78badc0b9b8bfe803fdf05b8b3efd776.jpg",
+                "Assets/UIComputer/Wallpapers/3fcb662b76157ae851b2e1b66a29b301.jpg",
+            };
+
+            bool changed = false;
+            var objects = new GameObject[names.Length];
+            for (int i = 0; i < names.Length; i++)
+            {
+                Transform existing = desktop.Find("Wallpaper - " + names[i]);
+                UnityEngine.UI.Image image = existing != null
+                    ? existing.GetComponent<UnityEngine.UI.Image>()
+                    : null;
+
+                if (image == null)
+                {
+                    image = CreateImage("Wallpaper - " + names[i], desktop,
+                        i == 0 ? background.color : Color.white);
+                    Stretch(image.rectTransform);
+                    image.raycastTarget = false;
+                    image.gameObject.SetActive(i == 0);
+                    changed = true;
+                }
+
+                Sprite sprite = i == 0 ? background.sprite
+                    : AssetDatabase.LoadAssetAtPath<Sprite>(paths[i]);
+                if (image.sprite != sprite)
+                {
+                    image.sprite = sprite;
+                    changed = true;
+                }
+
+                objects[i] = image.gameObject;
+            }
+
+            Transform decoration = desktop.Find("K-On Pivo");
+            if (decoration != null)
+            {
+                decoration.SetParent(objects[0].transform, false);
+                changed = true;
+            }
+
+            WallpaperThemeController controller = desktop.GetComponent<WallpaperThemeController>();
+            if (controller == null)
+            {
+                controller = desktop.gameObject.AddComponent<WallpaperThemeController>();
+                changed = true;
+            }
+
+            SerializedObject serialized = new(controller);
+            SerializedProperty options = serialized.FindProperty("_wallpapers");
+            options.arraySize = objects.Length;
+            for (int i = 0; i < objects.Length; i++)
+            {
+                SerializedProperty option = options.GetArrayElementAtIndex(i);
+                option.FindPropertyRelative("name").stringValue = names[i];
+                option.FindPropertyRelative("wallpaper").objectReferenceValue = objects[i];
+            }
+
+            changed |= serialized.ApplyModifiedPropertiesWithoutUndo();
+            return changed;
         }
 
         private static ComputerAppView CreateApp(RectTransform parent, string appName, int index)
