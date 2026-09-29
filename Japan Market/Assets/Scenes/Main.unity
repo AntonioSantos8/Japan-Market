@@ -61895,10 +61895,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::IdleSway
   rootPivot: {fileID: 573934989}
-  breathSpeed: 2
-  rootBobAmount: 0.02
-  rootStretchAmount: 0.01
-  rootLeanAngle: 2
+  breathSpeed: 5
+  rootBobAmount: 0.013
+  rootStretchAmount: 0.003
+  rootLeanAngle: 1
   rootStiffness: 70
   rootDamping: 8
   limbs: []
@@ -232673,9 +232673,25 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 340886961}
     - target: {fileID: 1278586913637040968, guid: e0a871c8d696995458ec6f63284dadca, type: 3}
+      propertyPath: redSegment.g
+      value: 0.007786109
+      objectReference: {fileID: 0}
+    - target: {fileID: 1278586913637040968, guid: e0a871c8d696995458ec6f63284dadca, type: 3}
+      propertyPath: redSegment.r
+      value: 0.254717
+      objectReference: {fileID: 0}
+    - target: {fileID: 1278586913637040968, guid: e0a871c8d696995458ec6f63284dadca, type: 3}
       propertyPath: ghostValidator
       value: 
       objectReference: {fileID: 934342651}
+    - target: {fileID: 1278586913637040968, guid: e0a871c8d696995458ec6f63284dadca, type: 3}
+      propertyPath: greenSegment.b
+      value: 0.023512343
+      objectReference: {fileID: 0}
+    - target: {fileID: 1278586913637040968, guid: e0a871c8d696995458ec6f63284dadca, type: 3}
+      propertyPath: greenSegment.g
+      value: 0.16981131
+      objectReference: {fileID: 0}
     - target: {fileID: 1278586913637040968, guid: e0a871c8d696995458ec6f63284dadca, type: 3}
       propertyPath: furnitureSlotName
       value: 

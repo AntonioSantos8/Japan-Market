@@ -347,7 +347,6 @@ public class Segment : InteractableBase
     if (!CanPlaceFromBox(box)) return;
 
         Items type = box.GetBoxType();
-        box.transform.root.DOPunchScale(-Vector3.right * .03f, .3f, 2);
         Transform item = box.TakeItemByType(type);
         if (item == null) return;
 

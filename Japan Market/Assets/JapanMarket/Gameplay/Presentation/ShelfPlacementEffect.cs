@@ -64,6 +64,17 @@ namespace JapanMarket.Gameplay
             return effect.Restart();
         }
 
+        public static void Stop(GameObject itemRoot)
+        {
+            if (itemRoot == null) return;
+
+            ShelfPlacementEffect effect = itemRoot.GetComponent<ShelfPlacementEffect>();
+            if (effect == null) return;
+
+            effect.Cleanup();
+            effect.DestroySelf();
+        }
+
         private bool Restart()
         {
             Cleanup();
