@@ -181,6 +181,7 @@ public class PauseMenuController : MonoBehaviour
         if (Cursor.lockState != CursorLockMode.Locked && Time.timeScale > 0f) return;
 
         IsOpen = true;
+        SoundManager.Instance?.Play(SFX.PanelOpen);
         _resumedMotor = false;
         _timeScaleBeforePause = Time.timeScale > 0f ? Time.timeScale : 1f;
         _cursorLockBeforePause = Cursor.lockState;
@@ -229,6 +230,7 @@ public class PauseMenuController : MonoBehaviour
     {
         if (!IsOpen) return;
         IsOpen = false;
+        SoundManager.Instance?.Play(SFX.PanelClose);
         HideTab();
 
         _sequence?.Kill();

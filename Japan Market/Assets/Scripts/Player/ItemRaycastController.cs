@@ -3,6 +3,8 @@ using UnityEngine;
 using UnityEngine.UI;
 using DG.Tweening;
 using Unity.VisualScripting;
+using UnityEngine.Rendering.Universal;
+using System.Collections.Generic;
 
 public class ItemRaycastController : MonoBehaviour
 {
@@ -25,6 +27,15 @@ public class ItemRaycastController : MonoBehaviour
     private InteractableBase heldInteractable;
     private InteractableBase lastLookedInteractable;
     private ItemBox lastBoxHeld;
+    private Camera itemOverlayCamera;
+    private int itemOverlayLayer = -1;
+    private int originalCameraMask;
+    private readonly Dictionary<Transform, int> savedLayers = new();
+    private readonly Dictionary<Collider, bool> savedColliders = new();
+    private readonly Dictionary<Rigidbody, (bool kinematic, bool gravity)> savedBodies = new();
+
+    [Header("Item Box Carry")]
+    [SerializeField, Min(1f)] float boxFollowSpeed = 18f;
 
     Tween normalReticleScleTween;
 
@@ -91,6 +102,60 @@ public class ItemRaycastController : MonoBehaviour
     void Start()
     {
         cam = GetComponent<Camera>();
+        SetupItemOverlayCamera();
+    }
+
+    void SetupItemOverlayCamera()
+    {
+        itemOverlayLayer = LayerMask.NameToLayer("HeldItemOverlay");
+        if (itemOverlayLayer < 0 || cam == null)
+        {
+            Debug.LogError("A layer HeldItemOverlay ou a câmera do jogador não foi encontrada.", this);
+            return;
+        }
+
+        originalCameraMask = cam.cullingMask;
+        cam.cullingMask &= ~(1 << itemOverlayLayer);
+
+        GameObject overlayObject = new GameObject("Held Item Overlay Camera");
+        overlayObject.transform.SetParent(cam.transform, false);
+        itemOverlayCamera = overlayObject.AddComponent<Camera>();
+        itemOverlayCamera.cullingMask = 1 << itemOverlayLayer;
+        itemOverlayCamera.useOcclusionCulling = false;
+        itemOverlayCamera.nearClipPlane = cam.nearClipPlane;
+        itemOverlayCamera.farClipPlane = cam.farClipPlane;
+        itemOverlayCamera.fieldOfView = cam.fieldOfView;
+
+        UniversalAdditionalCameraData overlayData = overlayObject.AddComponent<UniversalAdditionalCameraData>();
+        overlayData.renderType = CameraRenderType.Overlay;
+        overlayData.renderPostProcessing = false;
+        overlayData.SetRenderer(1); // Forward renderer, shared by the PC and mobile URP assets.
+        List<Camera> stack = cam.GetUniversalAdditionalCameraData().cameraStack;
+        if (stack == null)
+        {
+            Debug.LogError("O renderizador da câmera principal não suporta camera stacking.", this);
+            cam.cullingMask = originalCameraMask;
+            Destroy(overlayObject);
+            itemOverlayCamera = null;
+            return;
+        }
+        stack.Add(itemOverlayCamera);
+    }
+
+    void LateUpdate()
+    {
+        if (itemOverlayCamera != null && cam != null)
+        {
+            itemOverlayCamera.fieldOfView = cam.fieldOfView;
+            itemOverlayCamera.orthographic = cam.orthographic;
+            itemOverlayCamera.orthographicSize = cam.orthographicSize;
+        }
+
+        if (lastBoxHeld == null || heldItem == null || boxHandPivot == null) return;
+
+        float amount = 1f - Mathf.Exp(-boxFollowSpeed * Time.deltaTime);
+        heldItem.position = Vector3.Lerp(heldItem.position, boxHandPivot.position, amount);
+        heldItem.rotation = Quaternion.Slerp(heldItem.rotation, boxHandPivot.rotation, amount);
     }
 
     void Update()
@@ -310,7 +375,7 @@ public class ItemRaycastController : MonoBehaviour
 
     void FollowHand()
     {
-        if (heldItemRb == null || !useItemRotation) return;
+        if (heldItemRb == null || !useItemRotation || lastBoxHeld != null) return;
 
         Quaternion rotOffset = boxHandPivot.rotation * Quaternion.Inverse(heldItemRb.rotation);
         rotOffset.ToAngleAxis(out float angle, out Vector3 axis);
@@ -359,7 +424,10 @@ public class ItemRaycastController : MonoBehaviour
 
     public bool PickItem(Rigidbody itemRb, bool useRotationFollow = false)
     {
-        if (heldItem != null) return false;
+        if (heldItem != null || itemRb == null) return false;
+
+        ItemBox itemBox = itemRb.GetComponentInChildren<ItemBox>();
+        if (itemBox != null && (itemOverlayCamera == null || boxHandPivot == null)) return false;
 
         ServiceLocator.Get<SoundManager>().Play(SFX.PegarItem);
 
@@ -371,7 +439,14 @@ public class ItemRaycastController : MonoBehaviour
 
         var phys = heldItemRb.GetComponentInChildren<Box>();
 
-        if (phys != null)
+        if (itemBox != null)
+        {
+            lastBoxHeld = itemBox;
+            isWithBox = true;
+            CaptureItemBoxTree(heldItem);
+            phys?.OpenForCarry();
+        }
+        else if (phys != null)
         {
             phys.StartHolding(boxHandPivot);
         }
@@ -382,13 +457,8 @@ public class ItemRaycastController : MonoBehaviour
                 phys2.StartHolding(normalPivot);
         }
 
-        if (heldInteractable.gameObject.GetComponent<Box>())
-        {
-            lastBoxHeld = heldItem.GetComponentInChildren<ItemBox>();
-            isWithBox = true;
-        }
-
-        heldItem.gameObject.layer = LayerMask.NameToLayer("InShelf");
+        if (itemBox == null)
+            heldItem.gameObject.layer = LayerMask.NameToLayer("InShelf");
 
         heldInteractable.OnPickEvent?.Invoke();
         heldInteractable.SetCanInteract(false);
@@ -401,10 +471,23 @@ public class ItemRaycastController : MonoBehaviour
     {
         if (heldItem == null) return;
 
+        if (lastBoxHeld != null && !CanDropItemBox())
+        {
+            ServiceLocator.Get<Warnings>()?.ShowBadWarning("Can't drop the box here.");
+            return;
+        }
+
         heldItem.SetParent(null);
 
         var phys = heldItemRb.GetComponent<Box>();
-        if (phys != null)
+        if (lastBoxHeld != null)
+        {
+            RestoreItemBoxTree(heldItem);
+            savedLayers.Clear();
+            savedColliders.Clear();
+            savedBodies.Clear();
+        }
+        else if (phys != null)
         {
             phys.StopHolding();
         }
@@ -415,9 +498,10 @@ public class ItemRaycastController : MonoBehaviour
                 phys2.StopHolding();
         }
 
-        heldItem.gameObject.layer = LayerMask.NameToLayer("Interactive");
+        if (lastBoxHeld == null)
+            heldItem.gameObject.layer = LayerMask.NameToLayer("Interactive");
 
-        if (Physics.Raycast(transform.position, transform.forward, out RaycastHit hit, .8f, interactLayer))
+        if (lastBoxHeld == null && Physics.Raycast(transform.position, transform.forward, out RaycastHit hit, .8f, interactLayer))
         {
             heldItem.position = hit.point - transform.forward * 0.2f;
         }
@@ -434,6 +518,110 @@ public class ItemRaycastController : MonoBehaviour
         heldItem = null;
         heldInteractable = null;
         ReRaycast();
+    }
+
+    // Items may enter or leave the box while it is carried. Keep their original
+    // layers and physics state so shelving them never leaves overlay-only items.
+    public void RegisterItemBoxContent(ItemBox box, Transform content)
+    {
+        if (box == lastBoxHeld && content != null) CaptureItemBoxTree(content);
+    }
+
+    public void RestoreItemBoxContent(ItemBox box, Transform content)
+    {
+        if (box == lastBoxHeld && content != null) RestoreItemBoxTree(content);
+    }
+
+    void CaptureItemBoxTree(Transform root)
+    {
+        foreach (Transform child in root.GetComponentsInChildren<Transform>(true))
+        {
+            if (!savedLayers.ContainsKey(child)) savedLayers.Add(child, child.gameObject.layer);
+            child.gameObject.layer = itemOverlayLayer;
+        }
+
+        foreach (Collider collider in root.GetComponentsInChildren<Collider>(true))
+        {
+            if (!savedColliders.ContainsKey(collider)) savedColliders.Add(collider, collider.enabled);
+            collider.enabled = false;
+        }
+
+        foreach (Rigidbody body in root.GetComponentsInChildren<Rigidbody>(true))
+        {
+            if (!savedBodies.ContainsKey(body)) savedBodies.Add(body, (body.isKinematic, body.useGravity));
+            body.isKinematic = true;
+            body.useGravity = false;
+            body.linearVelocity = Vector3.zero;
+            body.angularVelocity = Vector3.zero;
+        }
+    }
+
+    void RestoreItemBoxTree(Transform root)
+    {
+        foreach (Transform child in root.GetComponentsInChildren<Transform>(true))
+        {
+            if (savedLayers.TryGetValue(child, out int layer))
+            {
+                child.gameObject.layer = layer;
+                savedLayers.Remove(child);
+            }
+        }
+
+        foreach (Collider collider in root.GetComponentsInChildren<Collider>(true))
+        {
+            if (savedColliders.TryGetValue(collider, out bool enabled))
+            {
+                collider.enabled = enabled;
+                savedColliders.Remove(collider);
+            }
+        }
+
+        foreach (Rigidbody body in root.GetComponentsInChildren<Rigidbody>(true))
+        {
+            if (savedBodies.TryGetValue(body, out var state))
+            {
+                body.isKinematic = state.kinematic;
+                body.useGravity = state.gravity;
+                savedBodies.Remove(body);
+            }
+        }
+    }
+
+    bool CanDropItemBox()
+    {
+        Vector3 destination = heldItem.position;
+        Vector3 direction = destination - cam.transform.position;
+        float distanceToBox = direction.magnitude;
+        if (distanceToBox < 0.01f) return false;
+
+        int playerLayer = LayerMask.NameToLayer("Player");
+        int mask = Physics.DefaultRaycastLayers & ~(1 << itemOverlayLayer);
+        if (playerLayer >= 0) mask &= ~(1 << playerLayer);
+
+        // The rendered box may be visible through a wall. Check the real world
+        // between the camera and the intended position before restoring physics.
+        if (Physics.SphereCast(cam.transform.position, 0.08f, direction / distanceToBox,
+                out RaycastHit obstruction, distanceToBox, mask, QueryTriggerInteraction.Ignore)
+            && obstruction.distance < distanceToBox - 0.02f)
+            return false;
+
+        BoxCollider boxCollider = heldItem.GetComponentInChildren<BoxCollider>();
+        if (boxCollider == null) return false;
+
+        Vector3 scale = boxCollider.transform.lossyScale;
+        Vector3 halfSize = Vector3.Scale(boxCollider.size * 0.5f,
+            new Vector3(Mathf.Abs(scale.x), Mathf.Abs(scale.y), Mathf.Abs(scale.z)));
+        halfSize = Vector3.Max(halfSize - Vector3.one * 0.01f, Vector3.one * 0.01f);
+        Vector3 center = boxCollider.transform.TransformPoint(boxCollider.center);
+        Collider[] overlaps = Physics.OverlapBox(center, halfSize, boxCollider.transform.rotation,
+            mask, QueryTriggerInteraction.Ignore);
+        foreach (Collider overlap in overlaps)
+        {
+            if (!overlap.transform.IsChildOf(heldItem) && !overlap.transform.IsChildOf(transform.root))
+                return false;
+        }
+
+        return true;
     }
 
     public void OnDrawGizmos()

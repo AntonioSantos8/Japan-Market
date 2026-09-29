@@ -310,6 +310,7 @@ public class CashRegister : InteractableBase
         Item item = _hoveredItem;
         ClearItemHover();
         DequeueItem(item);
+        SoundManager.Instance?.Play(SFX.ScanItem);
         SendItemToBag(item);
     }
 

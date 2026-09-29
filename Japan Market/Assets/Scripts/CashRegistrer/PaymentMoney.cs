@@ -188,6 +188,7 @@ public class PaymentMoney : MonoBehaviour
 
     private void OnPaymentError()
     {
+        SoundManager.Instance?.Play(SFX.Warning);
         cashRegister.ApplyPenalty();
         cashRegister.PaymentTextCash("Troco incorreto!");
 

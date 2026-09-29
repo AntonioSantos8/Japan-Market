@@ -1,3 +1,4 @@
+using JapanMarket.UI;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -44,6 +45,8 @@ public class OptionsManager : MonoBehaviour
 
     private void Start()
     {
+        foreach (Selectable control in GetComponentsInChildren<Selectable>(true))
+            UIAudioFeedback.Ensure(control);
         LoadSavedSettings();
         RegisterListeners();
         SetCurrentTab(currentObj);

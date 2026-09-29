@@ -72,8 +72,12 @@ public class Box : InteractableBase
         rb.isKinematic = false;
         rb.linearDamping = followDrag;
 
-        //if (ServiceLocator.Get<ItemRaycastController>().PickItem(rb))
-            anim.SetTrigger("Open");
+        OpenForCarry();
+    }
+
+    public void OpenForCarry()
+    {
+        if (anim != null) anim.SetTrigger("Open");
     }
 
     public void StopHolding()

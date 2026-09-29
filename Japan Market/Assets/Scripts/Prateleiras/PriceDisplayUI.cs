@@ -1,3 +1,4 @@
+using JapanMarket.UI;
 using System.Globalization;
 using DG.Tweening;
 using TMPro;
@@ -54,6 +55,8 @@ public class PriceDisplayUI : MonoBehaviour
 
     private void Awake()
     {
+        foreach (Selectable control in GetComponentsInChildren<Selectable>(true))
+            UIAudioFeedback.Ensure(control);
         rectTransform = transform as RectTransform;
         initialScale = transform.localScale;
         if (Mathf.Approximately(initialScale.x, 0f)) initialScale.x = 1f;
@@ -116,6 +119,7 @@ public class PriceDisplayUI : MonoBehaviour
         scaleTween = transform.DOScale(initialScale, transitionTime).SetEase(ease);
 
         isOpen = true;
+        SoundManager.Instance?.Play(SFX.PanelOpen);
         ServiceLocator.Get<ItemRaycastController>()?.SetGeneralCanInteract(false);
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
@@ -197,6 +201,7 @@ public class PriceDisplayUI : MonoBehaviour
 
     public void CloseDisplay()
     {
+        if (isOpen) SoundManager.Instance?.Play(SFX.PanelClose);
         isOpen = false;
         positionTween?.Kill();
         scaleTween?.Kill();

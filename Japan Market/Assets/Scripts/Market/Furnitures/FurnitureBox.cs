@@ -32,6 +32,7 @@ public class FurnitureBox : InteractableBase
         if (manager == null || data == null) return;
 
         manager.AddToInventory(data);
+        SoundManager.Instance?.Play(SFX.PegarItem);
         Destroy(gameObject);
     }
 }

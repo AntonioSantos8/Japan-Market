@@ -149,6 +149,7 @@ public class ConstructionUI : MonoBehaviour
 
     private void OnEnterBuildMode()
     {
+        SoundManager.Instance?.Play(SFX.PanelOpen);
         panelMode.SetActive(true);
         panelMode.transform.localScale = Vector3.zero;
         panelMode.transform.DOScale(Vector3.one, 0.35f).SetEase(Ease.OutBack);
@@ -158,6 +159,7 @@ public class ConstructionUI : MonoBehaviour
 
     private void OnExitBuildMode()
     {
+        SoundManager.Instance?.Play(SFX.PanelClose);
         panelMode.transform.DOKill();
         panelMode.transform.DOScale(Vector3.zero, 0.2f)
             .SetEase(Ease.InBack)

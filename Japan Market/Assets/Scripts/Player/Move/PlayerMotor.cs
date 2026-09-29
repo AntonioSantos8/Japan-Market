@@ -10,6 +10,7 @@ public class PlayerMotor : MonoBehaviour
     private bool isGrounded;
     private float stepTimer = 0f;
     private float currentStepRate = 0f;
+    private bool wasStepping;
 
     public bool IsRunning { get; set; }
     public bool IsMoving { get; set; }
@@ -33,7 +34,7 @@ public class PlayerMotor : MonoBehaviour
 
         IsMoving = false;
         IsRunning = false;
-        stepTimer = 0f;
+        StopFootsteps();
         ResetCameraEffects();
     }
     private float fovValue = 60f;
@@ -51,7 +52,7 @@ public class PlayerMotor : MonoBehaviour
 
     void Update()
     {
-        if (!canMove) return;
+        if (!canMove) { StopFootsteps(); return; }
 
         HandleHeadBob();
         TiltCamera();
@@ -95,8 +96,13 @@ public class PlayerMotor : MonoBehaviour
 
     public void Move(Vector2 input, bool jump, bool run)
     {
-        if (!settings.canMove) return;
-        if(!canMove) return;
+        if (!settings.canMove || !canMove)
+        {
+            IsMoving = false;
+            IsRunning = false;
+            StopFootsteps();
+            return;
+        }
 
         isGrounded = Physics.CheckSphere(groundCheck.position, groundDistance, settings.groundMask);
 
@@ -122,23 +128,35 @@ public class PlayerMotor : MonoBehaviour
 
     private void HandleFootsteps()
     {
-        if (IsMoving && isGrounded)
+        Vector2 rawInput = new(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
+        if (IsMoving && isGrounded && rawInput.sqrMagnitude > 0.01f)
         {
             currentStepRate = IsRunning ? settings.runStepRate : settings.walkStepRate;
 
+            if (!wasStepping)
+            {
+                wasStepping = true;
+                stepTimer = Mathf.Min(0.2f, 0.5f / Mathf.Max(currentStepRate, 0.01f));
+            }
             stepTimer -= Time.deltaTime;
 
             if (stepTimer <= 0)
             {
-                ServiceLocator.Get<SoundManager>().Play(SFX.Passo);
-                stepTimer = 1f / currentStepRate;
+                ServiceLocator.Get<SoundManager>()?.Play(SFX.Passo);
+                stepTimer = 1f / Mathf.Max(currentStepRate, 0.01f);
             }
         }
-        else
-        {
-            stepTimer = 0f;
-        }
+        else StopFootsteps();
     }
+
+    private void StopFootsteps()
+    {
+        if (wasStepping) ServiceLocator.Get<SoundManager>()?.Stop(SFX.Passo);
+        wasStepping = false;
+        stepTimer = 0f;
+    }
+
+    private void OnDisable() => StopFootsteps();
 
     private void HandleHeadBob()
     {

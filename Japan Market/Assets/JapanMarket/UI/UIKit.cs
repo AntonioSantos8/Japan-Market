@@ -104,6 +104,7 @@ namespace JapanMarket.UI
 
             var button = image.gameObject.AddComponent<Button>();
             button.targetGraphic = image;
+            UIAudioFeedback.Ensure(button);
 
             ColorBlock colors = button.colors;
             colors.normalColor = Color.white;

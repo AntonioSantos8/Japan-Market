@@ -391,6 +391,7 @@ public sealed class ComputerMarketView : MonoBehaviour
     {
         feedbackText.text = message;
         feedbackText.color = success ? new Color(0.35f, 0.9f, 0.5f) : new Color(1f, 0.4f, 0.4f);
+        if (!success) SoundManager.Instance?.Play(SFX.Warning);
     }
 
     private static string Explain(MarketOrderResult result) => result switch

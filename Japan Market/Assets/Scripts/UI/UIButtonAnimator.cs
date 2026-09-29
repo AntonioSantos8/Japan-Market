@@ -127,7 +127,7 @@ public class UIButtonAnimator : MonoBehaviour, IPointerEnterHandler, IPointerExi
         if (shakeRotationOnHover)
             parentToShake.DOShakeRotation(shakeRotationParams.duration, shakeRotationParams.strenght, shakeRotationParams.vibrato, shakeRotationParams.randomness);
 
-        PlaySound(hoverClip);
+        PlaySound(hoverClip, SFX.ButtonHover);
         onSelect?.Invoke();
     }
 
@@ -136,13 +136,13 @@ public class UIButtonAnimator : MonoBehaviour, IPointerEnterHandler, IPointerExi
         targetScale = Vector3.zero;
         lerpSpeed   = normalSpeed;
         onDeselection?.Invoke();
-        PlaySound(unhoverClip);
+        PlaySound(unhoverClip, SFX.ButtonUnhover);
     }
 
     public void OnPointerClick(PointerEventData eventData)
     {
         DoClickPunch();
-        PlaySound(clickClip);
+        PlaySound(clickClip, SFX.ButtonClick);
         onClicked?.Invoke();
     }
 
@@ -158,7 +158,7 @@ public class UIButtonAnimator : MonoBehaviour, IPointerEnterHandler, IPointerExi
         if (shakeRotationOnHover)
             parentToShake.DOShakeRotation(shakeRotationParams.duration, shakeRotationParams.strenght, shakeRotationParams.vibrato, shakeScaleParams.randomness);
 
-        PlaySound(hoverClip);
+        PlaySound(hoverClip, SFX.ButtonHover);
         onSelect?.Invoke();
     }
 
@@ -167,21 +167,23 @@ public class UIButtonAnimator : MonoBehaviour, IPointerEnterHandler, IPointerExi
         targetScale = Vector3.zero;
         lerpSpeed   = normalSpeed;
         onDeselection?.Invoke();
-        PlaySound(unhoverClip);
+        PlaySound(unhoverClip, SFX.ButtonUnhover);
     }
 
     public void OnSubmit(BaseEventData eventData)
     {
         DoClickPunch();
-        PlaySound(clickClip);
+        PlaySound(clickClip, SFX.ButtonClick);
         onClicked?.Invoke();
     }
 
-    public void PlayClickSound() => PlaySound(clickClip);
+    public void PlayClickSound() => PlaySound(clickClip, SFX.ButtonClick);
 
-    void PlaySound(AudioClip clip)
+    void PlaySound(AudioClip clip, SFX fallback)
     {
-        if (!useAudio || clip == null) return;
-        audioSource.PlayOneShot(clip);
+        if (useAudio && clip != null && audioSource != null)
+            audioSource.PlayOneShot(clip);
+        else
+            SoundManager.Instance?.Play(fallback);
     }
 }

@@ -115,6 +115,7 @@ public class PaymentCard : MonoBehaviour
     {
         currentValue = "";
         RefreshUI();
+        SoundManager.Instance?.Play(SFX.Warning);
         cashRegister.ApplyPenalty();
 
         DOTween.Sequence()

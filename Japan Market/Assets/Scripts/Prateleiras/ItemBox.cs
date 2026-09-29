@@ -90,6 +90,8 @@ public class ItemBox : MonoBehaviour, JapanMarket.Gameplay.IStockDeliveryReceive
                     if (itemObj.TryGetComponent(out Rigidbody rb))
                         rb.isKinematic = true;
 
+                    ServiceLocator.Get<ItemRaycastController>()?.RegisterItemBoxContent(this, itemObj.transform);
+
                     _spaces[i] = itemObj.transform;
                 }
             }
@@ -210,6 +212,7 @@ public class ItemBox : MonoBehaviour, JapanMarket.Gameplay.IStockDeliveryReceive
 
         _spaces[index] = item;
         item.SetParent(itemsParent);
+        ServiceLocator.Get<ItemRaycastController>()?.RegisterItemBoxContent(this, item);
 
         ServiceLocator.Get<SoundManager>().Play(SFX.WooshTransicaoItem);
 
@@ -238,6 +241,7 @@ public class ItemBox : MonoBehaviour, JapanMarket.Gameplay.IStockDeliveryReceive
             item.localPosition = end;
             item.localRotation = targetRotation;
             item.localScale = targetScale;
+            SoundManager.Instance?.Play(SFX.PopItemPrateleira);
 
             activeTweens--;
             if (activeTweens <= 0)
@@ -282,6 +286,7 @@ public class ItemBox : MonoBehaviour, JapanMarket.Gameplay.IStockDeliveryReceive
             if (item == null) continue;
 
             _spaces[i] = null;
+            ServiceLocator.Get<ItemRaycastController>()?.RestoreItemBoxContent(this, item);
 
             if (IsEmpty())
             {

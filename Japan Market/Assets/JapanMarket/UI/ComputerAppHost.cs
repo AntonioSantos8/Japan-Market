@@ -21,6 +21,9 @@ namespace JapanMarket.UI
 
             EnsureManagementApp();
 
+            foreach (UnityEngine.UI.Button button in GetComponentsInChildren<UnityEngine.UI.Button>(true))
+                UIAudioFeedback.Ensure(button);
+
             for (int i = 0; i < _apps.Count; i++)
             {
                 ComputerAppView app = _apps[i];

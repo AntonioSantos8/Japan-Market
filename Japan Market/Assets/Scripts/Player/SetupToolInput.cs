@@ -16,6 +16,7 @@ public sealed class SetupToolInput : MonoBehaviour
     private PlayerController controller;
     private PlayerMotor motor;
     private bool wheelOpen;
+    private ToolWheelView subscribedWheel;
     private bool controllerWasEnabled;
     private bool motorWasMovable;
     private CursorLockMode previousCursorLock;
@@ -32,6 +33,7 @@ public sealed class SetupToolInput : MonoBehaviour
         motor = GetComponent<PlayerMotor>();
         if (wheel == null)
             wheel = FindFirstObjectByType<ToolWheelView>(FindObjectsInactive.Include);
+        SubscribeWheel();
     }
 
     private void Update()
@@ -71,6 +73,7 @@ public sealed class SetupToolInput : MonoBehaviour
         tools.StopUsing();
         if (wheel == null)
             wheel = FindFirstObjectByType<ToolWheelView>(FindObjectsInactive.Include);
+        SubscribeWheel();
         if (wheel == null || !wheel.Open()) return;
 
         wheelOpen = true;
@@ -111,7 +114,39 @@ public sealed class SetupToolInput : MonoBehaviour
     {
         tools?.StopUsing();
         CloseWheel(false);
+        UnsubscribeWheel();
     }
+
+    private void OnEnable() => SubscribeWheel();
+
+    private void SubscribeWheel()
+    {
+        if (wheel == null || subscribedWheel == wheel) return;
+        UnsubscribeWheel();
+        wheel.Opened += OnWheelOpened;
+        wheel.Hovered += OnWheelHovered;
+        wheel.Selected += OnWheelSelected;
+        wheel.Closed += OnWheelClosed;
+        wheel.LockedHovered += OnWheelLocked;
+        subscribedWheel = wheel;
+    }
+
+    private void UnsubscribeWheel()
+    {
+        if (subscribedWheel == null) return;
+        subscribedWheel.Opened -= OnWheelOpened;
+        subscribedWheel.Hovered -= OnWheelHovered;
+        subscribedWheel.Selected -= OnWheelSelected;
+        subscribedWheel.Closed -= OnWheelClosed;
+        subscribedWheel.LockedHovered -= OnWheelLocked;
+        subscribedWheel = null;
+    }
+
+    private void OnWheelOpened() => SoundManager.Instance?.Play(SFX.WheelOpen);
+    private void OnWheelHovered() => SoundManager.Instance?.Play(SFX.WheelHover);
+    private void OnWheelSelected() => SoundManager.Instance?.Play(SFX.WheelSelect);
+    private void OnWheelClosed() => SoundManager.Instance?.Play(SFX.WheelClose);
+    private void OnWheelLocked() => SoundManager.Instance?.Play(SFX.Warning);
 
     private void OnApplicationFocus(bool hasFocus)
     {

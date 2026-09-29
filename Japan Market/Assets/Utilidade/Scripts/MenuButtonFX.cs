@@ -6,7 +6,7 @@ using UnityEngine.UI;
 using GameJam.Utilities;
 
 [RequireComponent(typeof(RectTransform), typeof(Button))]
-public class MenuButtonFX : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler//, ISelectHandler, IDeselectHandler, ISubmitHandler
+public class MenuButtonFX : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler, ISelectHandler, IDeselectHandler, ISubmitHandler
 {
     [SerializeField] private RectTransform visual;
     [SerializeField] private RectTransform scaleTarget;
@@ -35,6 +35,7 @@ public class MenuButtonFX : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
 
     private RectTransform _selfRect;
     private Button _button;
+    private bool _pointerInside;
 
     private Vector2 _restAnchoredPosition;
     private Vector3 _restScale;
@@ -112,6 +113,7 @@ public class MenuButtonFX : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
 
     public void OnPointerEnter(PointerEventData eventData)
     {
+        _pointerInside = true;
         if (!_button.interactable) return;
 
         AnimateTo(hoverScale, _restAnchoredPosition + Vector2.up * hoverLiftAmount, hoverTiltAngle, hoverButtonColor, hoverTextColor);
@@ -121,6 +123,7 @@ public class MenuButtonFX : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
 
     public void OnPointerExit(PointerEventData eventData)
     {
+        _pointerInside = false;
         AnimateTo(1f, _restAnchoredPosition, 0f, _baseButtonColor, _baseTextColor);
        if (SoundManager.Instance != null)
            SoundManager.Instance.Play(SFX.ButtonUnhover);
@@ -130,17 +133,14 @@ public class MenuButtonFX : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
     {
         if (!_button.interactable) return;
 
+        SoundManager.Instance?.Play(SFX.ButtonClick);
         if(clickPunchCooldown.CanUse)
         {
             clickPunchCooldown.Use();
             _selfRect.DOPunchScale(clickPunchScale, clickPunchDuration, 6, 0.7f)
                 .SetUpdate(true);
-            if (SoundManager.Instance != null)
-                SoundManager.Instance.Play(SFX.ButtonClick);
         }
         
-        // _selfRect.DOPunchScale(clickPunchScale, clickPunchDuration, 6, 0.7f);
-        // SoundManager.Instance.Play(SFX.ButtonClick);
     }
 
     private void AnimateTo(float scaleMultiplier, Vector2 anchoredPosition, float tiltAngle, Color buttonColor, Color textColor)
@@ -164,19 +164,20 @@ public class MenuButtonFX : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
         }
     }
 
-    // public void OnSelect(BaseEventData eventData)
-    // {
-    //    OnPointerEnter(eventData as PointerEventData);
-    // }
+    public void OnSelect(BaseEventData eventData)
+    {
+        if (_pointerInside || !_button.interactable) return;
+        SoundManager.Instance?.Play(SFX.ButtonHover);
+    }
 
-    // public void OnDeselect(BaseEventData eventData)
-    // {
-    //     OnPointerExit(eventData as PointerEventData);
-    // }
+    public void OnDeselect(BaseEventData eventData)
+    {
+        if (!_pointerInside) SoundManager.Instance?.Play(SFX.ButtonUnhover);
+    }
 
-    // public void OnSubmit(BaseEventData eventData)
-    // {
-    //     OnPointerClick(eventData as PointerEventData);
-    // }
+    public void OnSubmit(BaseEventData eventData)
+    {
+        if (_button.interactable) SoundManager.Instance?.Play(SFX.ButtonClick);
+    }
 
 }

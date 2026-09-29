@@ -1,3 +1,4 @@
+using JapanMarket.UI;
 using System;
 using System.Collections.Generic;
 using JapanMarket.Domain;
@@ -19,6 +20,8 @@ public class MainMenuManager : MonoBehaviour
 
     void Start()
     {
+        foreach (UnityEngine.UI.Button button in GetComponentsInChildren<UnityEngine.UI.Button>(true))
+            UIAudioFeedback.Ensure(button);
         SetOption(0);
         BindSaveMenu();
         BindIconMenu();

@@ -67,6 +67,7 @@ namespace JapanMarket.UI
         private int _hoveredIndex = -1;
 
         public bool IsOpen => _isOpen;
+        public event System.Action Opened, Hovered, Selected, Closed, LockedHovered;
 
         private sealed class SegmentWidget
         {
@@ -150,6 +151,7 @@ namespace JapanMarket.UI
             if (_hideWhenEmpty && _belt.Slots.Count == 0) return false;
 
             _isOpen = true;
+            Opened?.Invoke();
             _hoveredIndex = -1;
             _openProgress = 0f;
             _overlay.gameObject.SetActive(true);
@@ -170,11 +172,14 @@ namespace JapanMarket.UI
                 SegmentWidget hovered = _segments[_hoveredIndex];
                 if (hovered.IsUnlocked)
                 {
+                    Selected?.Invoke();
                     if (hovered.IsEmptyHand) _belt.Deselect();
                     else _belt.TrySelect(hovered.SlotIndex);
                 }
             }
 
+            if (!commitSelection || _hoveredIndex < 0 || _hoveredIndex >= _segments.Count || !_segments[_hoveredIndex].IsUnlocked)
+                Closed?.Invoke();
             _isOpen = false;
             _hoveredIndex = -1;
             HideImmediate();
@@ -216,6 +221,11 @@ namespace JapanMarket.UI
         {
             if (_hoveredIndex == index) return;
             _hoveredIndex = index;
+            if (index >= 0)
+            {
+                if (_segments[index].IsUnlocked) Hovered?.Invoke();
+                else LockedHovered?.Invoke();
+            }
         }
 
         private bool TryResolve()
