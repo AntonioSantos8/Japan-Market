@@ -28,6 +28,9 @@ public class ItemRaycastController : MonoBehaviour
     private InteractableBase lastLookedInteractable;
     private ItemBox lastBoxHeld;
     private Camera itemOverlayCamera;
+    private UniversalAdditionalCameraData baseCameraData;
+    private bool originalPostProcessing;
+    private AntialiasingMode originalAntialiasing;
     private int itemOverlayLayer = -1;
     private int originalCameraMask;
     private readonly Dictionary<Transform, int> savedLayers = new();
@@ -128,18 +131,43 @@ public class ItemRaycastController : MonoBehaviour
 
         UniversalAdditionalCameraData overlayData = overlayObject.AddComponent<UniversalAdditionalCameraData>();
         overlayData.renderType = CameraRenderType.Overlay;
-        overlayData.renderPostProcessing = false;
         overlayData.SetRenderer(1); // Forward renderer, shared by the PC and mobile URP assets.
-        List<Camera> stack = cam.GetUniversalAdditionalCameraData().cameraStack;
+        baseCameraData = cam.GetUniversalAdditionalCameraData();
+        List<Camera> stack = baseCameraData.cameraStack;
         if (stack == null)
         {
             Debug.LogError("O renderizador da câmera principal não suporta camera stacking.", this);
             cam.cullingMask = originalCameraMask;
             Destroy(overlayObject);
             itemOverlayCamera = null;
+            baseCameraData = null;
             return;
         }
+
+        // Render the complete camera stack through the Volume effects once.
+        // Processing the Base camera first would leave the carried box untreated;
+        // processing both cameras would apply effects such as Bloom twice.
+        originalPostProcessing = baseCameraData.renderPostProcessing;
+        originalAntialiasing = baseCameraData.antialiasing;
+        overlayData.volumeLayerMask = baseCameraData.volumeLayerMask;
+        overlayData.volumeTrigger = baseCameraData.volumeTrigger;
+        overlayData.renderPostProcessing = originalPostProcessing;
+        overlayData.antialiasing = originalAntialiasing == AntialiasingMode.TemporalAntiAliasing
+            ? AntialiasingMode.SubpixelMorphologicalAntiAliasing
+            : originalAntialiasing;
+        overlayData.antialiasingQuality = baseCameraData.antialiasingQuality;
+        baseCameraData.renderPostProcessing = false;
+        baseCameraData.antialiasing = AntialiasingMode.None;
         stack.Add(itemOverlayCamera);
+    }
+
+    void OnDestroy()
+    {
+        if (baseCameraData == null) return;
+        baseCameraData.cameraStack?.Remove(itemOverlayCamera);
+        baseCameraData.renderPostProcessing = originalPostProcessing;
+        baseCameraData.antialiasing = originalAntialiasing;
+        if (cam != null) cam.cullingMask = originalCameraMask;
     }
 
     void LateUpdate()
