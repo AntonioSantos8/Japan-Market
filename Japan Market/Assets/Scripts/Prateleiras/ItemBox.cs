@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using DG.Tweening;
 using UnityEngine.UI;
+using JapanMarket.Gameplay;
 
 public class ItemBox : MonoBehaviour, JapanMarket.Gameplay.IStockDeliveryReceiver
 {
@@ -205,6 +206,7 @@ public class ItemBox : MonoBehaviour, JapanMarket.Gameplay.IStockDeliveryReceive
         if (index == -1) return false;
 
         EnsureItemsParent();
+        ShelfPlacementEffect.Stop(item.gameObject);
 
         Vector3 end = _gridSettings.GetLocalPosition(index);
         Quaternion targetRotation = _gridSettings.GetLocalRotation();

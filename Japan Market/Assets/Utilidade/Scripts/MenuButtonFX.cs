@@ -39,11 +39,14 @@ public class MenuButtonFX : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
 
     private Vector2 _restAnchoredPosition;
     private Vector3 _restScale;
+    private Quaternion _restRotation;
     private Color _baseButtonColor;
     private Color _baseTextColor;
+    private bool _initialized;
 
     private Sequence _idleSequence;
     private Sequence _hoverSequence;
+    private Tween _clickPunchTween;
 
 
     public RectTransform GetVisual() => visual;
@@ -64,10 +67,12 @@ public class MenuButtonFX : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
         _button = GetComponent<Button>();
         _restAnchoredPosition = _selfRect.anchoredPosition;
         _restScale = scaleTarget.localScale;
+        _restRotation = visual.localRotation;
 
         _baseButtonColor = buttonImage != null ? buttonImage.color : Color.white;
         _baseTextColor = label != null ? label.color : Color.white;
         clickPunchCooldown = new CooldownTimer(clickPunchDuration);
+        _initialized = true;
     }
 
     private void ResolveReferences()
@@ -94,6 +99,18 @@ public class MenuButtonFX : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
     {
         _idleSequence?.Kill();
         _hoverSequence?.Kill();
+        _clickPunchTween?.Kill();
+        _idleSequence = null;
+        _hoverSequence = null;
+        _clickPunchTween = null;
+        _pointerInside = false;
+
+        if (!_initialized) return;
+        visual.anchoredPosition = _restAnchoredPosition;
+        visual.localRotation = _restRotation;
+        scaleTarget.localScale = _restScale;
+        if (buttonImage != null) buttonImage.color = _baseButtonColor;
+        if (label != null) label.color = _baseTextColor;
     }
     private void PlayIdleBob()
     {
@@ -113,6 +130,10 @@ public class MenuButtonFX : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
 
     public void OnPointerEnter(PointerEventData eventData)
     {
+        // Alguns menus reposicionam os ícones depois do Awake.
+        if (!_pointerInside && idleBobAmount <= 0f && _hoverSequence == null)
+            _restAnchoredPosition = visual.anchoredPosition;
+
         _pointerInside = true;
         if (!_button.interactable) return;
 
@@ -131,13 +152,13 @@ public class MenuButtonFX : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
 
     public void OnPointerClick(PointerEventData eventData)
     {
-        if (!_button.interactable) return;
+        if (!isActiveAndEnabled || !_button.interactable) return;
 
         SoundManager.Instance?.Play(SFX.ButtonClick);
         if(clickPunchCooldown.CanUse)
         {
             clickPunchCooldown.Use();
-            _selfRect.DOPunchScale(clickPunchScale, clickPunchDuration, 6, 0.7f)
+            _clickPunchTween = _selfRect.DOPunchScale(clickPunchScale, clickPunchDuration, 6, 0.7f)
                 .SetUpdate(true);
         }
         
