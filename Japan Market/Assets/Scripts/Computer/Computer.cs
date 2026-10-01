@@ -11,6 +11,7 @@ public class Computer : InteractableBase
     [SerializeField] GameObject reticle;
     public UnityEvent onEnterComputer, onLeaveComputer;
     TutorialManager _tutorialManager;
+    private ComputerHudVisibility[] _hudViews;
 
     void Start()
     {
@@ -31,6 +32,11 @@ public class Computer : InteractableBase
             ServiceLocator.Get<PlayerLook>().CanLook = false;
             reticle.SetActive(false);
 
+            _hudViews = FindObjectsByType<ComputerHudVisibility>(
+                FindObjectsInactive.Include, FindObjectsSortMode.None);
+            foreach (ComputerHudVisibility hud in _hudViews)
+                hud.Hide();
+
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
 
@@ -48,6 +54,7 @@ public class Computer : InteractableBase
                 ServiceLocator.Get<SoundManager>().Play(SFX.PCLigarDesligar);
                 computerCamera.Priority = 0;
                 computerScreen.SetActive(false);
+                RestoreHud();
                 onLeaveComputer?.Invoke();
                 ServiceLocator.Get<PlayerMotor>().SetCanMove(true);
                 ServiceLocator.Get<PlayerLook>().CanLook = true;
@@ -67,5 +74,18 @@ public class Computer : InteractableBase
 
 
         }
+    }
+
+    private void RestoreHud(bool immediate = false)
+    {
+        if (_hudViews == null) return;
+        foreach (ComputerHudVisibility hud in _hudViews)
+            if (hud != null) hud.Show(immediate);
+        _hudViews = null;
+    }
+
+    private void OnDisable()
+    {
+        RestoreHud(immediate: true);
     }
 }

@@ -51,11 +51,14 @@ public class FurnitureManager : MonoBehaviour
     {
         public readonly FurnitureData Data;
         public readonly FurnitureSaveData SaveData;
+        public readonly FurnitureInstance ExistingInstance;
 
-        public InventoryItem(FurnitureData data, FurnitureSaveData saveData = null)
+        public InventoryItem(FurnitureData data, FurnitureSaveData saveData = null,
+            FurnitureInstance existingInstance = null)
         {
             Data = data;
             SaveData = saveData;
+            ExistingInstance = existingInstance;
         }
     }
 
@@ -158,6 +161,21 @@ public class FurnitureManager : MonoBehaviour
         _currentSelected = null;
         CancelPickupHold();
         DismissGhostAnimated();
+        RestoreUnplacedFurniture();
+    }
+
+    private void RestoreUnplacedFurniture()
+    {
+        // Cancel a relocation at its original position, retaining all stock.
+        for (int i = _inventory.Count - 1; i >= 0; i--)
+        {
+            FurnitureInstance existing = _inventory[i].ExistingInstance;
+            if (existing == null) continue;
+            existing.gameObject.SetActive(true);
+            if (!_placedFurnitures.Contains(existing)) _placedFurnitures.Add(existing);
+            _inventory.RemoveAt(i);
+        }
+        _currentIndex = Mathf.Clamp(_currentIndex, 0, Mathf.Max(0, _inventory.Count - 1));
     }
 
     private void LoadCurrentFromInventory(Vector3? spawnPos = null, Quaternion? spawnRot = null)
@@ -429,9 +447,10 @@ public class FurnitureManager : MonoBehaviour
         }
 
         _placedFurnitures.Remove(instance);
-        _inventory.Add(new InventoryItem(instance.Data, instance.SaveData));
+        _inventory.Add(new InventoryItem(instance.Data, instance.SaveData, instance));
 
-        AnimatePickedUpFurniture(instance.gameObject);
+        // The ghost is only a preview. Keep the actual furniture and its children.
+        instance.gameObject.SetActive(false);
 
         if (_activeGhost == null)
         {
@@ -443,22 +462,6 @@ public class FurnitureManager : MonoBehaviour
         if (constructionUI != null) constructionUI.SetText();
 
         PlayCameraKick(6f, 0.06f, 0.2f, Ease.OutQuad);
-    }
-
-    private void AnimatePickedUpFurniture(GameObject target)
-    {
-        SetCollidersEnabled(target.GetComponentsInChildren<Collider>(true), false);
-
-        Transform targetTransform = target.transform;
-        targetTransform.DOKill(false);
-        Vector3 originalScale = targetTransform.localScale;
-
-        DOTween.Sequence()
-            .Append(targetTransform.DOScale(originalScale * 1.2f, 0.08f).SetEase(Ease.OutQuad))
-            .Append(targetTransform.DOScale(Vector3.zero, 0.25f).SetEase(Ease.InBack))
-            .Join(targetTransform.DORotate(Vector3.up * 180f, 0.33f, RotateMode.LocalAxisAdd).SetEase(Ease.InQuad))
-            .SetLink(target)
-            .OnComplete(() => Destroy(target));
     }
 
     private void PlaceFurniture()
@@ -473,7 +476,7 @@ public class FurnitureManager : MonoBehaviour
 
         _currentIndex = Mathf.Clamp(_currentIndex, 0, _inventory.Count - 1);
         InventoryItem inventoryItem = _inventory[_currentIndex];
-        bool wasMovingExistingFurniture = inventoryItem.SaveData != null;
+        bool wasMovingExistingFurniture = inventoryItem.ExistingInstance != null;
         FurnitureData selectedData = _currentSelected;
 
         SettleGhostTransform();
@@ -481,9 +484,19 @@ public class FurnitureManager : MonoBehaviour
         lastPos.y = selectedData.floorDistance;
         DestroyGhostImmediate();
 
-        GameObject obj = Instantiate(selectedData.prefab, lastPos, lastRot);
-        obj.transform.SetParent(furnitureContainer);
-        AnimatePlacedFurniture(obj.transform);
+        GameObject obj;
+        if (wasMovingExistingFurniture)
+        {
+            obj = inventoryItem.ExistingInstance.gameObject;
+            obj.transform.SetPositionAndRotation(lastPos, lastRot);
+            obj.SetActive(true);
+        }
+        else
+        {
+            obj = Instantiate(selectedData.prefab, lastPos, lastRot);
+            obj.transform.SetParent(furnitureContainer);
+            AnimatePlacedFurniture(obj.transform);
+        }
         ServiceLocator.Get<SoundManager>().Play(SFX.FurnitureColocada);
 
         if (obj.TryGetComponent(out FurnitureInstance instance))

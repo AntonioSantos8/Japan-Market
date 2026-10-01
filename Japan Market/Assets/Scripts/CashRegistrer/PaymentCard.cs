@@ -17,13 +17,14 @@ public class PaymentCard : MonoBehaviour
 
     private float  totalPrice;
     private bool processingPayment;
+    private Sequence _feedback;
     private string currentValue = "" ;
 
     // ── Public API ────────────────────────────────────────────────────────────
 
     public void Open(float price)
     {
-        if (IsOpen) return;
+        if (IsOpen || cashRegister == null || !cashRegister.CanUseCardMachine) return;
 
         IsOpen     = true;
         processingPayment = false;
@@ -37,7 +38,9 @@ public class PaymentCard : MonoBehaviour
 
     public void Close()
     {
+        _feedback?.Kill();
         IsOpen = false;
+        processingPayment = false;
     }
 
     // ── Number Input (called by UI buttons) ───────────────────────────────────
@@ -50,7 +53,7 @@ public class PaymentCard : MonoBehaviour
             return false;
         }
 
-        bool canUse = cashRegister.GetCurrentPaymentType() == PaymentType.Card;
+        bool canUse = IsOpen && !processingPayment && cashRegister.IsUsingCardMachine;
         if (!canUse)
             Debug.LogWarning($"[PaymentCard] Bloqueado: cliente paga com {cashRegister.GetCurrentPaymentType()}, não com cartão.");
 
@@ -100,7 +103,8 @@ public class PaymentCard : MonoBehaviour
         if (processingPayment) return;
         processingPayment = true;
 
-        DOTween.Sequence()
+        _feedback?.Kill();
+        _feedback = DOTween.Sequence()
             .Append(valueText.DOColor(Color.green, 0.2f))
             .AppendInterval(0.2f)
             .Append(valueText.DOColor(Color.black, 0.2f))
@@ -113,14 +117,19 @@ public class PaymentCard : MonoBehaviour
 
     private void OnPaymentError()
     {
+        processingPayment = true;
         currentValue = "";
         RefreshUI();
         SoundManager.Instance?.Play(SFX.Warning);
         cashRegister.ApplyPenalty();
 
-        DOTween.Sequence()
+        _feedback?.Kill();
+        _feedback = DOTween.Sequence()
             .Append(valueText.DOColor(Color.red, 0.2f))
             .Join(valueText.transform.DOShakePosition(0.3f, 5.3f, 20))
-            .Append(valueText.DOColor(Color.black, 0.2f));
+            .Append(valueText.DOColor(Color.black, 0.2f))
+            .OnComplete(() => processingPayment = false);
     }
+
+    private void OnDestroy() => _feedback?.Kill();
 }

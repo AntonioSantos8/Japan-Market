@@ -61564,6 +61564,23 @@ Transform:
   - {fileID: 1500724279}
   m_Father: {fileID: 1905949776}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &526006722 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7888318325625049025, guid: 8cc1c3ef09a6194438af65f66f9a7d8d, type: 3}
+  m_PrefabInstance: {fileID: 591879773}
+  m_PrefabAsset: {fileID: 0}
+--- !u!225 &526006728
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 526006722}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!64 &526061764
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -69079,7 +69096,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 7888318325625049025, guid: 8cc1c3ef09a6194438af65f66f9a7d8d, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 526006728}
   m_SourcePrefab: {fileID: 100100000, guid: 8cc1c3ef09a6194438af65f66f9a7d8d, type: 3}
 --- !u!1001 &594948871
 PrefabInstance:
@@ -76581,6 +76601,10 @@ PrefabInstance:
     - target: {fileID: -3410185793394415013, guid: cfc4e520fff49d14c8d381add4e26f9c, type: 3}
       propertyPath: m_IsActive
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: -3139136031368735924, guid: cfc4e520fff49d14c8d381add4e26f9c, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -2874765826992384646, guid: cfc4e520fff49d14c8d381add4e26f9c, type: 3}
       propertyPath: m_Name
@@ -116037,6 +116061,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9541d86e2fd84c1d9990edf0852d74ab, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshPro
+--- !u!1 &1058154855 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5570882275982037470, guid: 1efcaca1f084d754997f672266975cf1, type: 3}
+  m_PrefabInstance: {fileID: 7059309506458919221}
+  m_PrefabAsset: {fileID: 0}
+--- !u!225 &1058154861
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1058154855}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &1058241446
 GameObject:
   m_ObjectHideFlags: 0
@@ -247317,7 +247358,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 5570882275982037470, guid: 1efcaca1f084d754997f672266975cf1, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1058154861}
   m_SourcePrefab: {fileID: 100100000, guid: 1efcaca1f084d754997f672266975cf1, type: 3}
 --- !u!23 &7108264864745958705
 MeshRenderer:

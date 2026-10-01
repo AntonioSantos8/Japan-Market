@@ -23,6 +23,9 @@ public class PaymentMoney : MonoBehaviour
     private List<float> moneyStack   = new List<float>();
     private float       totalPrice;
     private bool processingPayment;
+    private Sequence _feedback;
+    public bool CanAcceptChange => IsOpen && !processingPayment
+        && cashRegister != null && cashRegister.CanUseCashPayment;
     private float       customerPaid;
     private float       giving;
     private Vector3     _imageOriginalScale;
@@ -44,7 +47,7 @@ public class PaymentMoney : MonoBehaviour
 
     public void Open(float price)
     {
-        if (IsOpen) return;
+        if (IsOpen || cashRegister == null || !cashRegister.CanUseCashPayment) return;
 
         IsOpen     = true;
         processingPayment = false;
@@ -71,9 +74,14 @@ public class PaymentMoney : MonoBehaviour
 
     public void Close()
     {
+        _feedback?.Kill();
         IsOpen = false;
+        processingPayment = false;
         if (imagePayment != null)
             imagePayment.SetActive(false);
+        if (receivedText != null) receivedText.gameObject.SetActive(false);
+        if (changeText != null) changeText.gameObject.SetActive(false);
+        if (givingText != null) givingText.gameObject.SetActive(false);
     }
 
     
@@ -88,7 +96,7 @@ public class PaymentMoney : MonoBehaviour
             return false;
         }
 
-        bool canUse = cashRegister.GetCurrentPaymentType() == PaymentType.Cash;
+        bool canUse = CanAcceptChange;
         if (!canUse)
             Debug.LogWarning($"[PaymentMoney] Bloqueado: cliente paga com {cashRegister.GetCurrentPaymentType()}, não com dinheiro.");
 
@@ -153,7 +161,7 @@ public class PaymentMoney : MonoBehaviour
         var valid = possiblePayments.FindAll(v => v >= totalPrice);
         float result = valid.Count > 0
             ? valid[Random.Range(0, valid.Count)]
-            : possiblePayments[possiblePayments.Count - 1];
+            : totalPrice;
 
         return Mathf.Round(result);
     }
@@ -171,7 +179,8 @@ public class PaymentMoney : MonoBehaviour
         if (processingPayment) return;
         processingPayment = true;
 
-        DOTween.Sequence()
+        _feedback?.Kill();
+        _feedback = DOTween.Sequence()
             .Append(givingText.DOColor(Color.green, 0.2f))
             .AppendInterval(0.2f)
             .Append(givingText.DOColor(Color.white, 0.2f))
@@ -188,14 +197,22 @@ public class PaymentMoney : MonoBehaviour
 
     private void OnPaymentError()
     {
+        processingPayment = true;
         SoundManager.Instance?.Play(SFX.Warning);
         cashRegister.ApplyPenalty();
         cashRegister.PaymentTextCash("Troco incorreto!");
 
-        DOTween.Sequence()
+        _feedback?.Kill();
+        _feedback = DOTween.Sequence()
             .Append(givingText.DOColor(Color.red, 0.2f))
             .Join(givingText.transform.DOShakePosition(0.3f, 0.02f, 15))
             .Append(givingText.DOColor(Color.white, 0.2f))
-            .OnComplete(ClearAll);
+            .OnComplete(() =>
+            {
+                processingPayment = false;
+                cashRegister.PaymentTextCash("Corrija o troco e pressione Espaço.");
+            });
     }
+
+    private void OnDestroy() => _feedback?.Kill();
 }

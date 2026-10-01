@@ -30,7 +30,7 @@ public class MoneyInstance : InteractableBase
 
     public override void Interact()
     {
-        if(!canInteract) return;
+        if (!canInteract || cashRegister == null || !cashRegister.CanEditChange) return;
         canInteract = false;
         cashRegister?.RemoveMoney(value);
         cashRegister?.UnregisterMoneyInstance(this);

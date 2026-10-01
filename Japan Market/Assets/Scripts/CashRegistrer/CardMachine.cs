@@ -16,6 +16,17 @@ public class CardMachine : InteractableBase
 
     public override void Interact()
     {
+        if (cashRegister == null || !cashRegister.CanUseCardMachine) return;
         cashRegister.EnterCardMachineMode(machineCamera, machineCameraPriority, paymentCard);
+    }
+
+    public override bool OnLookAt()
+    {
+        if (cashRegister == null || !cashRegister.CanUseCardMachine)
+        {
+            OnLookAway();
+            return false;
+        }
+        return base.OnLookAt();
     }
 }
