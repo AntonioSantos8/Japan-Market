@@ -8,7 +8,7 @@ public class ItemBox : MonoBehaviour, JapanMarket.Gameplay.IStockDeliveryReceive
 {
     public void InitializeDelivery(JapanMarket.Data.ItemDefinition product)
     {
-        if (product != null) InitializeBox((Items)product.LegacyEnumValue);
+        if (product != null) InitializeBox((Items)product.LegacyEnumValue, product);
     }
     [SerializeField] Items boxType;
     [SerializeField] FurnitureType allowedFurniture;
@@ -48,6 +48,9 @@ public class ItemBox : MonoBehaviour, JapanMarket.Gameplay.IStockDeliveryReceive
     }
 
     public void InitializeBox(Items type)
+        => InitializeBox(type, ServiceLocator.Get<ItemManager>()?.GetItemDefinition(type));
+
+    private void InitializeBox(Items type, JapanMarket.Data.ItemDefinition product)
     {
         if (type == Items.None)
         {
@@ -62,22 +65,24 @@ public class ItemBox : MonoBehaviour, JapanMarket.Gameplay.IStockDeliveryReceive
 
         boxType = type;
         var itemManager = ServiceLocator.Get<ItemManager>();
-        var data = itemManager != null ? itemManager.GetItemData(type) : null;
+        var data = itemManager != null
+            ? product != null ? itemManager.GetItemData(product) : itemManager.GetItemData(type)
+            : null;
 
         if (data != null)
         {
             _gridSettings = data.boxGrid;
-            if (data.allowedFurniture != FurnitureType.None)
-                allowedFurniture = data.allowedFurniture;
+            allowedFurniture = data.allowedFurniture;
 
             int capacity = _gridSettings != null ? _gridSettings.TotalCapacity : 0;
-            _spaces = new List<Transform>(new Transform[capacity]);
+            int units = product != null ? product.UnitsPerBox : capacity;
+            _spaces = new List<Transform>(new Transform[Mathf.Max(capacity, units)]);
 
             EnsureItemsParent();
 
-            if (data.itemPrefab != null && capacity > 0)
+            if (data.itemPrefab != null && units > 0)
             {
-                for (int i = 0; i < capacity; i++)
+                for (int i = 0; i < units; i++)
                 {
                     Vector3 localPos = _gridSettings.GetLocalPosition(i);
                     Quaternion localRot = _gridSettings.GetLocalRotation();
@@ -189,7 +194,8 @@ public class ItemBox : MonoBehaviour, JapanMarket.Gameplay.IStockDeliveryReceive
             var data = itemManager != null ? itemManager.GetItemData(type) : null;
             _gridSettings = data != null ? data.boxGrid : new ItemGridSettings();
             int capacity = _gridSettings != null ? _gridSettings.TotalCapacity : 0;
-            _spaces = new List<Transform>(new Transform[capacity]);
+            var product = itemManager != null ? itemManager.GetItemDefinition(type) : null;
+            _spaces = new List<Transform>(new Transform[Mathf.Max(capacity, product != null ? product.UnitsPerBox : 0)]);
             UpdateVisual();
         }
 

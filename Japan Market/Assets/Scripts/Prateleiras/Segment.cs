@@ -216,7 +216,8 @@ public class Segment : InteractableBase
         if (groupIndex == -1 && (supportedItems == null || supportedItems.Count == 0))
         {
             var itemData = ServiceLocator.Get<ItemManager>()?.GetItemData(type);
-            if (itemData != null && (itemData.allowedFurniture == myType || myType == FurnitureType.None))
+            if (itemData != null && (itemData.allowedFurniture == myType ||
+                itemData.allowedFurniture == FurnitureType.None || myType == FurnitureType.None))
             {
                 var newGroup = new SegmentTypeGroup { type = type };
                 newGroup.Init(itemData.shelfGrid);

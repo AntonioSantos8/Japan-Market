@@ -29,7 +29,6 @@ namespace JapanMarket.UI
                 ComputerAppView app = _apps[i];
                 if (app == null) continue;
 
-                app.SetIconLayout(i);
                 AttachController(app);
                 app.Bind(Open, ShowDesktop);
             }
@@ -99,6 +98,7 @@ namespace JapanMarket.UI
             }
 
             management.ConfigureDisplayName("Gestão", "G");
+            management.SetIconLayout(_apps.Count);
             _apps.Add(management);
         }
 

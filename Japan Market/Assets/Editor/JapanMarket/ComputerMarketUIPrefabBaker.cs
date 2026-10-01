@@ -190,7 +190,9 @@ internal static class ComputerMarketUIPrefabBaker
     {
         RectTransform page = Rect("Cart Page", parent);
         Stretch(page);
-        Image("Background", page, Light).raycastTarget = false;
+        UnityEngine.UI.Image background = Image("Background", page, Light);
+        Stretch(background.rectTransform);
+        background.raycastTarget = false;
 
         RectTransform listPanel = Rect("Items Panel", page);
         listPanel.anchorMin = Vector2.zero;

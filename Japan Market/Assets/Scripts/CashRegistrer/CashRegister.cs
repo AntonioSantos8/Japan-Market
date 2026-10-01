@@ -893,13 +893,13 @@ public class CashRegister : InteractableBase
 
     private AllIThingsData GetItemData(Items type)
     {
-        if (allItem != null)
-            foreach (AllIThingsData data in allItem)
-                if (data != null && data.itemType == type) return data;
-
         ItemManager sharedCatalog = ServiceLocator.Get<ItemManager>();
         AllIThingsData sharedData = sharedCatalog != null ? sharedCatalog.GetItemData(type) : null;
         if (sharedData != null) return sharedData;
+
+        if (allItem != null)
+            foreach (AllIThingsData data in allItem)
+                if (data != null && data.itemType == type) return data;
 
         return null;
     }

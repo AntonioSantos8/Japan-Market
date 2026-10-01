@@ -54,11 +54,15 @@ public sealed class ComputerMarketView : MonoBehaviour
 
     private void OnEnable()
     {
+        Localization.LanguageChanged += OnLanguageChanged;
         ResolveServices();
         if (!built) BuildCatalogs();
         ShowProducts();
         RefreshCart();
     }
+
+    private void OnDisable() => Localization.LanguageChanged -= OnLanguageChanged;
+    private void OnLanguageChanged(GameLanguage _) => RefreshCart();
 
     private void OnDestroy()
     {
@@ -165,7 +169,11 @@ public sealed class ComputerMarketView : MonoBehaviour
         for (int i = cartContent.childCount - 1; i >= 0; i--)
         {
             Transform child = cartContent.GetChild(i);
-            if (child.gameObject != cartRowPrefab.gameObject) Destroy(child.gameObject);
+            if (child.gameObject != cartRowPrefab.gameObject)
+            {
+                child.gameObject.SetActive(false);
+                Destroy(child.gameObject);
+            }
         }
 
         int lineCount = 0;

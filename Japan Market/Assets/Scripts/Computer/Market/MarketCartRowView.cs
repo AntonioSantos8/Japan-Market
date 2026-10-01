@@ -31,7 +31,8 @@ public sealed class MarketCartRowView : MonoBehaviour
         Action<ItemDefinition, int> change, Action remove)
     {
         string displayName = !product.DisplayName.IsEmpty ? product.DisplayName.Value : product.name;
-        icon.sprite = iconOverride != null ? iconOverride : product.Icon;
+        icon.sprite = product.Icon != null ? product.Icon : iconOverride;
+        icon.enabled = icon.sprite != null;
         nameText.text = displayName;
         unitsText.text = $"{boxes * product.UnitsPerBox} un ({boxes} cx)";
         unitPriceText.text = product.BoxCost.ToString();
@@ -49,6 +50,7 @@ public sealed class MarketCartRowView : MonoBehaviour
         icon.sprite = furniture.furnitureImage != null
             ? furniture.furnitureImage
             : furniture.data != null ? furniture.data.itemSprite : null;
+        icon.enabled = icon.sprite != null;
         nameText.text = string.IsNullOrWhiteSpace(furniture.furnitureName)
             ? furniture.name
             : furniture.furnitureName;

@@ -22,6 +22,11 @@ public sealed class MarketProductCardView : MonoBehaviour
     private ItemDefinition product;
     private Action<ItemDefinition, int> addAction;
     private int quantity = 1;
+    private AllIThingsData fallbackData;
+
+    private void OnEnable() => Localization.LanguageChanged += OnLanguageChanged;
+    private void OnDisable() => Localization.LanguageChanged -= OnLanguageChanged;
+    private void OnLanguageChanged(GameLanguage _) => RefreshPresentation();
 
     private void Awake()
     {
@@ -36,21 +41,31 @@ public sealed class MarketProductCardView : MonoBehaviour
         product = definition;
         addAction = onAdd;
         quantity = 1;
+        fallbackData = legacy;
+        RefreshPresentation();
+        RefreshQuantity();
+    }
 
-        string productName = legacy != null && !string.IsNullOrWhiteSpace(legacy.itemName)
-            ? legacy.itemName
-            : !definition.DisplayName.IsEmpty ? definition.DisplayName.Value : definition.name;
+    private void RefreshPresentation()
+    {
+        if (product == null) return;
+        ItemDefinition definition = product;
+        AllIThingsData legacy = fallbackData;
+
+        string productName = !definition.DisplayName.IsEmpty ? definition.DisplayName.Value
+            : legacy != null && !string.IsNullOrWhiteSpace(legacy.itemName) ? legacy.itemName : definition.name;
 
         titleText.text = productName;
-        placementText.text = "Colocável: " + (legacy != null
-            ? legacy.allowedFurniture.ToString()
-            : definition.RequiredStorage != null ? definition.RequiredStorage.name : "Qualquer");
+        placementText.text = "Colocável: " + (definition.RequiredStorage != null
+            ? !definition.RequiredStorage.DisplayName.IsEmpty ? definition.RequiredStorage.DisplayName.Value
+                : definition.RequiredStorage.name
+            : "Qualquer");
         unitsPerBoxText.text = $"{definition.UnitsPerBox} por caixa";
         unitPriceText.text = $"Preço por unidade: {Money.FromYen(definition.BoxCost.Yen / (double)definition.UnitsPerBox)}";
         boxPriceText.text = $"Caixa: {definition.BoxCost}";
-        icon.sprite = legacy != null && legacy.itemSprite != null ? legacy.itemSprite : definition.Icon;
+        icon.sprite = definition.Icon != null ? definition.Icon : legacy != null ? legacy.itemSprite : null;
+        icon.enabled = icon.sprite != null;
         icon.preserveAspect = true;
-        RefreshQuantity();
     }
 
     private void Decrease()

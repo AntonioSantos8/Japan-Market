@@ -63,10 +63,10 @@ public class ShopBuyItems : MonoBehaviour
         }
 
 
-        AllIThingsData at = currentObj.Data;
+        AllIThingsData at = ResolveCurrentData();
         currentItemPrefab = at.itemPrefab;
         currentItemBox = at.itemBoxPrefab;
-        nameText.text = at.name;
+        nameText.text = string.IsNullOrWhiteSpace(at.itemName) ? at.name : at.itemName;
         descriptionText.text = at.description;
         singlePriceText.text = BoxPriceText(at);
         
@@ -185,13 +185,13 @@ public class ShopBuyItems : MonoBehaviour
 
 
 
-                     AllIThingsData at = currentObj.Data;
+                     AllIThingsData at = ResolveCurrentData();
 
                     currentItemPrefab = at.itemPrefab;
                     currentItemBox = at.itemBoxPrefab;
                   
                     
-                    nameText.text = at.name;
+                    nameText.text = string.IsNullOrWhiteSpace(at.itemName) ? at.name : at.itemName;
                     descriptionText.text = at.description;
                     singlePriceText.text = BoxPriceText(at);
                 
@@ -222,6 +222,13 @@ public class ShopBuyItems : MonoBehaviour
     {
         ChangeItem(currentIndex);
     }
+    private AllIThingsData ResolveCurrentData()
+    {
+        AllIThingsData legacy = currentObj.Data;
+        if (_sellingItemType != SellingItemType.Food || legacy == null) return legacy;
+        return ServiceLocator.Get<ItemManager>()?.GetItemData(legacy.itemType) ?? legacy;
+    }
+
     private string BoxPriceText(AllIThingsData data)
     {
         var game = JapanMarket.Gameplay.GameContext.Current;

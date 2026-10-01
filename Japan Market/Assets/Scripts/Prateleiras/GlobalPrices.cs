@@ -109,6 +109,8 @@ public class GlobalPrices : MonoBehaviour
 
     private AllIThingsData GetItemData(Items item)
     {
+        AllIThingsData shared = ServiceLocator.Get<ItemManager>()?.GetItemData(item);
+        if (shared != null) return shared;
         if (_allItemsData == null) return null;
 
         foreach (AllIThingsData data in _allItemsData)
@@ -161,6 +163,7 @@ public class GlobalPrices : MonoBehaviour
 
     private ItemDefinition FindProduct(Items item)
     {
+        if (_catalog == null) ServiceContainer.Current.TryResolve(out _catalog);
         if (_catalog == null) return null;
 
         IReadOnlyList<ItemDefinition> products = _catalog.All;
@@ -175,6 +178,8 @@ public class GlobalPrices : MonoBehaviour
 
     private float GetMarketPrice(Items item)
     {
+        ItemDefinition product = FindProduct(item);
+        if (product != null) return (float)product.MarketPrice.Yen;
         AllIThingsData data = GetItemData(item);
         return data != null ? data.marketPrice : 0f;
     }

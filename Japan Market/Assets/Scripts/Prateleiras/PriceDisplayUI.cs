@@ -189,6 +189,8 @@ public class PriceDisplayUI : MonoBehaviour
     private static float CalculateAverageCost(AllIThingsData data)
     {
         if (data == null) return 0f;
+        var product = ServiceLocator.Get<ItemManager>()?.GetItemDefinition(data.itemType);
+        if (product != null) return (float)product.BaseCost.Yen;
         int unitsPerBox = data.boxGrid != null ? data.boxGrid.TotalCapacity : 1;
         return data.singleItemPrice / Mathf.Max(1, unitsPerBox);
     }
