@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &5494588022344090004
+--- !u!1 &1453816816830003200
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,51 +8,46 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 6629507400787699090}
-  - component: {fileID: 8240124288282067359}
-  - component: {fileID: 948166747151191584}
-  - component: {fileID: 2548257275112506480}
-  - component: {fileID: 5601030705684596547}
-  - component: {fileID: 5556986757645663292}
-  - component: {fileID: 2220805797072545210}
-  - component: {fileID: -5544022839210585147}
+  - component: {fileID: 2905189200995051012}
+  - component: {fileID: 7581487339017640846}
+  - component: {fileID: 6757249365679764357}
   m_Layer: 7
-  m_Name: Mostarda
+  m_Name: Model
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &6629507400787699090
+--- !u!4 &2905189200995051012
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5494588022344090004}
+  m_GameObject: {fileID: 1453816816830003200}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.21632999, y: -0.0052498276, z: 0.0010971902, w: 0.9763056}
-  m_LocalPosition: {x: -6.437, y: 1.6809678, z: 0.818}
-  m_LocalScale: {x: 0.1406427, y: 0.4062298, z: 0.1480334}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 47.34365, y: 42.320396, z: 42.320396}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: -24.986, y: -0.678, z: 0.279}
---- !u!33 &8240124288282067359
+  m_Father: {fileID: 6591178866086955635}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!33 &7581487339017640846
 MeshFilter:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5494588022344090004}
-  m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
---- !u!23 &948166747151191584
+  m_GameObject: {fileID: 1453816816830003200}
+  m_Mesh: {fileID: -5495902117074765545, guid: 457d80082c270e44098a059188f5af37, type: 3}
+--- !u!23 &6757249365679764357
 MeshRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5494588022344090004}
+  m_GameObject: {fileID: 1453816816830003200}
   m_Enabled: 1
   m_CastShadows: 1
   m_ReceiveShadows: 1
@@ -71,7 +66,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 60e47861e0880c84b883562519655311, type: 2}
+  - {fileID: -6922793697723135513, guid: 457d80082c270e44098a059188f5af37, type: 3}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -94,6 +89,42 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!1 &5494588022344090004
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6629507400787699090}
+  - component: {fileID: 2548257275112506480}
+  - component: {fileID: 5601030705684596547}
+  - component: {fileID: 5556986757645663292}
+  - component: {fileID: -5544022839210585147}
+  m_Layer: 7
+  m_Name: Mostarda
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6629507400787699090
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5494588022344090004}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 6591178866086955635}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: -24.986, y: -0.678, z: 0.279}
 --- !u!65 &2548257275112506480
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -113,8 +144,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Size: {x: 0.13460112, y: 0.36, z: 0.08985476}
+  m_Center: {x: 0, y: 0.18, z: 0}
 --- !u!114 &5601030705684596547
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -153,33 +184,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Item
   myType: 2
---- !u!54 &2220805797072545210
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5494588022344090004}
-  serializedVersion: 5
-  m_Mass: 1
-  m_LinearDamping: 0
-  m_AngularDamping: 0.05
-  m_CenterOfMass: {x: 0, y: 0, z: 0}
-  m_InertiaTensor: {x: 1, y: 1, z: 1}
-  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ImplicitCom: 1
-  m_ImplicitTensor: 1
-  m_UseGravity: 0
-  m_IsKinematic: 1
-  m_Interpolate: 0
-  m_Constraints: 0
-  m_CollisionDetection: 0
 --- !u!114 &-5544022839210585147
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -198,3 +202,35 @@ MonoBehaviour:
   precomputeOutline: 0
   bakeKeys: []
   bakeValues: []
+--- !u!1 &7923422367128336219
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6591178866086955635}
+  m_Layer: 7
+  m_Name: Visual
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6591178866086955635
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7923422367128336219}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.7071068, y: 0, z: 0, w: 0.7071068}
+  m_LocalPosition: {x: -0, y: 0.18513215, z: 0.000000001829447}
+  m_LocalScale: {x: 0.12387721, y: 0.12387721, z: 0.12387721}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 2905189200995051012}
+  m_Father: {fileID: 6629507400787699090}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

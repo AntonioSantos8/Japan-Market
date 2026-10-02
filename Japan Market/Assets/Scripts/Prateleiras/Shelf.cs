@@ -9,7 +9,13 @@ public enum Items
     Box, Fish, Mochi, Yakisoba,
     Buldak, Pringles, Biscuits,
     Chocopie, Cola, IceCream, FrozenMeat,
-    FrozenPizza
+    FrozenPizza,
+    KitKatWasabi = 17,
+    Milk = 18,
+    Water = 19,
+    Yogurt = 20,
+    EnergyDrink = 21,
+    Yakult = 22
 }
 
 public class Shelf : MonoBehaviour
