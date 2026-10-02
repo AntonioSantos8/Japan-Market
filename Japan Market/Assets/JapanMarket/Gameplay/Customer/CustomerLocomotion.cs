@@ -80,6 +80,7 @@ namespace JapanMarket.Gameplay
         private void Awake()
         {
             _agent = GetComponent<NavMeshAgent>();
+            CustomerNavigationPolicy.Configure(_agent);
             _agent.autoBraking = true;
 
             // A rotação é assumida já no Awake, e não só no Configure: um
@@ -103,27 +104,26 @@ namespace JapanMarket.Gameplay
         /// <summary>Vai até o ponto. Devolve false se o destino é inalcançável.</summary>
         public bool MoveTo(Vector3 destination)
         {
-            if (!_agent.isOnNavMesh)
+            CustomerNavigationPolicy.Configure(_agent);
+            var path = new NavMeshPath();
+            if (!CustomerNavigationPolicy.TryCalculatePath(_agent, destination, path, out Vector3 target))
             {
-                // Sem esta guarda, SetDestination num agente fora da NavMesh
-                // apenas emite um warning e não faz nada — e o estado fica
-                // esperando por uma chegada que nunca acontece.
+                Halt();
                 PathFailed = true;
                 return false;
             }
 
-            Destination = destination;
+            Destination = target;
             PathFailed = false;
             _isFacing = false;
             _stuckTimer = 0f;
             _lastRemainingDistance = float.PositiveInfinity;
 
-            _agent.obstacleAvoidanceType = ObstacleAvoidanceType.GoodQualityObstacleAvoidance;
             _agent.isStopped = false;
             IsHalted = false;
             DesiredSpeed = _agent.speed;
 
-            if (_agent.SetDestination(destination)) return true;
+            if (_agent.SetPath(path)) return true;
 
             PathFailed = true;
             return false;
@@ -174,11 +174,8 @@ namespace JapanMarket.Gameplay
         /// <summary>Existe um caminho completo até lá? Não move o cliente.</summary>
         public bool CanReach(Vector3 destination)
         {
-            if (!_agent.isOnNavMesh) return false;
-
             var path = new NavMeshPath();
-            return _agent.CalculatePath(destination, path)
-                && path.status == NavMeshPathStatus.PathComplete;
+            return CustomerNavigationPolicy.TryCalculatePath(_agent, destination, path, out _);
         }
 
         public void WarpTo(Vector3 position)

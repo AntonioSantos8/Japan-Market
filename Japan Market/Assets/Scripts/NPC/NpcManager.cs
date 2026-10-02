@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 
 /// <summary>
 /// Gerencia o ciclo de spawn de NPCs.
@@ -90,11 +91,33 @@ public class NpcManager : MonoBehaviour
             return;
 
         int idx = Random.Range(0, _npcPrefabs.Length);
+        GameObject prefab = _npcPrefabs[idx];
+        if (prefab == null) return;
+        NavMeshAgent prefabAgent = prefab.GetComponent<NavMeshAgent>();
+        if (prefabAgent == null) return;
 
         Vector2 circle = Random.insideUnitCircle * _spawnRadius;
         Vector3 spawnPos = _spawnPoint.position + new Vector3(circle.x, 0f, circle.y);
 
-        GameObject npc = Instantiate(_npcPrefabs[idx], spawnPos, _spawnPoint.rotation);
+        var filter = new NavMeshQueryFilter { agentTypeID = prefabAgent.agentTypeID, areaMask = prefabAgent.areaMask };
+        float sampleRadius = Mathf.Max(1.25f, _spawnRadius + 0.5f);
+        if (!NavMesh.SamplePosition(spawnPos, out NavMeshHit hit, sampleRadius, filter)
+            && !NavMesh.SamplePosition(_spawnPoint.position, out hit, sampleRadius, filter))
+        {
+            Debug.LogWarning("[NpcManager] Spawn sem NavMesh próxima; NPC não criado.", this);
+            return;
+        }
+
+        // SamplePosition returns the mesh surface, while the agent's transform
+        // sits above it by baseOffset (1m in the NPC prefabs).
+        Vector3 agentPosition = hit.position + Vector3.up * prefabAgent.baseOffset;
+        GameObject npc = Instantiate(prefab, agentPosition, _spawnPoint.rotation);
+        NavMeshAgent agent = npc.GetComponent<NavMeshAgent>();
+        if (!agent.Warp(agentPosition))
+        {
+            Destroy(npc);
+            return;
+        }
         _activeNpcs.Add(npc);
 
         TutorialManager tutorialManager = ServiceLocator.Get<TutorialManager>();

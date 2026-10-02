@@ -62,12 +62,14 @@ public class NpcTraject : MonoBehaviour
     private void Awake()
     {
         _agent = GetComponent<NavMeshAgent>();
+        JapanMarket.Gameplay.CustomerNavigationPolicy.Configure(_agent);
         _tutorialManager = ServiceLocator.Get<TutorialManager>();
     }
 
     private void Start()
     {
-        _exitPoint = GameObject.FindGameObjectWithTag("Exit").transform;
+        var exitObject = GameObject.FindGameObjectWithTag("Exit");
+        _exitPoint = exitObject != null ? exitObject.transform : null;
         _cashRegister = ServiceLocator.Get<CashRegister>();
         _furnitureManager = ServiceLocator.Get<FurnitureManager>();
 
@@ -156,6 +158,7 @@ public class NpcTraject : MonoBehaviour
 
             foreach (var furniture in selected)
             {
+                if (furniture == null || furniture.shelf == null) continue;
                 var occupancy = furniture.GetComponent<FurnitureOccupancy>();
 
                 if (occupancy != null)
@@ -173,15 +176,21 @@ public class NpcTraject : MonoBehaviour
                     _currentOccupancy = null;
                 }
 
-                yield return StartCoroutine(GoToDest(_reservedSlotPosition));
+                bool arrived = false;
+                yield return StartCoroutine(GoToDest(_reservedSlotPosition, result => arrived = result));
 
-                if (furniture.shelf != null)
+                if (!arrived)
+                {
+                    ReleaseShoppingSlot();
+                    continue;
+                }
+
+                if (furniture != null && furniture.shelf != null)
                     CollectItemsFromShelf(furniture.shelf);
 
                 yield return new WaitForSeconds(_waitTimeAtShelf);
 
-                _currentOccupancy?.Release(_reservedSlotPosition);
-                _currentOccupancy = null;
+                ReleaseShoppingSlot();
 
                 if (Clean.ActiveDustCount >= _dirtyLeaveThreshold)
                 {
@@ -226,8 +235,7 @@ public class NpcTraject : MonoBehaviour
         _hasQueueTarget = false;
         HasArrivedAtQueueTarget = false;
         if (_cashRegister != null) _cashRegister.LeaveQueue(this);
-        _currentOccupancy?.Release(_reservedSlotPosition);
-        _currentOccupancy = null;
+        ReleaseShoppingSlot();
 
         if (_queueWaiter != null)
         {
@@ -246,21 +254,30 @@ public class NpcTraject : MonoBehaviour
 
     private IEnumerator LeaveRoutine()
     {
-        _agent.SetDestination(_exitPoint.position);
-
-        yield return new WaitForSeconds(0.3f);
-        yield return new WaitUntil(() => !_agent.pathPending);
-
-        while (true)
+        var path = new NavMeshPath();
+        if (!JapanMarket.Gameplay.CustomerNavigationPolicy.TryCalculatePath(_agent, _exitPoint.position,
+                path, out _) || !_agent.SetPath(path))
         {
+            Destroy(gameObject);
+            yield break;
+        }
+
+        float elapsed = 0f;
+        while (elapsed < 20f)
+        {
+            if (_agent == null || !_agent.isActiveAndEnabled || !_agent.isOnNavMesh) break;
             float dist = Vector3.Distance(transform.position, _exitPoint.position);
             if (dist <= _exitDestroyDistance) break;
 
-            if (!_agent.hasPath || _agent.isStopped)
+            if (!_agent.pathPending && (_agent.pathStatus != NavMeshPathStatus.PathComplete
+                || !_agent.hasPath || _agent.isStopped))
             {
-                _agent.SetDestination(_exitPoint.position);
+                if (!JapanMarket.Gameplay.CustomerNavigationPolicy.TryCalculatePath(_agent,
+                        _exitPoint.position, path, out _) || !_agent.SetPath(path)) break;
+                _agent.isStopped = false;
             }
 
+            elapsed += Time.deltaTime;
             yield return null;
         }
 
@@ -368,6 +385,7 @@ public class NpcTraject : MonoBehaviour
         _hasQueueTarget = false;
         HasArrivedAtQueueTarget = false;
         if (_cashRegister != null) _cashRegister.LeaveQueue(this);
+        ReleaseShoppingSlot();
     }
 
     // ─── Fidget (animação de espera na fila) ──────────────────────────────────
@@ -416,25 +434,55 @@ public class NpcTraject : MonoBehaviour
 
     // ─── Movimento genérico ───────────────────────────────────────────────────
 
-    private IEnumerator GoToDest(Vector3 dest)
+    private void ReleaseShoppingSlot()
     {
-        _agent.SetDestination(dest);
+        if (_currentOccupancy != null) _currentOccupancy.Release(_reservedSlotPosition);
+        _currentOccupancy = null;
+    }
 
-        yield return new WaitUntil(() => !_agent.pathPending);
+    private IEnumerator GoToDest(Vector3 dest, System.Action<bool> completed)
+    {
+        var path = new NavMeshPath();
+        if (!JapanMarket.Gameplay.CustomerNavigationPolicy.TryCalculatePath(_agent, dest, path,
+                out Vector3 target))
+        {
+            completed(false);
+            yield break;
+        }
 
-        float arrivalThreshold = _agent.stoppingDistance + 0.05f;
+        _agent.isStopped = false;
+        if (!_agent.SetPath(path))
+        {
+            completed(false);
+            yield break;
+        }
 
-        // Timeout evita que o NPC fique preso pra sempre num destino inalcançável
-        // (slot bloqueado, NavMesh com buraco, etc.) — sem isso ele travava a rotina inteira.
+        float arrivalThreshold = Mathf.Max(0.15f, _agent.stoppingDistance + 0.05f);
         float elapsed = 0f;
         const float timeout = 15f;
-
-        while (_agent.remainingDistance > arrivalThreshold && elapsed < timeout)
+        while (elapsed < timeout)
         {
-            if (_agent.pathStatus == NavMeshPathStatus.PathInvalid) break;
+            if (_agent == null || !_agent.isActiveAndEnabled || !_agent.isOnNavMesh) break;
+            if (!_agent.pathPending)
+            {
+                if (_agent.pathStatus != NavMeshPathStatus.PathComplete) break;
+                Vector3 delta = transform.position - target;
+                delta.y = 0f;
+                if (_agent.remainingDistance <= arrivalThreshold
+                    && delta.sqrMagnitude <= (arrivalThreshold + 0.1f) * (arrivalThreshold + 0.1f))
+                {
+                    _agent.isStopped = true;
+                    completed(true);
+                    yield break;
+                }
+                if (!_agent.hasPath || _agent.isStopped) break;
+            }
             elapsed += Time.deltaTime;
             yield return null;
         }
+        if (_agent != null && _agent.isActiveAndEnabled && _agent.isOnNavMesh)
+            _agent.isStopped = true;
+        completed(false);
     }
 
     // ─── Seleção de furnitures ────────────────────────────────────────────────

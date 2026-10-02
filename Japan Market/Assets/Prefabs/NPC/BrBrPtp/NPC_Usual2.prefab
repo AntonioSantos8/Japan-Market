@@ -378,7 +378,6 @@ GameObject:
   - component: {fileID: 8386243685861414529}
   - component: {fileID: 6887360665677815602}
   - component: {fileID: 2792848331388153669}
-  - component: {fileID: 7355339312587925789}
   - component: {fileID: 5095686463619319939}
   - component: {fileID: 6013700793619636848}
   - component: {fileID: 419126940387637259}
@@ -440,20 +439,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1c58305bc76317d42a7de9a9171d9864, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NpcTraject
-  _waitTime: 5
---- !u!114 &7355339312587925789
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5342482067624042977}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 37c8c69aab636e54389b22a4684ba07c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::NpcPhrases
-  phraseText: {fileID: 168700204537161844}
+  _waitTimeAtShelf: 3
+  _maxInventorySize: 6
+  _itemsPerFurnitureWeights: 010000000100000001000000020000000200000003000000
+  _dirtyLeaveThreshold: 12
+  _maxAcceptableItemPrice: 500
+  _exitDestroyDistance: 1.5
+  _fidgetRotationMax: 38
+  _fidgetInterval: 2.8
 --- !u!114 &5095686463619319939
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -466,10 +459,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e1b9905e4f2293142a474361f63a246d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NpcInstance
+  data: {fileID: 11400000, guid: 5888b0bd416ca764d86feef5b162ce76, type: 2}
   paymentType: 0
-  _data: {fileID: 11400000, guid: 5888b0bd416ca764d86feef5b162ce76, type: 2}
-  humorCoins: 100
-  currentHumor: 0
 --- !u!54 &6013700793619636848
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -509,6 +500,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5cd02a6b68508f24f91c0741aeec6b42, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NpcAnimationManager
+  _movementThreshold: 0.1
 --- !u!1 &9222633412253327509
 GameObject:
   m_ObjectHideFlags: 0

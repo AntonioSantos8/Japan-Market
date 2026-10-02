@@ -118,9 +118,11 @@ public class Segment : InteractableBase
         if (transform.parent != null)
         {
             GameObject container = new GameObject($"{gameObject.name}_Items");
-            container.transform.SetParent(transform.parent);
-            container.transform.position = transform.position;
-            container.transform.rotation = transform.rotation;
+            // Furniture placement starts at scale zero. World-to-local conversion
+            // at that moment would collapse every segment's origin to zero.
+            container.transform.SetParent(transform.parent, false);
+            container.transform.localPosition = transform.localPosition;
+            container.transform.localRotation = transform.localRotation;
             container.transform.localScale = Vector3.one;
             itemsParent = container.transform;
         }
