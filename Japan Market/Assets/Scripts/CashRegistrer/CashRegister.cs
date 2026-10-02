@@ -43,7 +43,24 @@ public class CashRegister : InteractableBase
     [SerializeField] private Transform bagPoint;
     [SerializeField] private Transform bagTopPoint;
     public  Transform   itemPosition;
-    public  Transform[] queuePoints;
+    [HideInInspector] public Transform[] queuePoints; // Serialized compatibility with older scenes.
+
+    [Header("Procedural Queue")]
+    [Tooltip("Primeiro lugar da fila, junto ao balcão.")]
+    public Transform queueStart;
+    [Tooltip("A fila cresce de Start em direção a este ponto e contorna obstáculos.")]
+    public Transform queueDirection;
+    [Min(0.4f)] [SerializeField] private float queueSpacing = 1.4f;
+    [Range(1, 128)] [SerializeField] private int maxQueueSlots = 64;
+    [Min(0.1f)] [SerializeField] private float queueCustomerRadius = 0.54f;
+    [Min(0.2f)] [SerializeField] private float queueCustomerHeight = 2.07f;
+    [SerializeField] private LayerMask queueObstacleMask = ~0;
+    private readonly List<Vector3> _queuePositions = new();
+    private float _nextQueueRefresh;
+    private bool _finishingTransaction;
+
+    public int QueueCapacity { get { RefreshQueueLayout(); return _queuePositions.Count; } }
+    public int QueueLength => npcQueue.Count;
 
     [Header("Camera")]
     [SerializeField] private CinemachineCamera cam;
@@ -138,6 +155,8 @@ public class CashRegister : InteractableBase
 
     private void Update()
     {
+        if (npcQueue.Count > 0 && Time.unscaledTime >= _nextQueueRefresh)
+            RefreshQueuePositions();
         if (_state == State.Idle) return;
 
         if (Input.GetKeyDown(KeyCode.Escape))
@@ -182,20 +201,107 @@ public class CashRegister : InteractableBase
 
     public void EnterQueue(NpcTraject npc)
     {
-        npcQueue.Add(npc);
+        TryEnterQueue(npc);
+    }
+
+    public bool TryEnterQueue(NpcTraject npc)
+    {
+        if (npc == null || !isActiveAndEnabled) return false;
+        if (npcQueue.Contains(npc)) return true;
         RefreshQueuePositions();
+        int index = npcQueue.Count;
+        if (index >= _queuePositions.Count || !npc.CanReachQueuePosition(_queuePositions[index]))
+            return false;
+        npcQueue.Add(npc);
+        npc.SetQueueTarget(_queuePositions[index], index);
+        return true;
     }
 
     public void LeaveQueue(NpcTraject npc)
     {
-        npcQueue.Remove(npc);
+        bool wasFront = npcQueue.Count > 0 && npcQueue[0] == npc;
+        if (!npcQueue.Remove(npc)) return;
+        if (wasFront && !_finishingTransaction) AbortCurrentTransaction();
         RefreshQueuePositions();
     }
 
     private void RefreshQueuePositions()
     {
+        NpcTraject previousFront = npcQueue.Count > 0 ? npcQueue[0] : null;
+        npcQueue.RemoveAll(npc => npc == null);
+        RefreshQueueLayout();
+        // Space can disappear when furniture is placed. Release the tail before
+        // moving anyone; a missing slot is never replaced with an unsafe point.
+        while (npcQueue.Count > _queuePositions.Count)
+        {
+            int last = npcQueue.Count - 1;
+            NpcTraject displaced = npcQueue[last];
+            npcQueue.RemoveAt(last);
+            displaced.GoAway();
+        }
+        NpcTraject nextFront = npcQueue.Count > 0 ? npcQueue[0] : null;
+        if (!ReferenceEquals(previousFront, nextFront) && !_finishingTransaction)
+            AbortCurrentTransaction();
         for (int i = 0; i < npcQueue.Count; i++)
-            npcQueue[i].SetTarget(queuePoints[i], i);
+            npcQueue[i].SetQueueTarget(_queuePositions[i], i);
+    }
+
+    private void AbortCurrentTransaction()
+    {
+        if (_totalExpected == 0) return;
+        ClearItemHover();
+        CancelInvoke(nameof(ShowTotalAndPaymentOptions));
+        if (_inCardMachineMode) ExitCardMachineMode();
+        cashDrawer?.Close();
+        foreach (Item item in itemsQueue)
+        {
+            if (item == null) continue;
+            item.transform.DOKill();
+            Destroy(item.gameObject);
+        }
+        ResetMoneyPlacementState();
+        ResetForNextCustomer();
+    }
+
+    private void RefreshQueueLayout(bool force = false)
+    {
+        if (!force && Time.unscaledTime < _nextQueueRefresh) return;
+        _nextQueueRefresh = Time.unscaledTime + 0.5f;
+        // Older prefabs work immediately, even before their markers are migrated.
+        Transform start = queueStart;
+        Transform direction = queueDirection;
+        if (start == null && queuePoints != null && queuePoints.Length > 0) start = queuePoints[0];
+        if (direction == null && queuePoints != null && queuePoints.Length > 1) direction = queuePoints[1];
+        _queuePositions.Clear();
+        if (start == null || direction == null) return;
+        Physics.SyncTransforms();
+        JapanMarket.Gameplay.ProceduralQueueLayout.Generate(_queuePositions, start.position,
+            direction.position - start.position, queueSpacing, maxQueueSlots,
+            queueCustomerRadius, queueCustomerHeight, queueObstacleMask);
+    }
+
+    [ContextMenu("Regenerate Queue")]
+    public void RegenerateQueue()
+    {
+        RefreshQueueLayout(true);
+        if (Application.isPlaying) RefreshQueuePositions();
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        if (queueStart == null || queueDirection == null) return;
+        var preview = new List<Vector3>();
+        JapanMarket.Gameplay.ProceduralQueueLayout.Generate(preview, queueStart.position,
+            queueDirection.position - queueStart.position, queueSpacing, maxQueueSlots,
+            queueCustomerRadius, queueCustomerHeight, queueObstacleMask);
+        Gizmos.color = Color.cyan;
+        for (int i = 0; i < preview.Count; i++)
+        {
+            Gizmos.DrawWireSphere(preview[i] + Vector3.up * 0.1f, queueCustomerRadius);
+            if (i > 0) Gizmos.DrawLine(preview[i - 1], preview[i]);
+        }
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawLine(queueStart.position, queueDirection.position);
     }
 
     public NpcTraject GetCurrentCustomer() => npcQueue.Count > 0 ? npcQueue[0] : null;
@@ -413,6 +519,7 @@ public class CashRegister : InteractableBase
 
     private void SendItemToBag(Item item)
     {
+        NpcTraject scannedCustomer = GetCurrentCustomer();
         item.MarkAsPast();
         if (item.TryGetComponent(out Collider col)) col.enabled = false;
         if (item.TryGetComponent(out Rigidbody rb))
@@ -424,7 +531,11 @@ public class CashRegister : InteractableBase
             .Append(item.transform.DOMove(bagTopPoint.position, 0.18f).SetEase(Ease.InOutQuad))
             .Append(item.transform.DOMove(bagPoint.position,    0.19f).SetEase(Ease.InQuad))
             .Append(item.transform.DOPunchScale(Vector3.one * 0.12f, 0.26f, 5))
-            .AppendCallback(() => { item.transform.SetParent(bagPoint); RegisterScannedItem(item); })
+            .AppendCallback(() => {
+                item.transform.SetParent(bagPoint);
+                if (scannedCustomer != null && scannedCustomer == GetCurrentCustomer())
+                    RegisterScannedItem(item);
+            })
             .AppendCallback(() => Destroy(item.gameObject));
     }
 
@@ -748,8 +859,10 @@ public class CashRegister : InteractableBase
     {
         if (npcQueue.Count == 0) return;
         var npc = npcQueue[0];
+        _finishingTransaction = true;
         LeaveQueue(npc);
         npc.GoAway();
+        _finishingTransaction = false;
     }
 
     private void ResetForNextCustomer()

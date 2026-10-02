@@ -99,7 +99,6 @@ GameObject:
   m_Component:
   - component: {fileID: 6629507400787699090}
   - component: {fileID: 2548257275112506480}
-  - component: {fileID: 5601030705684596547}
   - component: {fileID: 5556986757645663292}
   - component: {fileID: -5544022839210585147}
   m_Layer: 7
@@ -146,31 +145,6 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.13460112, y: 0.36, z: 0.08985476}
   m_Center: {x: 0, y: 0.18, z: 0}
---- !u!114 &5601030705684596547
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5494588022344090004}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3b5b663da327bea4787cf5e988bbbb43, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::HoldableItem
-  OnDropEvent:
-    m_PersistentCalls:
-      m_Calls: []
-  OnPickEvent:
-    m_PersistentCalls:
-      m_Calls: []
-  interactionText: 
-  followForce: 150
-  followDrag: 2
-  canBreak: 1
-  maxResistance: 100
-  breakThreshold: 15
-  rbAngularDamping: 13
 --- !u!114 &5556986757645663292
 MonoBehaviour:
   m_ObjectHideFlags: 0

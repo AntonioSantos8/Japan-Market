@@ -1,36 +1,5 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &2268771746833252
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 6424248230104381581}
-  m_Layer: 0
-  m_Name: NpcPoints (4)
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &6424248230104381581
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2268771746833252}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -3.07, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 8252070422478986559}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &13047183906667092
 GameObject:
   m_ObjectHideFlags: 0
@@ -4342,7 +4311,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ee4848507e1fb2d4d9d59256f8e6e44b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PaymentCard
-  imagepayment: {fileID: 1145461732769837520}
   valueText: {fileID: 8561529601917999044}
   cashRegister: {fileID: 6022185972138446325}
 --- !u!114 &1092931640730794412
@@ -5659,8 +5627,6 @@ Transform:
   m_Children:
   - {fileID: 4816156220528272912}
   - {fileID: 7838300137562953564}
-  - {fileID: 1471376418507373544}
-  - {fileID: 6424248230104381581}
   - {fileID: 358056964484520747}
   m_Father: {fileID: 3022488421649988169}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -6832,7 +6798,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7838300137562953564}
   m_Layer: 0
-  m_Name: NpcPoints (2)
+  m_Name: Direction
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -7679,6 +7645,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4e0443696512e2245aadaf473f158a3d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CashRegister
+  OnDropEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  OnPickEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  interactionText: 
   allItem:
   - {fileID: 11400000, guid: efd74a6b0532c2444a03cf6960fa7a5d, type: 2}
   - {fileID: 11400000, guid: 3d3a032e966809d46ab7c66bb10746a7, type: 2}
@@ -7687,25 +7660,47 @@ MonoBehaviour:
   playerLook: {fileID: 0}
   paymentMoney: {fileID: 1281496735393705072}
   paymentCard: {fileID: 925263216021706473}
+  cashDrawer: {fileID: 0}
+  creditCard: {fileID: 3011469709430539606}
+  money: {fileID: 75591056166125605}
+  quitButton: {fileID: 6869562694846097577}
+  reticle: {fileID: 0}
   nameItemText: {fileID: 542632211226350799}
   priceItemText: {fileID: 2379957881668402217}
   totalPriceText: {fileID: 7026062813187483805}
   cashregisterText: {fileID: 3975505264138207784}
+  cashPosition: {fileID: 3519212118417312177}
   bagPoint: {fileID: 2194368557664814568}
   bagTopPoint: {fileID: 7802467289201437116}
-  creditCard: {fileID: 3011469709430539606}
-  money: {fileID: 75591056166125605}
-  quitButton: {fileID: 6869562694846097577}
-  cashPosition: {fileID: 3519212118417312177}
-  cam: {fileID: 0}
   itemPosition: {fileID: 5709734712581234898}
+  queuePoints: []
+  queueStart: {fileID: 4816156220528272912}
+  queueDirection: {fileID: 7838300137562953564}
+  queueSpacing: 1.4
+  maxQueueSlots: 64
+  queueCustomerRadius: 0.54
+  queueCustomerHeight: 2.07
+  queueObstacleMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  cam: {fileID: 0}
+  activeCameraPriority: 10
+  cameraBlendDuration: 0.6
+  cameraLookSensitivity: 2
   zoom: 96.3
-  queuePoints:
-  - {fileID: 4816156220528272912}
-  - {fileID: 7838300137562953564}
-  - {fileID: 1471376418507373544}
-  - {fileID: 6424248230104381581}
-  hasClient: 0
+  minimumCameraXRotation: -35
+  maximumCameraXRotation: 35
+  minimumCameraYRotation: 240
+  maximumCameraYRotation: 304
+  clickRadius: 0.05
+  itemScanDistance: 5
+  maximumCounterItemSize: {x: 0.38, y: 0.48, z: 0.38}
+  _coinPopPrefab: {fileID: 0}
+  _popupSpawnPoint: {fileID: 0}
+  coinsPosition: {fileID: 0}
+  billPositions: {fileID: 0}
+  yAmmountPerCoin: 0
+  yAmmountPerBill: 0
 --- !u!1 &6449427103914031918
 GameObject:
   m_ObjectHideFlags: 0
@@ -9516,7 +9511,7 @@ GameObject:
   - component: {fileID: 4816156220528272912}
   - component: {fileID: 4580474079541457696}
   m_Layer: 0
-  m_Name: NpcPoints (1)
+  m_Name: Start
   m_TagString: CashRegister
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -10592,34 +10587,3 @@ MonoBehaviour:
   scaleButton: 0.65
   duration: 0.42
   ease: 27
---- !u!1 &9200140153976975843
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1471376418507373544}
-  m_Layer: 0
-  m_Name: NpcPoints (3)
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1471376418507373544
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9200140153976975843}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -1.76, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 8252070422478986559}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

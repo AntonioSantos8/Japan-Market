@@ -45,6 +45,9 @@ public class NpcTraject : MonoBehaviour
     private Vector3 _reservedSlotPosition;
     private bool _itemsPlaced = false;
     private int _queueIndex = -1;
+    private Vector3 _queueTargetPosition;
+    private bool _hasQueueTarget;
+    private NavMeshPath _queuePath;
     public bool HasArrivedAtQueueTarget { get; private set; }
 
     private bool _isLeaving = false;
@@ -90,7 +93,7 @@ public class NpcTraject : MonoBehaviour
         {
             if (_isLeaving) yield break;
 
-            bool isCurrentCustomer = _cashRegister.GetCurrentCustomer() == this;
+            bool isCurrentCustomer = _cashRegister != null && _cashRegister.GetCurrentCustomer() == this;
 
             if (isCurrentCustomer && HasArrivedAtQueueTarget)
             {
@@ -198,8 +201,16 @@ public class NpcTraject : MonoBehaviour
             yield break;
         }
 
-        _cashRegister.EnterQueue(this);
-        Debug.Log("[NPC] Entrou na fila.");
+        // Full or temporarily blocked: retry without sharing somebody else's
+        // slot, and leave cleanly if no safe space becomes available.
+        float queueWait = 0f;
+        while (!_isLeaving && _cashRegister != null && !_cashRegister.TryEnterQueue(this))
+        {
+            if (queueWait >= 90f) { GoAway(); yield break; }
+            queueWait += 0.5f;
+            yield return new WaitForSeconds(0.5f);
+        }
+        if (_cashRegister == null) GoAway();
     }
 
     // ─── Saída da loja ────────────────────────────────────────────────────────
@@ -210,6 +221,11 @@ public class NpcTraject : MonoBehaviour
         _isLeaving = true;
 
         StopFidget();
+        StopAllCoroutines();
+        _queueWaiter = null;
+        _hasQueueTarget = false;
+        HasArrivedAtQueueTarget = false;
+        if (_cashRegister != null) _cashRegister.LeaveQueue(this);
         _currentOccupancy?.Release(_reservedSlotPosition);
         _currentOccupancy = null;
 
@@ -219,6 +235,11 @@ public class NpcTraject : MonoBehaviour
             _queueWaiter = null;
         }
 
+        if (_agent == null || !_agent.isActiveAndEnabled || !_agent.isOnNavMesh || _exitPoint == null)
+        {
+            Destroy(gameObject);
+            return;
+        }
         _agent.isStopped = false;
         StartCoroutine(LeaveRoutine());
     }
@@ -249,8 +270,30 @@ public class NpcTraject : MonoBehaviour
 
     public void SetQueueTarget(Transform target, int index)
     {
+        if (target != null) SetQueueTarget(target.position, index);
+    }
+
+    public bool CanReachQueuePosition(Vector3 position)
+    {
+        if (_agent == null) _agent = GetComponent<NavMeshAgent>();
+        _queuePath ??= new NavMeshPath();
+        return !_isLeaving && _agent != null && _agent.isActiveAndEnabled && _agent.isOnNavMesh
+            && _agent.CalculatePath(position, _queuePath)
+            && _queuePath.status == NavMeshPathStatus.PathComplete;
+    }
+
+    public void SetQueueTarget(Vector3 target, int index)
+    {
+        if (_isLeaving) return;
+        // Periodic validation and arrivals behind this NPC must not restart its
+        // movement, idle animation or waiter when the slot hasn't changed.
+        if (_hasQueueTarget && _queueIndex == index
+            && (target - _queueTargetPosition).sqrMagnitude < 0.0001f
+            && (HasArrivedAtQueueTarget || _queueWaiter != null)) return;
+
         _queueIndex = index;
-        Debug.Log($"[NPC:{name}] Nova posição na fila: {_queueIndex}");
+        _queueTargetPosition = target;
+        _hasQueueTarget = true;
 
         StopFidget();
 
@@ -258,35 +301,74 @@ public class NpcTraject : MonoBehaviour
             StopCoroutine(_queueWaiter);
 
         HasArrivedAtQueueTarget = false;
-        _agent.isStopped = false;
-        _agent.SetDestination(target.position);
-        _queueWaiter = StartCoroutine(WaitUntilAtQueuePosition(target));
+        bool reachable = CanReachQueuePosition(target);
+        if (reachable)
+        {
+            _agent.isStopped = false;
+            reachable = _agent.SetPath(_queuePath);
+        }
+        _queueWaiter = StartCoroutine(WaitUntilAtQueuePosition(target, reachable));
     }
 
-    private IEnumerator WaitUntilAtQueuePosition(Transform target)
+    private IEnumerator WaitUntilAtQueuePosition(Vector3 target, bool reachable)
     {
-        yield return new WaitUntil(() => !_agent.pathPending);
+        // Do not remove an NPC synchronously inside CashRegister's refresh loop.
+        yield return null;
+        if (!reachable)
+        {
+            _queueWaiter = null;
+            GoAway();
+            yield break;
+        }
 
         float elapsed = 0f;
         const float timeout = 15f;
 
-        while (_agent.remainingDistance > _agent.stoppingDistance && elapsed < timeout)
+        bool arrived = false;
+        while (elapsed < timeout)
         {
-            if (_agent.pathStatus == NavMeshPathStatus.PathInvalid) break;
+            if (_agent == null || !_agent.isActiveAndEnabled || !_agent.isOnNavMesh) break;
+            if (!_agent.pathPending)
+            {
+                if (_agent.pathStatus != NavMeshPathStatus.PathComplete) break;
+                Vector3 delta = transform.position - target;
+                delta.y = 0f;
+                float threshold = Mathf.Max(0.15f, _agent.stoppingDistance);
+                if (_agent.remainingDistance <= threshold
+                    && delta.sqrMagnitude <= (threshold + 0.1f) * (threshold + 0.1f))
+                {
+                    arrived = true;
+                    break;
+                }
+                if (!_agent.hasPath || _agent.isStopped) break;
+            }
             elapsed += Time.deltaTime;
             yield return null;
         }
 
-        if (elapsed >= timeout)
-            Debug.LogWarning($"[NPC:{name}] Timeout esperando chegar na fila — forçando chegada.");
+        _queueWaiter = null;
+        if (!arrived)
+        {
+            GoAway();
+            yield break;
+        }
 
         _agent.isStopped = true;
         HasArrivedAtQueueTarget = true;
-        _queueWaiter = null;
 
         StartFidget();
     }
     public void SetTarget(Transform target, int index) => SetQueueTarget(target, index);
+
+    private void OnDisable()
+    {
+        StopFidget();
+        StopAllCoroutines();
+        _queueWaiter = null;
+        _hasQueueTarget = false;
+        HasArrivedAtQueueTarget = false;
+        if (_cashRegister != null) _cashRegister.LeaveQueue(this);
+    }
 
     // ─── Fidget (animação de espera na fila) ──────────────────────────────────
 

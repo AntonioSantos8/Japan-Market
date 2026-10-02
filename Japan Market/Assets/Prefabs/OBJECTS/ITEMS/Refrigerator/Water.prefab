@@ -223,6 +223,7 @@ GameObject:
   - component: {fileID: 7984455751111003695}
   - component: {fileID: 9211235181294178009}
   - component: {fileID: 444737597563542049}
+  - component: {fileID: 8456094674726440984}
   m_Layer: 0
   m_Name: Water
   m_TagString: Untagged
@@ -280,6 +281,24 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.10870878, y: 0.33000004, z: 0.108399436}
   m_Center: {x: 0, y: 0.165, z: 0}
+--- !u!114 &8456094674726440984
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3751874628761134773}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5fea29bb7c508c244a1f805a5fd3fc4d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Outline
+  outlineMode: 0
+  outlineColor: {r: 1, g: 1, b: 1, a: 1}
+  outlineWidth: 2
+  precomputeOutline: 0
+  bakeKeys: []
+  bakeValues: []
 --- !u!1 &4686523973168272967
 GameObject:
   m_ObjectHideFlags: 0
