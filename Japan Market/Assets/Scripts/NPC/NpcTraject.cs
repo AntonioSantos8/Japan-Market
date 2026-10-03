@@ -150,11 +150,23 @@ public class NpcTraject : MonoBehaviour
         yield return new WaitForSeconds(Random.Range(2f, 5f));
 
         var allFurnitures = _furnitureManager.GetPlacedFurnitures();
+        int stockedShelves = 0;
+        int reachedShelves = 0;
 
         if (allFurnitures != null && allFurnitures.Count > 0)
         {
-            int quantToVisit = Random.Range(1, Mathf.Min(allFurnitures.Count + 1, 6));
-            var selected = PickFurnitures(allFurnitures, quantToVisit);
+            var candidates = new List<FurnitureInstance>();
+            foreach (var furniture in allFurnitures)
+            {
+                if (furniture != null && furniture.gameObject.activeInHierarchy
+                    && furniture.shelf != null && furniture.shelf.HasItems)
+                    candidates.Add(furniture);
+            }
+            stockedShelves = candidates.Count;
+            int quantToVisit = Random.Range(1, Mathf.Min(candidates.Count + 1, 6));
+            // Keep alternatives when an earlier shelf is blocked or too expensive.
+            var selected = PickFurnitures(candidates, candidates.Count);
+            int successfulVisits = 0;
 
             foreach (var furniture in selected)
             {
@@ -177,7 +189,9 @@ public class NpcTraject : MonoBehaviour
                 }
 
                 bool arrived = false;
-                yield return StartCoroutine(GoToDest(_reservedSlotPosition, result => arrived = result));
+                Vector3 shoppingDestination = _reservedSlotPosition;
+                shoppingDestination.y = furniture.InteractionPosition.y;
+                yield return StartCoroutine(GoToDest(shoppingDestination, result => arrived = result));
 
                 if (!arrived)
                 {
@@ -185,12 +199,15 @@ public class NpcTraject : MonoBehaviour
                     continue;
                 }
 
+                reachedShelves++;
+                int previousItemCount = _inventory.Count;
                 if (furniture != null && furniture.shelf != null)
                     CollectItemsFromShelf(furniture.shelf);
 
                 yield return new WaitForSeconds(_waitTimeAtShelf);
 
                 ReleaseShoppingSlot();
+                if (_inventory.Count > previousItemCount) successfulVisits++;
 
                 if (Clean.ActiveDustCount >= _dirtyLeaveThreshold)
                 {
@@ -199,12 +216,18 @@ public class NpcTraject : MonoBehaviour
                     GoAway();
                     yield break;
                 }
+                if (successfulVisits >= quantToVisit || _inventory.Count >= _maxInventorySize) break;
             }
         }
 
         if (_inventory.Count == 0)
         {
-            Debug.Log("[NPC] Sem itens (prateleiras vazias), indo embora.");
+            if (stockedShelves == 0)
+                Debug.Log("[NPC] Nenhuma prateleira ativa com estoque encontrada, indo embora.");
+            else if (reachedShelves == 0)
+                Debug.LogWarning("[NPC] Há estoque, mas não consegui chegar a uma prateleira. Confira o NavMesh e os slots de interação.", this);
+            else
+                Debug.Log("[NPC] Visitei as prateleiras, mas não encontrei itens disponíveis dentro do preço aceito, indo embora.");
             yield return new WaitForSeconds(2f);
             GoAway();
             yield break;
@@ -506,17 +529,20 @@ public class NpcTraject : MonoBehaviour
     private void CollectItemsFromShelf(Shelf shelf)
     {
         var globalPrices = ServiceLocator.Get<GlobalPrices>();
+        if (globalPrices == null)
+        {
+            Debug.LogError("[NPC] GlobalPrices não encontrado; compra cancelada.", this);
+            return;
+        }
         int quantity = RollItemQuantity();
 
         for (int i = 0; i < quantity && _inventory.Count < _maxInventorySize; i++)
         {
-            Items peekedType = shelf.PeekRandomItemType();
+            Items peekedType = shelf.PeekRandomMatchingItemType(
+                type => globalPrices.GetItemCurrentPrice(type) <= _maxAcceptableItemPrice);
             if (peekedType == Items.None) break;
 
             float price = globalPrices.GetItemCurrentPrice(peekedType);
-
-            if (price > _maxAcceptableItemPrice)
-                break;
 
             Items taken = shelf.TakeItemOfType(peekedType);
             if (taken == Items.None) break;

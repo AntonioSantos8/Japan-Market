@@ -45,6 +45,7 @@ GameObject:
   - component: {fileID: 7745478920139097228}
   - component: {fileID: 5595307834860710002}
   - component: {fileID: 2407360276066342767}
+  - component: {fileID: 8137412104029235651}
   m_Layer: 0
   m_Name: MetallicBin
   m_TagString: Untagged
@@ -135,8 +136,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2e15f90f795aeb74e8c2d9053ed91e17, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TrashBin
-  acceptedType: 1
-  trashSystem: {fileID: 1986878675381888048}
 --- !u!64 &5595307834860710002
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -180,6 +179,25 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.02028648, y: 0.019999998, z: 0.04611331}
   m_Center: {x: -0.00009995748, y: 3.7118313e-16, z: 0.017446438}
+--- !u!114 &8137412104029235651
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1449415290666253503}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4bfba8a3c1d1678408004af7008ca0da, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TrashBinInteraction
+  OnDropEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  OnPickEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  interactionText: 
 --- !u!1 &1804508129366331729
 GameObject:
   m_ObjectHideFlags: 0
@@ -449,6 +467,15 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 908810b5cb2874e47af9ff6d97a4a5e3, type: 2}
   - {fileID: 11400000, guid: 782ba37a41c3f2a45b345585e932d65e, type: 2}
   maxTrashCount: 5
+  _spawnInterval: 20
+  _spawnChance: 0.125
+  _spawnRadius: 1.5
+  _floorMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  _obstacleMask:
+    serializedVersion: 2
+    m_Bits: 0
 --- !u!1 &6067640394913433284
 GameObject:
   m_ObjectHideFlags: 0
@@ -594,6 +621,7 @@ GameObject:
   - component: {fileID: 6759442298337848165}
   - component: {fileID: 2437244957175607423}
   - component: {fileID: 3501177748781239720}
+  - component: {fileID: 3864809348031458331}
   m_Layer: 0
   m_Name: PlasticBin
   m_TagString: Untagged
@@ -684,8 +712,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2e15f90f795aeb74e8c2d9053ed91e17, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TrashBin
-  acceptedType: 0
-  trashSystem: {fileID: 1986878675381888048}
 --- !u!64 &2437244957175607423
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -729,6 +755,25 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.08895739, y: 0.04146005, z: 0.03973588}
   m_Center: {x: -0.01696369, y: -0.012823276, z: -0.019060317}
+--- !u!114 &3864809348031458331
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7705760835516378481}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4bfba8a3c1d1678408004af7008ca0da, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TrashBinInteraction
+  OnDropEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  OnPickEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  interactionText: 
 --- !u!1 &7799024230215291002
 GameObject:
   m_ObjectHideFlags: 0
@@ -743,6 +788,7 @@ GameObject:
   - component: {fileID: 4810945267222112663}
   - component: {fileID: 5696820866607115642}
   - component: {fileID: 8823064678821416476}
+  - component: {fileID: 3278717366844156113}
   m_Layer: 0
   m_Name: PaperBin
   m_TagString: Untagged
@@ -834,8 +880,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2e15f90f795aeb74e8c2d9053ed91e17, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TrashBin
-  acceptedType: 2
-  trashSystem: {fileID: 1986878675381888048}
 --- !u!64 &5696820866607115642
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -879,6 +923,25 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.020000005, y: 0.02, z: 0.047191262}
   m_Center: {x: 7.961561e-15, y: -0.00000005998715, z: 0.01690744}
+--- !u!114 &3278717366844156113
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7799024230215291002}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4bfba8a3c1d1678408004af7008ca0da, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TrashBinInteraction
+  OnDropEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  OnPickEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  interactionText: 
 --- !u!1 &8959129082585033747
 GameObject:
   m_ObjectHideFlags: 0
@@ -893,6 +956,7 @@ GameObject:
   - component: {fileID: 6110697234995703827}
   - component: {fileID: 5308848506916480693}
   - component: {fileID: 6133232309204294930}
+  - component: {fileID: 8354376156380901180}
   m_Layer: 0
   m_Name: OrganicBin
   m_TagString: Untagged
@@ -983,8 +1047,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2e15f90f795aeb74e8c2d9053ed91e17, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TrashBin
-  acceptedType: 3
-  trashSystem: {fileID: 1986878675381888048}
 --- !u!64 &5308848506916480693
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -1028,3 +1090,22 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.02028648, y: 0.019999998, z: 0.04611331}
   m_Center: {x: -0.00009995748, y: -0.000000029802322, z: 0.017446438}
+--- !u!114 &8354376156380901180
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8959129082585033747}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4bfba8a3c1d1678408004af7008ca0da, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TrashBinInteraction
+  OnDropEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  OnPickEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  interactionText: 

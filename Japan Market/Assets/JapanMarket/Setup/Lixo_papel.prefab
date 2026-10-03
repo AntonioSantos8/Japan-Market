@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 6936593648780805907}
   - component: {fileID: 1503512999147669458}
   - component: {fileID: 2920105561134440853}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Visual
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -100,9 +100,9 @@ GameObject:
   - component: {fileID: 5531050971084417961}
   - component: {fileID: 8535181617727495079}
   - component: {fileID: 2261994750544496091}
-  - component: {fileID: 6372160027328562945}
   - component: {fileID: 2217924924215498473}
   - component: {fileID: 2116199531274146551}
+  - component: {fileID: 5418594938629116836}
   m_Layer: 7
   m_Name: Lixo_papel
   m_TagString: Untagged
@@ -174,31 +174,6 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!114 &6372160027328562945
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8297147656946852615}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3b5b663da327bea4787cf5e988bbbb43, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::HoldableItem
-  OnDropEvent:
-    m_PersistentCalls:
-      m_Calls: []
-  OnPickEvent:
-    m_PersistentCalls:
-      m_Calls: []
-  interactionText: 
-  followForce: 150
-  followDrag: 2
-  canBreak: 0
-  maxResistance: 100
-  breakThreshold: 15
-  rbAngularDamping: 13
 --- !u!114 &2217924924215498473
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -230,3 +205,22 @@ MonoBehaviour:
   precomputeOutline: 0
   bakeKeys: []
   bakeValues: []
+--- !u!114 &5418594938629116836
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8297147656946852615}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3e59e9af3de4d9e4aa0b30a693bb6629, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TrashCollectionInteraction
+  OnDropEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  OnPickEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  interactionText: 

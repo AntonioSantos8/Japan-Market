@@ -169,6 +169,8 @@ namespace JapanMarket.Gameplay
         /// </summary>
         private void OnTriggerEnter(Collider other)
         {
+            // Equipped bags are emptied by interaction, never by collisions.
+            if (GameContext.Current != null && GameContext.Current.PlayerTrashBag != null) return;
             if (!other.TryGetComponent(out TrashItem item)) return;
             if (item.Definition == null) return;
 

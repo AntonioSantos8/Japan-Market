@@ -198,6 +198,38 @@ namespace JapanMarket.EditorTools
                     serialized.ApplyModifiedPropertiesWithoutUndo();
                     changed = true;
                 }
+
+                var registered = new HashSet<GameObject>();
+                for (int i = 0; i < options.arraySize; i++)
+                    registered.Add(options.GetArrayElementAtIndex(i).FindPropertyRelative("wallpaper")
+                        .objectReferenceValue as GameObject);
+                var freeNames = new HashSet<string>(names);
+                for (int i = 0; i < desktop.childCount; i++)
+                {
+                    Transform child = desktop.GetChild(i);
+                    const string prefix = "Wallpaper - ";
+                    if (!child.name.StartsWith(prefix) || registered.Contains(child.gameObject)) continue;
+                    int index = options.arraySize;
+                    options.arraySize++;
+                    SerializedProperty option = options.GetArrayElementAtIndex(index);
+                    string themeName = child.name.Substring(prefix.Length);
+                    option.FindPropertyRelative("name").stringValue = themeName;
+                    option.FindPropertyRelative("wallpaper").objectReferenceValue = child.gameObject;
+                    option.FindPropertyRelative("price").intValue = freeNames.Contains(themeName) ? 0 : 500;
+                    registered.Add(child.gameObject);
+                }
+                SerializedProperty version = serialized.FindProperty("_catalogVersion");
+                if (version.intValue == 0)
+                {
+                    for (int i = 0; i < options.arraySize; i++)
+                    {
+                        SerializedProperty option = options.GetArrayElementAtIndex(i);
+                        option.FindPropertyRelative("price").intValue =
+                            freeNames.Contains(option.FindPropertyRelative("name").stringValue) ? 0 : 500;
+                    }
+                    version.intValue = 1;
+                }
+                changed |= serialized.ApplyModifiedPropertiesWithoutUndo();
             }
             return changed;
         }
@@ -210,82 +242,116 @@ namespace JapanMarket.EditorTools
                 : null;
             if (content == null || wallpapers == null) return false;
 
-            // A tela é criada uma vez no prefab. Edições feitas depois no Inspector
-            // (inclusive animações e filhos dos wallpapers) permanecem intactas.
-            if (content.Find("Customization Panel") != null) return false;
+            RectTransform panel = content.Find("Customization Panel") as RectTransform;
+            bool changed = panel == null;
+            if (panel == null)
+            {
 
-            Transform placeholder = content.Find("Placeholder");
-            if (placeholder != null) placeholder.gameObject.SetActive(false);
+                Transform placeholder = content.Find("Placeholder");
+                if (placeholder != null) placeholder.gameObject.SetActive(false);
 
-            RectTransform panel = CreateRect("Customization Panel", content);
-            Stretch(panel);
-            var column = panel.gameObject.AddComponent<UnityEngine.UI.VerticalLayoutGroup>();
-            column.padding = new RectOffset(16, 16, 16, 16);
-            column.spacing = 10f;
-            column.childAlignment = TextAnchor.UpperLeft;
-            column.childControlWidth = true;
-            column.childControlHeight = true;
-            column.childForceExpandWidth = true;
-            column.childForceExpandHeight = false;
+                panel = CreateRect("Customization Panel", content);
+                Stretch(panel);
+                var column = panel.gameObject.AddComponent<UnityEngine.UI.VerticalLayoutGroup>();
+                column.padding = new RectOffset(16, 16, 16, 16);
+                column.spacing = 10f;
+                column.childAlignment = TextAnchor.UpperLeft;
+                column.childControlWidth = true;
+                column.childControlHeight = true;
+                column.childForceExpandWidth = true;
+                column.childForceExpandHeight = false;
 
-            TextMeshProUGUI heading = CreateText("Heading", panel, "Wallpaper do PC", 30f,
-                TextAlignmentOptions.MidlineLeft);
-            FixedHeight(heading.gameObject, 48f);
+                TextMeshProUGUI heading = CreateText("Heading", panel, "Wallpaper do PC", 30f,
+                    TextAlignmentOptions.MidlineLeft);
+                FixedHeight(heading.gameObject, 48f);
 
-            TextMeshProUGUI instruction = CreateText("Instruction", panel,
-                "Escolha um tema para mudar o fundo do desktop.", 18f,
-                TextAlignmentOptions.MidlineLeft);
-            FixedHeight(instruction.gameObject, 32f);
+                TextMeshProUGUI instruction = CreateText("Instruction", panel,
+                    "Escolha um tema para mudar o fundo do desktop.", 18f,
+                    TextAlignmentOptions.MidlineLeft);
+                FixedHeight(instruction.gameObject, 32f);
 
-            TextMeshProUGUI status = CreateText("Current Theme", panel,
-                "Tema atual: Original", 22f, TextAlignmentOptions.MidlineLeft);
-            FixedHeight(status.gameObject, 38f);
+                TextMeshProUGUI status = CreateText("Current Theme", panel,
+                    "Tema atual: Original", 22f, TextAlignmentOptions.MidlineLeft);
+                FixedHeight(status.gameObject, 38f);
+            }
+
+            RectTransform rows = EnsureWallpaperList(panel, ref changed);
+            var currentTheme = panel.Find("Current Theme")?.GetComponent<TextMeshProUGUI>();
+            var instructionText = panel.Find("Instruction")?.GetComponent<TextMeshProUGUI>();
+            const string instructionValue = "Compre novos temas e aplique os wallpapers desbloqueados.";
+            if (instructionText != null && instructionText.text != instructionValue)
+            {
+                instructionText.text = instructionValue;
+                changed = true;
+            }
 
             var buttons = new UnityEngine.UI.Button[wallpapers.Count];
             var labels = new TextMeshProUGUI[wallpapers.Count];
             for (int i = 0; i < wallpapers.Count; i++)
             {
-                UnityEngine.UI.Image row = CreateImage("Theme - " + wallpapers.GetName(i),
-                    panel, new Color(0.17f, 0.19f, 0.23f, 1f));
-                row.raycastTarget = false;
-                FixedHeight(row.gameObject, 104f);
+                string rowName = "Theme - " + wallpapers.GetName(i);
+                Transform existingRow = rows.Find(rowName) ?? panel.Find(rowName);
+                UnityEngine.UI.Image row;
+                if (existingRow != null)
+                {
+                    row = existingRow.GetComponent<UnityEngine.UI.Image>();
+                    if (existingRow.parent != rows)
+                    {
+                        existingRow.SetParent(rows, false);
+                        changed = true;
+                    }
+                }
+                else
+                {
+                    row = CreateImage(rowName, rows, new Color(0.17f, 0.19f, 0.23f, 1f));
+                    row.raycastTarget = false;
+                    FixedHeight(row.gameObject, 104f);
 
-                var layout = row.gameObject.AddComponent<UnityEngine.UI.HorizontalLayoutGroup>();
-                layout.padding = new RectOffset(10, 10, 8, 8);
-                layout.spacing = 12f;
-                layout.childAlignment = TextAnchor.MiddleLeft;
-                layout.childControlWidth = true;
-                layout.childControlHeight = true;
-                layout.childForceExpandWidth = false;
-                layout.childForceExpandHeight = true;
+                    var layout = row.gameObject.AddComponent<UnityEngine.UI.HorizontalLayoutGroup>();
+                    layout.padding = new RectOffset(10, 10, 8, 8);
+                    layout.spacing = 12f;
+                    layout.childAlignment = TextAnchor.MiddleLeft;
+                    layout.childControlWidth = true;
+                    layout.childControlHeight = true;
+                    layout.childForceExpandWidth = false;
+                    layout.childForceExpandHeight = true;
 
-                UnityEngine.UI.Image preview = CreateImage("Preview", row.transform,
-                    new Color(0.21f, 0.23f, 0.28f, 1f));
-                preview.sprite = wallpapers.GetPreview(i);
-                preview.preserveAspect = true;
-                preview.raycastTarget = false;
-                FixedWidth(preview.gameObject, 150f);
+                    UnityEngine.UI.Image preview = CreateImage("Preview", row.transform,
+                        new Color(0.21f, 0.23f, 0.28f, 1f));
+                    preview.sprite = wallpapers.GetPreview(i);
+                    preview.preserveAspect = true;
+                    preview.raycastTarget = false;
+                    FixedWidth(preview.gameObject, 150f);
 
-                TextMeshProUGUI name = CreateText("Theme Name", row.transform,
-                    wallpapers.GetName(i), 22f, TextAlignmentOptions.MidlineLeft);
-                name.gameObject.AddComponent<UnityEngine.UI.LayoutElement>().flexibleWidth = 1f;
+                    TextMeshProUGUI name = CreateText("Theme Name", row.transform,
+                        wallpapers.GetName(i), 22f, TextAlignmentOptions.MidlineLeft);
+                    name.gameObject.AddComponent<UnityEngine.UI.LayoutElement>().flexibleWidth = 1f;
 
-                UnityEngine.UI.Button button = CreateButton("Apply Button", row.transform,
-                    new Color(0.95f, 0.36f, 0.38f, 1f));
-                FixedWidth(button.gameObject, 150f);
-                TextMeshProUGUI label = CreateText("Button Label", button.transform,
-                    i == 0 ? "Selecionado" : "Aplicar", 18f, TextAlignmentOptions.Center);
-                Stretch(label.rectTransform, 4f);
-                button.interactable = i != 0;
-                buttons[i] = button;
-                labels[i] = label;
+                    UnityEngine.UI.Button button = CreateButton("Apply Button", row.transform,
+                        new Color(0.95f, 0.36f, 0.38f, 1f));
+                    FixedWidth(button.gameObject, 150f);
+                    TextMeshProUGUI label = CreateText("Button Label", button.transform,
+                        i == 0 ? "Selecionado" : wallpapers.GetPrice(i).IsPositive
+                            ? $"Comprar {wallpapers.GetPrice(i)}" : "Aplicar", 18f, TextAlignmentOptions.Center);
+                    Stretch(label.rectTransform, 4f);
+                    button.interactable = i != 0;
+                    changed = true;
+                }
+                if (row.transform.GetSiblingIndex() != i)
+                {
+                    row.transform.SetSiblingIndex(i);
+                    changed = true;
+                }
+                buttons[i] = row.transform.Find("Apply Button")?.GetComponent<UnityEngine.UI.Button>();
+                labels[i] = buttons[i] != null
+                    ? buttons[i].transform.Find("Button Label")?.GetComponent<TextMeshProUGUI>() : null;
             }
 
             CustomizationApp app = content.GetComponent<CustomizationApp>()
                 ?? content.gameObject.AddComponent<CustomizationApp>();
             SerializedObject serializedApp = new(app);
             serializedApp.FindProperty("_wallpapers").objectReferenceValue = wallpapers;
-            serializedApp.FindProperty("_status").objectReferenceValue = status;
+            serializedApp.FindProperty("_status").objectReferenceValue = currentTheme;
             SerializedProperty buttonProperty = serializedApp.FindProperty("_buttons");
             SerializedProperty labelProperty = serializedApp.FindProperty("_buttonLabels");
             buttonProperty.arraySize = buttons.Length;
@@ -295,8 +361,47 @@ namespace JapanMarket.EditorTools
                 buttonProperty.GetArrayElementAtIndex(i).objectReferenceValue = buttons[i];
                 labelProperty.GetArrayElementAtIndex(i).objectReferenceValue = labels[i];
             }
-            serializedApp.ApplyModifiedPropertiesWithoutUndo();
-            return true;
+            changed |= serializedApp.ApplyModifiedPropertiesWithoutUndo();
+            return changed;
+        }
+
+        private static RectTransform EnsureWallpaperList(RectTransform panel, ref bool changed)
+        {
+            Transform existing = panel.Find("Wallpaper List");
+            if (existing != null)
+                return existing.GetComponent<UnityEngine.UI.ScrollRect>().content;
+
+            UnityEngine.UI.Image list = CreateImage("Wallpaper List", panel,
+                new Color(0f, 0f, 0f, 0.12f));
+            var element = list.gameObject.AddComponent<UnityEngine.UI.LayoutElement>();
+            element.minHeight = 104f;
+            element.flexibleHeight = 1f;
+            UnityEngine.UI.Image viewport = CreateImage("Viewport", list.transform, Color.white);
+            Stretch(viewport.rectTransform);
+            viewport.gameObject.AddComponent<UnityEngine.UI.Mask>().showMaskGraphic = false;
+            RectTransform rows = CreateRect("Content", viewport.transform);
+            rows.anchorMin = new Vector2(0f, 1f);
+            rows.anchorMax = Vector2.one;
+            rows.pivot = new Vector2(0.5f, 1f);
+            rows.anchoredPosition = Vector2.zero;
+            rows.sizeDelta = Vector2.zero;
+            var layout = rows.gameObject.AddComponent<UnityEngine.UI.VerticalLayoutGroup>();
+            layout.spacing = 10f;
+            layout.childControlWidth = true;
+            layout.childControlHeight = true;
+            layout.childForceExpandWidth = true;
+            layout.childForceExpandHeight = false;
+            rows.gameObject.AddComponent<UnityEngine.UI.ContentSizeFitter>().verticalFit =
+                UnityEngine.UI.ContentSizeFitter.FitMode.PreferredSize;
+            var scroll = list.gameObject.AddComponent<UnityEngine.UI.ScrollRect>();
+            scroll.viewport = viewport.rectTransform;
+            scroll.content = rows;
+            scroll.horizontal = false;
+            scroll.vertical = true;
+            scroll.movementType = UnityEngine.UI.ScrollRect.MovementType.Clamped;
+            scroll.scrollSensitivity = 30f;
+            changed = true;
+            return rows;
         }
 
         private static void FixedHeight(GameObject target, float height)

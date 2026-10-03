@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 1064022420103529398}
   - component: {fileID: 6559723096532863153}
   - component: {fileID: 7996678125638228281}
+  - component: {fileID: 1945741337761438183}
   m_Layer: 0
   m_Name: Plastic_TrashBin
   m_TagString: Untagged
@@ -67,8 +68,25 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2e15f90f795aeb74e8c2d9053ed91e17, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TrashBin
-  acceptedType: 0
-  trashSystem: {fileID: 0}
+--- !u!114 &1945741337761438183
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 263171525038916834}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4bfba8a3c1d1678408004af7008ca0da, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TrashBinInteraction
+  OnDropEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  OnPickEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  interactionText: 
 --- !u!1 &636125782656264556
 GameObject:
   m_ObjectHideFlags: 0

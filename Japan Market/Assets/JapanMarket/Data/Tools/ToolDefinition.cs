@@ -51,6 +51,13 @@ namespace JapanMarket.Data
         [Tooltip("Ordem na roda. Menor aparece primeiro.")]
         [SerializeField] private int _sortOrder;
 
+        [Header("Saco de lixo")]
+        [SerializeField] private bool _isTrashBag;
+        [SerializeField, Min(1)] private int _trashCapacity = 10;
+
+        public bool IsTrashBag => _isTrashBag;
+        public int TrashCapacity => Mathf.Max(1, _trashCapacity);
+
         public LocalizedText DisplayName => _displayName;
         public Sprite Icon => _icon;
         public GameObject HeldPrefab => _heldPrefab;

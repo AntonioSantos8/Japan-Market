@@ -58,6 +58,8 @@ namespace JapanMarket.Gameplay
             CaptureObjectives(save);
             CaptureTrash(save);
             CaptureTools(save);
+            save.PlayerTrashCount = _game.PlayerTrashBag.Count;
+            save.Scraps = _game.PlayerTrashBag.Scraps;
 
             return save;
         }
@@ -278,6 +280,7 @@ namespace JapanMarket.Gameplay
             ApplyObjectives(save);
             ApplyTrash(save);
             ApplyTools(save);
+            _game.PlayerTrashBag.Restore(save.PlayerTrashCount, save.Scraps);
 
             if (_discarded > 0)
             {

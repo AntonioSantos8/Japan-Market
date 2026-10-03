@@ -164,6 +164,10 @@ public class Outline : MonoBehaviour {
 
     foreach (var meshFilter in GetComponentsInChildren<MeshFilter>()) {
 
+      if (meshFilter.sharedMesh == null || !meshFilter.sharedMesh.isReadable) {
+        continue;
+      }
+
       // Skip duplicates
       if (!bakedMeshes.Add(meshFilter.sharedMesh)) {
         continue;
@@ -181,6 +185,12 @@ public class Outline : MonoBehaviour {
 
     // Retrieve or generate smooth normals
     foreach (var meshFilter in GetComponentsInChildren<MeshFilter>()) {
+
+      // Imported meshes can omit their CPU copy. In that case the shader
+      // uses the original vertex normals instead of generated smooth normals.
+      if (meshFilter.sharedMesh == null || !meshFilter.sharedMesh.isReadable) {
+        continue;
+      }
 
       // Skip if smooth normals have already been adopted
       if (!registeredMeshes.Add(meshFilter.sharedMesh)) {
@@ -204,6 +214,10 @@ public class Outline : MonoBehaviour {
 
     // Clear UV3 on skinned mesh renderers
     foreach (var skinnedMeshRenderer in GetComponentsInChildren<SkinnedMeshRenderer>()) {
+
+      if (skinnedMeshRenderer.sharedMesh == null || !skinnedMeshRenderer.sharedMesh.isReadable) {
+        continue;
+      }
 
       // Skip if UV3 has already been reset
       if (!registeredMeshes.Add(skinnedMeshRenderer.sharedMesh)) {

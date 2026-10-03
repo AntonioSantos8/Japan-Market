@@ -25,7 +25,8 @@ namespace JapanMarket.Editor
             "Assets/JapanMarket/Setup/Mao_Rodo.prefab",
             "Assets/JapanMarket/Setup/Mao_Tablet.prefab",
             "Assets/JapanMarket/Setup/Mao_Engradado.prefab",
-            "Assets/JapanMarket/Setup/Mao_Taco.prefab"
+            "Assets/JapanMarket/Setup/Mao_Taco.prefab",
+            "Assets/JapanMarket/Setup/Mao_SacoDeLixo.prefab"
         };
 
         static PlayerToolsPrefabBaker()
@@ -151,13 +152,19 @@ namespace JapanMarket.Editor
                             && PrefabUtility.GetCorrespondingObjectFromSource(toolUser) == null);
                     if (!isLegacyOverride) continue;
 
-                    SetupToolInput input = toolUser.GetComponent<SetupToolInput>();
-                    bool inputIsLegacyOverride = input != null
-                        && (PrefabUtility.IsAddedComponentOverride(input)
+                    foreach (SetupToolInput input in toolUser.GetComponents<SetupToolInput>())
+                    {
+                        bool inputIsLegacyOverride = PrefabUtility.IsAddedComponentOverride(input)
                             || (PrefabUtility.IsPartOfPrefabInstance(input.gameObject)
-                                && PrefabUtility.GetCorrespondingObjectFromSource(input) == null));
-                    if (inputIsLegacyOverride)
+                                && PrefabUtility.GetCorrespondingObjectFromSource(input) == null);
+                        if (!inputIsLegacyOverride) continue;
                         UnityEngine.Object.DestroyImmediate(input);
+                        changed = true;
+                    }
+
+                    // A source input still requires this component. Do not remove
+                    // it while a dependency remains, even in an old scene override.
+                    if (toolUser.GetComponents<SetupToolInput>().Length > 0) continue;
 
                     UnityEngine.Object.DestroyImmediate(toolUser);
                     changed = true;

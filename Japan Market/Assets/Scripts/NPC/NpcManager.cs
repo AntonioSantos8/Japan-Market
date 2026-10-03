@@ -33,6 +33,7 @@ public class NpcManager : MonoBehaviour
     [Range(0.1f, 1f)] [SerializeField] private float _dirtyCapacityFraction = 0.5f;
 
     private readonly List<GameObject> _activeNpcs = new List<GameObject>();
+    private Transform _spawnStagingRoot;
 
     private void Start()
     {
@@ -108,16 +109,29 @@ public class NpcManager : MonoBehaviour
             return;
         }
 
-        // SamplePosition returns the mesh surface, while the agent's transform
-        // sits above it by baseOffset (1m in the NPC prefabs).
-        Vector3 agentPosition = hit.position + Vector3.up * prefabAgent.baseOffset;
-        GameObject npc = Instantiate(prefab, agentPosition, _spawnPoint.rotation);
-        NavMeshAgent agent = npc.GetComponent<NavMeshAgent>();
-        if (!agent.Warp(agentPosition))
+        // Instantiate inactive so Awake/OnEnable cannot bind the agent with the
+        // prefab's visual offset before we have placed it on the sampled surface.
+        if (_spawnStagingRoot == null)
         {
+            var staging = new GameObject("NPC Spawn Staging");
+            staging.SetActive(false);
+            staging.transform.SetParent(transform, false);
+            _spawnStagingRoot = staging.transform;
+        }
+        GameObject npc = Instantiate(prefab, hit.position, _spawnPoint.rotation, _spawnStagingRoot);
+        NavMeshAgent agent = npc.GetComponent<NavMeshAgent>();
+        float baseOffset = agent.baseOffset;
+        agent.baseOffset = 0f;
+        agent.enabled = true;
+        npc.transform.SetParent(null, true);
+        npc.SetActive(true);
+        if (!agent.Warp(hit.position) || !agent.isOnNavMesh)
+        {
+            npc.SetActive(false);
             Destroy(npc);
             return;
         }
+        agent.baseOffset = baseOffset;
         _activeNpcs.Add(npc);
 
         TutorialManager tutorialManager = ServiceLocator.Get<TutorialManager>();

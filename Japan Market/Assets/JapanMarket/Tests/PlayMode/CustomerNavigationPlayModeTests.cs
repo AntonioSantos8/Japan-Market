@@ -13,6 +13,7 @@ namespace JapanMarket.Tests.PlayMode
         private static readonly Vector3 Origin = new(1000f, 0f, 1000f);
         private readonly List<GameObject> _objects = new();
         private NavMeshData _data;
+        private ScriptableObject _furnitureData;
         private NavMeshDataInstance _instance;
         private float _previousTimeScale;
 
@@ -46,6 +47,7 @@ namespace JapanMarket.Tests.PlayMode
             _objects.Clear();
             if (_instance.valid) _instance.Remove();
             if (_data != null) Object.DestroyImmediate(_data);
+            if (_furnitureData != null) Object.DestroyImmediate(_furnitureData);
             Time.timeScale = _previousTimeScale;
         }
 
@@ -193,6 +195,30 @@ namespace JapanMarket.Tests.PlayMode
         }
 
         [UnityTest]
+        public IEnumerator Legacy_customer_reaches_a_shelf_with_a_marker_at_product_height()
+        {
+            Behaviour legacy = LegacyCustomer();
+            var furnitureObject = new GameObject("Shelf with elevated interaction marker");
+            _objects.Add(furnitureObject);
+            furnitureObject.transform.position = Origin + Vector3.right * 3f + Vector3.up * 1.56f;
+            Component furniture = furnitureObject.AddComponent(System.Type.GetType("FurnitureInstance, Assembly-CSharp", true));
+            _furnitureData = ScriptableObject.CreateInstance(System.Type.GetType("FurnitureData, Assembly-CSharp", true));
+            _furnitureData.GetType().GetField("floorDistance").SetValue(_furnitureData, 1.56f);
+            furniture.GetType().GetProperty("Data").SetValue(furniture, _furnitureData);
+            var marker = new GameObject("Interaction marker 2.32m above floor");
+            marker.transform.SetParent(furnitureObject.transform, false);
+            marker.transform.localPosition = Vector3.up * 2.32f;
+            furniture.GetType().GetField("interactionPoint").SetValue(furniture, marker.transform);
+            Vector3 target = (Vector3)furniture.GetType().GetProperty("InteractionPosition").GetValue(furniture);
+            Assert.That(target.y, Is.EqualTo(Origin.y));
+            yield return null;
+            bool arrived = false;
+            yield return Travel(legacy, target, result => arrived = result);
+            Assert.That(arrived, Is.True);
+            Assert.That(legacy.transform.position.x, Is.GreaterThan(Origin.x + 2.7f));
+        }
+
+        [UnityTest]
         public IEnumerator Manager_spawns_agents_with_prefab_base_offset_and_they_can_walk()
         {
             const System.Reflection.BindingFlags fields = System.Reflection.BindingFlags.Instance
@@ -233,8 +259,8 @@ namespace JapanMarket.Tests.PlayMode
                 Assert.That(agent.isOnNavMesh, Is.True);
                 Assert.That(agent.radius, Is.EqualTo(0.001f).Within(0.00001f));
                 Assert.That(NavMesh.SamplePosition(Origin, out NavMeshHit hit, 1f, NavMesh.AllAreas), Is.True);
-                Assert.That(npc.transform.position.y, Is.EqualTo(hit.position.y + offset).Within(0.01f));
                 yield return null;
+                Assert.That(npc.transform.position.y, Is.EqualTo(hit.position.y + offset).Within(0.01f));
                 bool? arrived = null;
                 yield return Travel(trajectory, Origin + Vector3.right * 3f, result => arrived = result);
                 Assert.That(arrived, Is.True);
@@ -279,6 +305,8 @@ namespace JapanMarket.Tests.PlayMode
             furniture.GetType().GetField("shelf").SetValue(furniture, shelf);
             Component occupancy = shelfObject.AddComponent(System.Type.GetType("FurnitureOccupancy, Assembly-CSharp"));
             occupancy.GetType().GetField("_maxOccupants", fields).SetValue(occupancy, 1);
+            ((Behaviour)segment).enabled = false;
+            shelfObject.SetActive(true);
 
             var managerObject = new GameObject("Shopping regression furniture manager");
             _objects.Add(managerObject);

@@ -112,6 +112,7 @@ namespace JapanMarket.Gameplay
         private ObjectiveService _objectives;
         private TrashService _trash;
         private ToolBelt _tools;
+        private PlayerTrashBag _playerTrashBag;
         private CleanlinessService _cleanliness;
         private DayCycle _dayCycle;
         private SaveService _save;
@@ -136,6 +137,7 @@ namespace JapanMarket.Gameplay
         public IObjectiveService Objectives => _objectives;
         public ITrashService Trash => _trash;
         public IToolBelt Tools => _tools;
+        public PlayerTrashBag PlayerTrashBag => _playerTrashBag;
         public IStoreCleanliness Cleanliness => _cleanliness;
         public IDailyReportService Reports => _reports;
 
@@ -268,6 +270,7 @@ namespace JapanMarket.Gameplay
         private void BuildToolsAndCleaning()
         {
             _tools = new ToolBelt(_toolBelt != null ? _toolBelt : null, _progress, _events);
+            _playerTrashBag = new PlayerTrashBag(_tools, _events);
 
             _cleanliness = new CleanlinessService(_events)
             {
@@ -346,6 +349,7 @@ namespace JapanMarket.Gameplay
             _container.Register<IObjectiveService>(_objectives);
             _container.Register<ITrashService>(_trash);
             _container.Register<IToolBelt>(_tools);
+            _container.Register<PlayerTrashBag>(_playerTrashBag);
             _container.Register<IDailyReportService>(_reports);
 
             // Os dois lados da limpeza, registrados separados: o cliente recebe

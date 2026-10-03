@@ -70,6 +70,7 @@ public class FurnitureManager : MonoBehaviour
 
     private void Start()
     {
+        RegisterSceneFurnitures();
         CacheBaseCameraFov();
     }
 
@@ -593,7 +594,25 @@ public class FurnitureManager : MonoBehaviour
         AddToInventory(data);
     }
 
-    public List<FurnitureInstance> GetPlacedFurnitures() => _placedFurnitures;
+    private void RegisterSceneFurnitures()
+    {
+        _placedFurnitures.RemoveAll(furniture => furniture == null);
+        // Scene furniture does not pass through the build-mode placement code.
+        foreach (var furniture in FindObjectsByType<FurnitureInstance>(FindObjectsSortMode.None))
+        {
+            if (furniture.gameObject.scene != gameObject.scene) continue;
+            if (_activeGhost != null && furniture.transform.IsChildOf(_activeGhost.transform)) continue;
+            if (furniture.shelf == null)
+                furniture.shelf = furniture.GetComponentInChildren<Shelf>();
+            if (!_placedFurnitures.Contains(furniture)) _placedFurnitures.Add(furniture);
+        }
+    }
+
+    public List<FurnitureInstance> GetPlacedFurnitures()
+    {
+        RegisterSceneFurnitures();
+        return _placedFurnitures;
+    }
     public FurnitureData GetCurrentSelected() => _currentSelected;
     public GameObject GetActiveGhost() => _activeGhost;
 }

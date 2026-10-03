@@ -1,17 +1,30 @@
 using UnityEngine;
 
-[RequireComponent(typeof(JapanMarket.Gameplay.TrashBin))]
+[DisallowMultipleComponent]
 public sealed class TrashBinInteraction : InteractableBase
 {
-    private JapanMarket.Gameplay.TrashBin bin;
-
     public override void Awake()
     {
         base.Awake();
-        bin = GetComponent<JapanMarket.Gameplay.TrashBin>();
-        interactionText = "Retirar saco";
+        interactionText = "Esvaziar saco de lixo";
     }
 
-    public override void Interact() => bin.TryReleaseBag(out _);
-    public override bool OnLookAt() { base.OnLookAt(); return CanInteract; }
+    public override void Interact()
+    {
+        var game = JapanMarket.Gameplay.GameContext.Current;
+        if (!CanInteract || game == null || !game.PlayerTrashBag.TryEmpty(out int earned)) return;
+        ServiceLocator.Get<Warnings>()?.ShowWarning($"+{earned} scraps", true);
+    }
+
+    public override bool OnLookAt()
+    {
+        var game = JapanMarket.Gameplay.GameContext.Current;
+        var bag = game != null ? game.PlayerTrashBag : null;
+        interactionText = bag == null || !bag.IsEquipped ? "Equipe o saco de lixo"
+            : bag.Count == 0 ? "Saco vazio" : $"Esvaziar saco (+{bag.Count} scraps)";
+        bool allowed = CanInteract && bag != null && bag.CanEmpty;
+        if (allowed) base.OnLookAt();
+        else OnLookAway();
+        return allowed;
+    }
 }

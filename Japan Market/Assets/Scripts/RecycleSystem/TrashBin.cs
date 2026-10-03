@@ -1,91 +1,11 @@
 using UnityEngine;
 
+/// <summary>Legacy bin marker. Recycling now uses the equipped bag.</summary>
 public class TrashBin : MonoBehaviour
 {
-    [SerializeField] private TrashType acceptedType;
-
-    [Header("Rejeição")]
-    [Tooltip("Força do impulso quando o lixo é colocado no lugar errado.")]
-    [SerializeField] private float _rejectForce = 5f;
-
-    [Header("Recompensa")]
-    [SerializeField] private float _coinReward = 50f;
-    [Tooltip("Prefab do pop '+50 ¥' que aparece acima da lixeira ao reciclar corretamente.")]
-    [SerializeField] private GameObject _coinPopPrefab;
-
-    [Header("Penalidade")]
-    [SerializeField] private float _moneyPenalty = 100f;
-    [Tooltip("Prefab do pop '-¥' vermelho que aparece ao errar o lixo.")]
-    [SerializeField] private GameObject _moneyLosePopPrefab;
-
-    private void OnTriggerEnter(Collider other)
+    private void Awake()
     {
-        var controller = ServiceLocator.Get<ItemRaycastController>();
-
-        if (other.TryGetComponent(out Box _))
-        {
-            var itemBox = other.GetComponentInChildren<ItemBox>();
-            if (itemBox != null && !itemBox.IsEmpty())
-            {
-                if (controller.HeldItem != null) controller.DropItem();
-                Destroy(other.gameObject);
-                SpawnLosePop();
-                ServiceLocator.Get<MarketManager>().Lose_Money(_moneyPenalty);
-                ServiceLocator.Get<Warnings>().ShowWarning("That's not trash!", false);
-                return;
-            }
-        }
-
-        if (!other.TryGetComponent(out TrashInstance trash)) return;
-        if (trash.TrashData == null) return;
-
-        if (trash.TrashData.type == acceptedType)
-        {
-            if (controller.HeldItem != null)
-                controller.DropItem();
-
-            Recycle(other.gameObject);
-        }
-        else
-        {
-            RejectTrash(other.gameObject, controller);
-        }
-    }
-
-    private void Recycle(GameObject trashObj)
-    {
-        ServiceLocator.Get<TrashSystem>().UnregisterTrash(trashObj);
-        Destroy(trashObj);
-
-        ServiceLocator.Get<MarketManager>().Earn_Money(_coinReward);
-
-        if (_coinPopPrefab != null)
-        {
-            GameObject pop = Instantiate(_coinPopPrefab, transform.position + Vector3.up * 1.5f, Quaternion.identity);
-            if (pop.TryGetComponent(out CoinPop coinPop))
-                coinPop.Setup(_coinReward);
-            Destroy(pop, 4f);
-        }
-    }
-
-    private void RejectTrash(GameObject trashObj, ItemRaycastController controller)
-    {
-        if (controller.HeldItem != null)
-            controller.DropItem();
-
-        ServiceLocator.Get<TrashSystem>().UnregisterTrash(trashObj);
-        Destroy(trashObj);
-        SpawnLosePop();
-        ServiceLocator.Get<MarketManager>().Lose_Money(_moneyPenalty);
-        ServiceLocator.Get<Warnings>().ShowWarning("Lixo errado!", false);
-    }
-
-    private void SpawnLosePop()
-    {
-        if (_moneyLosePopPrefab == null) return;
-        GameObject pop = Instantiate(_moneyLosePopPrefab, transform.position + Vector3.up * 1.5f, Quaternion.identity);
-        if (pop.TryGetComponent(out MoneyLosePop losePop))
-            losePop.Setup(_moneyPenalty);
-        Destroy(pop, 4f);
+        if (GetComponent<TrashBinInteraction>() == null)
+            gameObject.AddComponent<TrashBinInteraction>();
     }
 }

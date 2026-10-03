@@ -21,11 +21,33 @@ public enum Items
 public class Shelf : MonoBehaviour
 {
     [SerializedDictionary("Item", " Segment")]
-    [SerializeField] SerializedDictionary<Segment, Items> shelf;
+    [SerializeField] SerializedDictionary<Segment, Items> shelf = new SerializedDictionary<Segment, Items>();
 
     List<Items> allItemsInShelf = new List<Items>();
 
     public Segment lastItemSegment;
+
+    public bool HasItems
+    {
+        get
+        {
+            foreach (var pair in shelf)
+                if (HasStock(pair.Key, pair.Value)) return true;
+            return false;
+        }
+    }
+
+    private static bool HasStock(Segment segment, Items type)
+    {
+        if (segment == null || type == Items.None) return false;
+        foreach (var group in segment.Groups)
+        {
+            if (group == null || group.type != type) continue;
+            foreach (var item in group.spaces)
+                if (item != null) return true;
+        }
+        return false;
+    }
 
     [ContextMenu("Tirar Item")]
     public Items TakeRandomItem()
@@ -75,14 +97,19 @@ public class Shelf : MonoBehaviour
     // Retorna o tipo de um item aleatório SEM remover da prateleira.
     public Items PeekRandomItemType()
     {
-        if (shelf.Count == 0) return Items.None;
-        int index = Random.Range(0, shelf.Count);
-        int i = 0;
+        return PeekRandomMatchingItemType(null);
+    }
+
+    public Items PeekRandomMatchingItemType(System.Predicate<Items> matches)
+    {
+        Items selected = Items.None;
+        int available = 0;
         foreach (var pair in shelf)
         {
-            if (i++ == index) return pair.Value;
+            if (!HasStock(pair.Key, pair.Value) || (matches != null && !matches(pair.Value))) continue;
+            if (Random.Range(0, ++available) == 0) selected = pair.Value;
         }
-        return Items.None;
+        return selected;
     }
 
     // Remove e destrói um item de um tipo específico.
@@ -90,7 +117,7 @@ public class Shelf : MonoBehaviour
     {
         foreach (var pair in shelf)
         {
-            if (pair.Value != targetType) continue;
+            if (pair.Value != targetType || !HasStock(pair.Key, targetType)) continue;
             Segment segment = pair.Key;
             for (int g = 0; g < segment.Groups.Length; g++)
             {
@@ -106,14 +133,21 @@ public class Shelf : MonoBehaviour
                     return targetType;
                 }
             }
-            break;
         }
         return Items.None;
     }
 
     public void RegisterSegment(Items item, Segment segment)
     {
-        if (shelf.ContainsKey(segment)) return;
+        if (segment == null) return;
+        if (shelf.TryGetValue(segment, out Items previous))
+        {
+            if (previous == item) return;
+            shelf[segment] = item;
+            allItemsInShelf.Remove(previous);
+            allItemsInShelf.Add(item);
+            return;
+        }
 
         shelf.Add(segment, item);
         allItemsInShelf.Add(item);

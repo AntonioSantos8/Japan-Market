@@ -34,6 +34,12 @@ public class ComputerButtonsManager : MonoBehaviour
 
     void Start()
     {
+        // The current computer layout can omit the decorative indicators.
+        if (leftIndicator == null || rightIndicator == null)
+        {
+            enabled = false;
+            return;
+        }
         rightBaseScale = rightIndicator.localScale;
         leftBaseScale = leftIndicator.localScale;
         rightBaseRot = rightIndicator.localRotation;

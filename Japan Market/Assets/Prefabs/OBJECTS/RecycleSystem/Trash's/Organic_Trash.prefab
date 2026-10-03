@@ -10,11 +10,11 @@ GameObject:
   m_Component:
   - component: {fileID: 5762468996722209546}
   - component: {fileID: 5997705025251037906}
-  - component: {fileID: 5763621900245358607}
   - component: {fileID: -824795173828221646}
   - component: {fileID: 5129636295708907283}
   - component: {fileID: 1601480233120092972}
   - component: {fileID: -5115459732055968813}
+  - component: {fileID: 323755913920941614}
   m_Layer: 7
   m_Name: Organic_Trash
   m_TagString: Untagged
@@ -51,31 +51,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TrashInstance
   TrashData: {fileID: 11400000, guid: e3e00d5b66a75c24fba030ba50668dbe, type: 2}
---- !u!114 &5763621900245358607
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3759841111657897731}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3b5b663da327bea4787cf5e988bbbb43, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::HoldableItem
-  OnDropEvent:
-    m_PersistentCalls:
-      m_Calls: []
-  OnPickEvent:
-    m_PersistentCalls:
-      m_Calls: []
-  interactionText: 
-  followForce: 550
-  followDrag: 16
-  canBreak: 0
-  maxResistance: 100
-  breakThreshold: 15
-  rbAngularDamping: 3
 --- !u!65 &-824795173828221646
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -155,6 +130,25 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Item
   myType: 0
+--- !u!114 &323755913920941614
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3759841111657897731}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3e59e9af3de4d9e4aa0b30a693bb6629, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TrashCollectionInteraction
+  OnDropEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  OnPickEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  interactionText: 
 --- !u!1 &8459258379645383528
 GameObject:
   m_ObjectHideFlags: 0
@@ -167,7 +161,7 @@ GameObject:
   - component: {fileID: 300714333346259145}
   - component: {fileID: 8835867188507481804}
   - component: {fileID: 6601889515964383899}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Visual
   m_TagString: Untagged
   m_Icon: {fileID: 0}

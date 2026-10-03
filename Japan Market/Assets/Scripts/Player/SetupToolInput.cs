@@ -27,6 +27,7 @@ public sealed class SetupToolInput : MonoBehaviour
     private void Awake()
     {
         tools = GetComponent<ToolUser>();
+        if (GetComponent<TrashBagHud>() == null) gameObject.AddComponent<TrashBagHud>();
         input = GetComponent<PlayerInput>();
         interaction = GetComponentInChildren<ItemRaycastController>();
         controller = GetComponent<PlayerController>();

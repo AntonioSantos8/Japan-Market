@@ -11,9 +11,9 @@ GameObject:
   - component: {fileID: 211360330941218058}
   - component: {fileID: 8320667720085792165}
   - component: {fileID: 1217660934275128144}
-  - component: {fileID: 2342834694592219845}
   - component: {fileID: 5361228465540966053}
   - component: {fileID: 6697409634617864110}
+  - component: {fileID: 3388494135755451349}
   m_Layer: 7
   m_Name: Lixo_metal
   m_TagString: Untagged
@@ -85,31 +85,6 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!114 &2342834694592219845
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2049498975411719005}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3b5b663da327bea4787cf5e988bbbb43, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::HoldableItem
-  OnDropEvent:
-    m_PersistentCalls:
-      m_Calls: []
-  OnPickEvent:
-    m_PersistentCalls:
-      m_Calls: []
-  interactionText: 
-  followForce: 150
-  followDrag: 2
-  canBreak: 0
-  maxResistance: 100
-  breakThreshold: 15
-  rbAngularDamping: 13
 --- !u!114 &5361228465540966053
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -141,6 +116,25 @@ MonoBehaviour:
   precomputeOutline: 0
   bakeKeys: []
   bakeValues: []
+--- !u!114 &3388494135755451349
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2049498975411719005}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3e59e9af3de4d9e4aa0b30a693bb6629, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TrashCollectionInteraction
+  OnDropEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  OnPickEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  interactionText: 
 --- !u!1 &6029605848571636032
 GameObject:
   m_ObjectHideFlags: 0
@@ -152,7 +146,7 @@ GameObject:
   - component: {fileID: 5649244759029603402}
   - component: {fileID: 6851012801407204755}
   - component: {fileID: 4949354288633247571}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Visual
   m_TagString: Untagged
   m_Icon: {fileID: 0}

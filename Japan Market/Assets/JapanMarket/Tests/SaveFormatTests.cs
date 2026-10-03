@@ -85,6 +85,8 @@ namespace JapanMarket.Tests
             },
 
             Tools = new ToolsSave { UsesPerSlot = new[] { 12, 0, 5 }, SelectedIndex = 2 },
+            PlayerTrashCount = 2,
+            Scraps = 100,
         };
 
         [Test]
@@ -104,6 +106,8 @@ namespace JapanMarket.Tests
             Assert.IsTrue(restored.Clock.StoreOpen);
 
             Assert.AreEqual(12345, restored.Ledger.BalanceYen);
+            Assert.AreEqual(2, restored.PlayerTrashCount);
+            Assert.AreEqual(100, restored.Scraps);
 
             Assert.AreEqual(4, restored.Progress.StoreLevel);
             Assert.AreEqual(65, restored.Progress.StoreXP);

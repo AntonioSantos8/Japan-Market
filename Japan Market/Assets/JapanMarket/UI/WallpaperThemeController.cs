@@ -1,4 +1,6 @@
 using System;
+using JapanMarket.Core;
+using JapanMarket.Domain;
 using UnityEngine;
 
 namespace JapanMarket.UI
@@ -12,11 +14,14 @@ namespace JapanMarket.UI
         {
             public string name;
             public GameObject wallpaper;
+            [Min(0)] public int price;
         }
 
         private const string PreferenceKey = "JapanMarket.ComputerWallpaper";
+        private const string OwnershipPrefix = "JapanMarket.ComputerWallpaper.Owned.";
 
         [SerializeField] private WallpaperOption[] _wallpapers = Array.Empty<WallpaperOption>();
+        [SerializeField, HideInInspector] private int _catalogVersion;
 
         public int Count => _wallpapers.Length;
         public int SelectedIndex { get; private set; }
@@ -27,7 +32,7 @@ namespace JapanMarket.UI
             int index = 0;
             for (int i = 0; i < _wallpapers.Length; i++)
             {
-                if (_wallpapers[i].name != saved) continue;
+                if (_wallpapers[i].name != saved || !IsOwned(i)) continue;
                 index = i;
                 break;
             }
@@ -36,6 +41,20 @@ namespace JapanMarket.UI
         }
 
         public string GetName(int index) => IsValid(index) ? _wallpapers[index].name : string.Empty;
+        public Money GetPrice(int index) => Money.FromYen(IsValid(index) ? Mathf.Max(0, _wallpapers[index].price) : 0);
+        public bool IsOwned(int index) => IsValid(index) && (_wallpapers[index].price <= 0
+            || PlayerPrefs.GetInt(OwnershipPrefix + _wallpapers[index].name, 0) == 1);
+
+        public bool TryPurchase(int index, ILedger ledger)
+        {
+            if (!IsValid(index) || _wallpapers[index].wallpaper == null) return false;
+            if (IsOwned(index)) return true;
+            if (ledger == null || !ledger.TryWithdraw(GetPrice(index), TransactionReason.CustomizationCost,
+                    "Wallpaper: " + GetName(index))) return false;
+            PlayerPrefs.SetInt(OwnershipPrefix + _wallpapers[index].name, 1);
+            PlayerPrefs.Save();
+            return true;
+        }
 
         public Sprite GetPreview(int index)
         {
@@ -46,7 +65,7 @@ namespace JapanMarket.UI
 
         public void Select(int index)
         {
-            if (!IsValid(index) || _wallpapers[index].wallpaper == null) return;
+            if (!IsOwned(index) || _wallpapers[index].wallpaper == null) return;
 
             Apply(index);
             PlayerPrefs.SetString(PreferenceKey, _wallpapers[index].name);

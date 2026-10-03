@@ -47,6 +47,8 @@ namespace JapanMarket.Domain
         public ProgressSave Progress = new();
         public MarketSave Market = new();
         public ToolsSave Tools = new();
+        public int PlayerTrashCount;
+        public long Scraps;
 
         public PricingSave[] Pricing = Array.Empty<PricingSave>();
         public LoanSave[] Loans = Array.Empty<LoanSave>();
